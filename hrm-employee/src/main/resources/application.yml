@@ -1,0 +1,36 @@
+server:
+  port: 9003
+  servlet:
+    encoding:
+      force-response: true
+spring:
+  application:
+    name: hrm-employee #指定服务名
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.182.129:33306/db_hrm?useSSL=true&useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 991226Ab#
+  jpa:
+    database: MySQL
+    show-sql: true
+    open-in-view: true
+
+  banner:
+    location: banner.txt
+  redis:
+    host: 192.168.182.129
+    port: 6379
+logging:
+  level:
+    root: info
+  file:
+    name: sys.log
+#微服务注册到eureka配置
+eureka:
+  client:
+    service-url:
+      defaultZone: http://192.168.182.129:6868/eureka/
+# 自定义配置
+date-format: yyyy-MM-dd
+initial-password: 123456
