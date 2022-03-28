@@ -29,18 +29,21 @@ public class ShiroConfigure {
     @Value("${spring.redis.host}")
     private String host;
 
+
     @Value("${spring.redis.port}")
     private int port;
     /**
      * 匿名访问
      */
-    private static final String ANON_ACCESS="anon";
+    private static final String ANON_ACCESS = "anon";
     /**
      * 授权访问
      */
-    private static final String AUTH_ACCESS="authc";
+    private static final String AUTH_ACCESS = "authc";
+
     /**
      * 配置自定义realm
+     *
      * @return
      */
     @Bean
@@ -50,6 +53,7 @@ public class ShiroConfigure {
 
     /**
      * 配置安全管理器
+     *
      * @param realm
      * @return
      */
@@ -68,6 +72,7 @@ public class ShiroConfigure {
 
     /**
      * 配置shiro注解支持
+     *
      * @param securityManager
      * @return
      */
@@ -80,6 +85,7 @@ public class ShiroConfigure {
 
     /**
      * Filter工厂，设置对应的过滤条件和跳转条件
+     *
      * @param securityManager
      * @return
      */
@@ -103,10 +109,10 @@ public class ShiroConfigure {
          *          anno    ：匿名访问（表明此链接所有人可以访问）
          *          authc   ：认证后访问（表明此链接需登录认证成功之后可以访问）
          */
-        Map<String,String> filterMap = new LinkedHashMap<>();
+        Map<String, String> filterMap = new LinkedHashMap<>();
         // 匿名访问
-        filterMap.put("/sys/login",ANON_ACCESS);
-        filterMap.put("/authError",ANON_ACCESS);
+        filterMap.put("/sys/login", ANON_ACCESS);
+        filterMap.put("/authError", ANON_ACCESS);
         //认证之后访问（登录之后可以访问）
         filterMap.put("/**", AUTH_ACCESS);
         //5.设置过滤器
@@ -122,6 +128,7 @@ public class ShiroConfigure {
         sessionManager.setSessionDAO(redisSessionDAO());
         return sessionManager;
     }
+
     /**
      * RedisSessionDAO shiro sessionDao层的实现 通过redis
      * 使用的是shiro-redis开源插件
@@ -133,7 +140,8 @@ public class ShiroConfigure {
     }
 
     /**
-     *  配置shiro redisManager
+     * 配置shiro redisManager
+     *
      * @return
      */
     public RedisManager redisManager() {
