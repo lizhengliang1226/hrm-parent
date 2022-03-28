@@ -28,5 +28,11 @@
         <version>0.0.1-SNAPSHOT</version>
         <scope>compile</scope>
     </dependency>
+    <!--feign -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+
 </dependencies>
 </project>

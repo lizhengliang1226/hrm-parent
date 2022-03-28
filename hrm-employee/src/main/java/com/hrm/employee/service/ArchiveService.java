@@ -1,78 +1,61 @@
 package com.hrm.employee.service;
 
-import com.hrm.common.service.BaseService;
-import com.hrm.common.utils.IdWorker;
 import com.hrm.domain.employee.EmployeeArchive;
-import com.hrm.employee.dao.ArchiveDao;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 /**
- * @author 17314
+ * @Description 月度员工归档服务
+ * @Author LZL
+ * @Date 2022/3/15-0:57
  */
-@Service
-public class ArchiveService extends BaseService {
-    @Autowired
-    private ArchiveDao archiveDao;
-    @Autowired
-    private IdWorker idWorker;
-
-    public void save(EmployeeArchive archive) {
-        archive.setId(idWorker.nextId() + "");
-        archive.setCreateTime(new Date());
-        archiveDao.save(archive);
-    }
-
-    public EmployeeArchive findLast(String companyId, String month) {
-        EmployeeArchive archive = archiveDao.findByLast(companyId, month);
-        return archive;
-    }
-
-    public List<EmployeeArchive> findAll(Integer page, Integer pagesize, String year, String companyId) {
-        int index = (page - 1) * pagesize;
-        return archiveDao.findAllData(companyId, year + "%", index, pagesize);
-    }
-
-    public Long countAll(String year, String companyId) {
-        return archiveDao.countAllData(companyId, year+"%");
-    }
-
-
-    public Page<EmployeeArchive> findSearch(Map<String,Object> map, int page, int size) {
-        return archiveDao.findAll(createSpecification(map), PageRequest.of(page-1, size));
-    }
+public interface ArchiveService {
+    /**
+     * 保存月度归档信息
+     *
+     * @param archive
+     */
+    public void save(EmployeeArchive archive);
 
     /**
-     * 动态条件构建
-     * @param searchMap
+     * 查找
+     *
+     * @param companyId
+     * @param month
      * @return
      */
-    private Specification<EmployeeArchive> createSpecification(Map searchMap) {
-        return new Specification<EmployeeArchive>() {
-            @Override
-            public Predicate toPredicate(Root<EmployeeArchive> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                List<Predicate> predicateList = new ArrayList<Predicate>();
-                // 企业id
-                if (searchMap.get("companyId")!=null && !"".equals(searchMap.get("companyId"))) {
-                    predicateList.add(cb.like(root.get("companyId").as(String.class), (String)searchMap.get("companyId")));
-                }
-                if (searchMap.get("year")!=null && !"".equals(searchMap.get("year"))) {
-                    predicateList.add(cb.like(root.get("month").as(String.class), (String)searchMap.get("year")));
-                }
-                return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
-            }
-        };
-    }
+    public EmployeeArchive findLast(String companyId, String month);
+
+    /**
+     * 查询全部归档信息
+     *
+     * @param page
+     * @param pagesize
+     * @param year
+     * @param companyId
+     * @return
+     */
+    public List<EmployeeArchive> findAll(Integer page, Integer pagesize, String year, String companyId);
+
+    /**
+     * 查询某年的归档数量
+     *
+     * @param year
+     * @param companyId
+     * @return
+     */
+    public Long countAll(String year, String companyId);
+
+    /**
+     * 分页查询月度归档信息
+     *
+     * @param map
+     * @param page
+     * @param size
+     * @return
+     */
+    public Page<EmployeeArchive> findSearch(Map<String, Object> map, int page, int size);
+
 }

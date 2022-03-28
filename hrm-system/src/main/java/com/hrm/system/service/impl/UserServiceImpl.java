@@ -1,5 +1,7 @@
 package com.hrm.system.service.impl;
 
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.symmetric.DES;
 import com.hrm.common.entity.UserLevel;
 import com.hrm.common.utils.IdWorker;
 import com.hrm.domain.system.Role;
@@ -7,7 +9,6 @@ import com.hrm.domain.system.User;
 import com.hrm.system.dao.RoleDao;
 import com.hrm.system.dao.UserDao;
 import com.hrm.system.service.UserService;
-import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.criteria.Predicate;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -61,26 +63,33 @@ public class UserServiceImpl implements UserService {
         user.setInServiceStatus(1);
         //默认级别为普通用户
         user.setLevel(UserLevel.NORMAL_USER);
-        String password= String.valueOf(new Md5Hash(initialPassword,user.getMobile(),3));
+        DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
+        final String password = des.encryptHex(initialPassword);
         user.setPassword(password);
         userDao.save(user);
     }
 
-//    public static void main(String[] args) {
-//        String password= String.valueOf(new Md5Hash("123456","88888888",3));
-//        System.out.println(password);
-//    }
     @Override
     public void update(User user) {
         User user1 = userDao.findById(user.getId()).get();
-        user1.setPassword(user.getPassword());
-        user1.setMobile(user.getMobile());
+        // 设置用户的其他信息
+        user1.setWorkNumber(user.getWorkNumber());
         user1.setUsername(user.getUsername());
-        user1.setWorkingCity(user.getWorkingCity());
-        user1.setInServiceStatus(user.getInServiceStatus());
+        final String oldMobile = user1.getMobile();
+        final String newMobile = user.getMobile();
+        // 如果手机号发生了改变需要重新加密密码
+        if (!oldMobile.trim().equals(newMobile.trim())) {
+            final String pass = user1.getPassword();
+            final String oldPass = SecureUtil.des(oldMobile.getBytes(StandardCharsets.UTF_8)).decryptStr(pass);
+            final String newPass = SecureUtil.des(newMobile.getBytes(StandardCharsets.UTF_8)).encryptHex(oldPass);
+            user1.setPassword(newPass);
+        }
+        user1.setMobile(newMobile);
+        user1.setStaffPhoto(user.getStaffPhoto());
         user1.setDepartmentId(user.getDepartmentId());
         user1.setDepartmentName(user.getDepartmentName());
-        user1.setCorrectionTime(user.getCorrectionTime());
+        user1.setFormOfEmployment(user.getFormOfEmployment());
+        user1.setTimeOfEntry(user.getTimeOfEntry());
         userDao.save(user1);
     }
 
@@ -141,4 +150,14 @@ public class UserServiceImpl implements UserService {
         user.setRoles(roleSet);
         userDao.save(user);
     }
+
+    @Override
+    public void updatePassword(String id, String password) {
+        User user1 = userDao.findById(id).get();
+        final DES des = SecureUtil.des(user1.getMobile().getBytes(StandardCharsets.UTF_8));
+        final String s = des.encryptHex(password);
+        userDao.updatePassword(id, s);
+    }
+
+
 }

@@ -17,9 +17,13 @@ spring:
   redis:
     host: 192.168.182.129
     port: 6379
+logging:
+  level:
+    root: info
+  file:
+    name: company.log
 #微服务注册到eureka配置
 eureka:
   client:
     service-url:
       defaultZone: http://192.168.182.129:6868/eureka/
-date-format: yyyy-MM-dd

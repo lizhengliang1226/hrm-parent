@@ -1,7 +1,7 @@
 package com.hrm.common.controller;
 
 import com.hrm.domain.system.response.ProfileResult;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  * @Author LZL
  * @Date 2022/3/7-20:28
  */
+@Slf4j
 public class BaseController {
     protected HttpServletRequest request;
     protected HttpServletResponse response;
@@ -33,6 +34,7 @@ public class BaseController {
         // 获取session中的安全数据
         final Subject subject = SecurityUtils.getSubject();
         final PrincipalCollection previousPrincipals = subject.getPrincipals();
+
         if (previousPrincipals != null&&!previousPrincipals.isEmpty()) {
             final ProfileResult profileResult = (ProfileResult) previousPrincipals.getPrimaryPrincipal();
             this.companyId = profileResult.getCompanyId();

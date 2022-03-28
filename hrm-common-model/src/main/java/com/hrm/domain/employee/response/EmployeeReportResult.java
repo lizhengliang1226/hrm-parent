@@ -29,7 +29,7 @@ public class EmployeeReportResult {
     /**
      * 出生日期
      */
-    private String dateOfBirth;
+//    private String dateOfBirth;
     /**
      * 最高学历
      */
@@ -65,7 +65,7 @@ public class EmployeeReportResult {
     /**
      * 英文名
      */
-    private String englishName;
+//    private String englishName;
     /**
      * 婚姻状况
      */
@@ -81,7 +81,7 @@ public class EmployeeReportResult {
     /**
      * 属相
      */
-    private String zodiac;
+//    private String zodiac;
     /**
      * 年龄
      */
@@ -89,7 +89,7 @@ public class EmployeeReportResult {
     /**
      * 星座
      */
-    private String constellation;
+//    private String constellation;
     /**
      * 血型
      */
@@ -109,19 +109,19 @@ public class EmployeeReportResult {
     /**
      * 存档机构
      */
-    private String archivingOrganization;
+//    private String archivingOrganization;
     /**
      * 子女状态
      */
-    private String stateOfChildren;
+//    private String stateOfChildren;
     /**
      * 子女有无商业保险
      */
-    private String doChildrenHaveCommercialInsurance;
+//    private String doChildrenHaveCommercialInsurance;
     /**
      * 有无违法违纪行为
      */
-    private String isThereAnyViolationOfLawOrDiscipline;
+//    private String isThereAnyViolationOfLawOrDiscipline;
     /**
      * 有无重大病史
      */
@@ -137,23 +137,23 @@ public class EmployeeReportResult {
     /**
      * 居住证城市
      */
-    private String residenceCardCity;
+//    private String residenceCardCity;
     /**
      * 居住证办理日期
      */
-    private String dateOfResidencePermit;
+//    private String dateOfResidencePermit;
     /**
      * 居住证截止日期
      */
-    private String residencePermitDeadline;
+//    private String residencePermitDeadline;
     /**
      * 现居住地
      */
     private String placeOfResidence;
     /**
-     * 通讯地址
+     * 详细地址
      */
-    private String postalAddress;
+    private String detailAddress;
     /**
      * 联系手机
      */

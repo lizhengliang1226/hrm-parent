@@ -7,7 +7,8 @@ import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.utils.BeanMapUtils;
 import com.hrm.domain.employee.*;
-import com.hrm.employee.service.*;
+import com.hrm.employee.service.UserCompanyPersonalService;
+import com.hrm.employee.service.impl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -26,51 +27,60 @@ public class EmployeeController extends BaseController {
 
     private UserCompanyPersonalService userCompanyPersonalService;
 
-    private UserCompanyJobsService userCompanyJobsService;
+    private UserCompanyJobsServiceImpl userCompanyJobsServiceImpl;
 
-    private ResignationService resignationService;
+    private ResignationServiceImpl resignationServiceImpl;
 
-    private TransferPositionService transferPositionService;
+    private TransferPositionServiceImpl transferPositionServiceImpl;
 
-    private PositiveService positiveService;
+    private PositiveServiceImpl positiveServiceImpl;
 
-    private ArchiveService archiveService;
+    private ArchiveServiceImpl archiveServiceImpl;
+
     @Autowired
     public void setUserCompanyPersonalService(UserCompanyPersonalService userCompanyPersonalService) {
         this.userCompanyPersonalService = userCompanyPersonalService;
     }
+
     @Autowired
-    public void setUserCompanyJobsService(UserCompanyJobsService userCompanyJobsService) {
-        this.userCompanyJobsService = userCompanyJobsService;
+    public void setUserCompanyJobsService(UserCompanyJobsServiceImpl userCompanyJobsServiceImpl) {
+        this.userCompanyJobsServiceImpl = userCompanyJobsServiceImpl;
     }
+
     @Autowired
-    public void setResignationService(ResignationService resignationService) {
-        this.resignationService = resignationService;
+    public void setResignationService(ResignationServiceImpl resignationServiceImpl) {
+        this.resignationServiceImpl = resignationServiceImpl;
     }
+
     @Autowired
-    public void setTransferPositionService(TransferPositionService transferPositionService) {
-        this.transferPositionService = transferPositionService;
+    public void setTransferPositionService(TransferPositionServiceImpl transferPositionServiceImpl) {
+        this.transferPositionServiceImpl = transferPositionServiceImpl;
     }
+
     @Autowired
-    public void setPositiveService(PositiveService positiveService) {
-        this.positiveService = positiveService;
+    public void setPositiveService(PositiveServiceImpl positiveServiceImpl) {
+        this.positiveServiceImpl = positiveServiceImpl;
     }
+
     @Autowired
-    public void setArchiveService(ArchiveService archiveService) {
-        this.archiveService = archiveService;
+    public void setArchiveService(ArchiveServiceImpl archiveServiceImpl) {
+        this.archiveServiceImpl = archiveServiceImpl;
     }
 
     /**
-     * 员工个人信息保存
+     * 员工详细信息保存
      */
     @PutMapping(value = "/{id}/personalInfo")
     public Result savePersonalInfo(@PathVariable(name = "id") String uid, @RequestBody Map map) throws Exception {
         UserCompanyPersonal sourceInfo = BeanMapUtils.mapToBean(map, UserCompanyPersonal.class);
+        System.out.println(sourceInfo.getMobile());
+        System.out.println(sourceInfo.getUsername());
+        System.out.println(map);
         if (sourceInfo == null) {
             sourceInfo = new UserCompanyPersonal();
         }
         sourceInfo.setUserId(uid);
-        sourceInfo.setCompanyId(super.companyId);
+        sourceInfo.setCompanyId(companyId);
         userCompanyPersonalService.save(sourceInfo);
         return new Result(ResultCode.SUCCESS);
     }
@@ -99,7 +109,7 @@ public class EmployeeController extends BaseController {
             sourceInfo.setUserId(uid);
             sourceInfo.setCompanyId(super.companyId);
         }
-        userCompanyJobsService.save(sourceInfo);
+        userCompanyJobsServiceImpl.save(sourceInfo);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -108,7 +118,7 @@ public class EmployeeController extends BaseController {
      */
     @GetMapping(value = "/{id}/jobs")
     public Result findJobsInfo(@PathVariable(name = "id") String uid) throws Exception {
-        UserCompanyJobs info = userCompanyJobsService.findById(uid);
+        UserCompanyJobs info = userCompanyJobsServiceImpl.findById(uid);
         if(info == null) {
             info = new UserCompanyJobs();
             info.setUserId(uid);
@@ -123,7 +133,7 @@ public class EmployeeController extends BaseController {
     @PutMapping(value = "/{id}/leave")
     public Result saveLeave(@PathVariable(name = "id") String uid, @RequestBody EmployeeResignation resignation) throws Exception {
         resignation.setUserId(uid);
-        resignationService.save(resignation);
+        resignationServiceImpl.save(resignation);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -132,7 +142,7 @@ public class EmployeeController extends BaseController {
      */
     @GetMapping(value = "/{id}/leave")
     public Result findLeave(@PathVariable(name = "id") String uid) throws Exception {
-        EmployeeResignation resignation = resignationService.findById(uid);
+        EmployeeResignation resignation = resignationServiceImpl.findById(uid);
         if(resignation == null) {
             resignation = new EmployeeResignation();
             resignation.setUserId(uid);
@@ -154,7 +164,7 @@ public class EmployeeController extends BaseController {
     @PutMapping(value = "/{id}/transferPosition")
     public Result saveTransferPosition(@PathVariable(name = "id") String uid, @RequestBody EmployeeTransferPosition transferPosition) throws Exception {
         transferPosition.setUserId(uid);
-        transferPositionService.save(transferPosition);
+        transferPositionServiceImpl.save(transferPosition);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -163,7 +173,7 @@ public class EmployeeController extends BaseController {
      */
     @GetMapping(value = "/{id}/transferPosition")
     public Result findTransferPosition(@PathVariable(name = "id") String uid) throws Exception {
-        UserCompanyJobs jobsInfo = userCompanyJobsService.findById(uid);
+        UserCompanyJobs jobsInfo = userCompanyJobsServiceImpl.findById(uid);
         if(jobsInfo == null) {
             jobsInfo = new UserCompanyJobs();
             jobsInfo.setUserId(uid);
@@ -176,7 +186,7 @@ public class EmployeeController extends BaseController {
      */
     @PutMapping(value = "/{id}/positive")
     public Result savePositive(@PathVariable(name = "id") String uid, @RequestBody EmployeePositive positive) throws Exception {
-        positiveService.save(positive);
+        positiveServiceImpl.save(positive);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -184,13 +194,13 @@ public class EmployeeController extends BaseController {
      * 转正表单读取
      */
     @GetMapping(value = "/{id}/positive")
-    public Result findPositive(@PathVariable(name = "id") String uid) throws Exception {
-        EmployeePositive positive = positiveService.findById(uid);
-        if(positive == null) {
+    public Result findPositive(@PathVariable(name = "id") String uid) {
+        EmployeePositive positive = positiveServiceImpl.findById(uid);
+        if (positive == null) {
             positive = new EmployeePositive();
             positive.setUserId(uid);
         }
-        return new Result(ResultCode.SUCCESS,positive);
+        return new Result(ResultCode.SUCCESS, positive);
     }
 
     /**
@@ -217,8 +227,8 @@ public class EmployeeController extends BaseController {
         Map map = new HashMap();
         map.put("year",year);
         map.put("companyId",companyId);
-        Page<EmployeeArchive> searchPage = archiveService.findSearch(map, page, pagesize);
-        PageResult<EmployeeArchive> pr = new PageResult(searchPage.getTotalElements(),searchPage.getContent());
+        Page<EmployeeArchive> searchPage = archiveServiceImpl.findSearch(map, page, pagesize);
+        PageResult<EmployeeArchive> pr = new PageResult(searchPage.getTotalElements(), searchPage.getContent());
         return new Result(ResultCode.SUCCESS,pr);
     }
 

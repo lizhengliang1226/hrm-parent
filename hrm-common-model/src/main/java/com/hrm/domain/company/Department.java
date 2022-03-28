@@ -14,6 +14,8 @@ import java.util.Date;
 
 /**
  * (Department)实体类
+ *
+ * @author 17314
  */
 @Entity
 @Table(name = "co_department")

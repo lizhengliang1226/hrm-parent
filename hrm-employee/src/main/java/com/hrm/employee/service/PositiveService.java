@@ -1,35 +1,34 @@
 package com.hrm.employee.service;
 
-
 import com.hrm.domain.employee.EmployeePositive;
-import com.hrm.employee.dao.PositiveDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.Date;
+/**
+ * @Description 转正服务
+ * @Author LZL
+ * @Date 2022/3/15-0:57
+ */
+public interface PositiveService {
+    /**
+     * 查询转正信息
+     *
+     * @param uid
+     * @param status
+     * @return
+     */
+    public EmployeePositive findById(String uid, Integer status);
 
-@Service
-public class PositiveService {
-    @Autowired
-    private PositiveDao positiveDao;
+    /**
+     * 查询转正信息通过id
+     *
+     * @param uid
+     * @return
+     */
+    public EmployeePositive findById(String uid);
 
-    public EmployeePositive findById(String uid, Integer status) {
-        EmployeePositive positive = positiveDao.findByUserId(uid);
-        if (status != null && positive != null) {
-            if (!positive.getEstatus().equals(status)) {
-                positive = null;
-            }
-        }
-        return positive;
-    }
-
-    public EmployeePositive findById(String uid) {
-        return positiveDao.findByUserId(uid);
-    }
-
-    public void save(EmployeePositive positive) {
-        positive.setCreateTime(new Date());
-        positive.setEstatus(1);//未执行
-        positiveDao.save(positive);
-    }
+    /**
+     * 保存转正信息
+     *
+     * @param positive
+     */
+    public void save(EmployeePositive positive);
 }

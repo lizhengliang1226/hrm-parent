@@ -16,53 +16,61 @@ public interface UserService {
     /**
      * 保存用户
      *
-     * @param department
+     * @param user 用户
      */
-    void save(User department);
+    void save(User user);
 
     /**
      * 更新用户
      *
-     * @param department
+     * @param user 用户
      */
-    void update(User department);
+    void update(User user);
 
     /**
      * 查找用户
      *
-     * @param id
-     * @return
+     * @param id 用户id
+     * @return 用户
      */
     User findById(String id);
 
     /**
      * 查找用户通过手机
      *
-     * @param mobile
-     * @return
+     * @param mobile 手机号
+     * @return 用户
      */
     User findByMobile(String mobile);
 
     /**
      * 查找用户列表
      *
-     * @param map
-     * @return
+     * @param map 条件
+     * @return 用户列表
      */
     Page<User> findAll(Map<String, Object> map);
 
     /**
      * 删除用户
      *
-     * @param id
+     * @param id 用户id
      */
     void deleteById(String id);
 
     /**
      * 给用户分配角色
      *
-     * @param id
-     * @param roles
+     * @param id    用户id
+     * @param roles 角色数组
      */
     void assignRoles(String id, List<String> roles);
+
+    /**
+     * 更新密码
+     *
+     * @param id       用户id
+     * @param password 密码
+     */
+    void updatePassword(String id, String password);
 }

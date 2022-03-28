@@ -7,6 +7,7 @@ import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.system.service.PermissionService;
 import com.hrm.system.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,6 +21,7 @@ import java.util.Set;
  * @Author LZL
  * @Date 2022/3/14-6:49
  */
+@Slf4j
 public class UserRealm extends HrmRealm {
 
     private UserService userService;

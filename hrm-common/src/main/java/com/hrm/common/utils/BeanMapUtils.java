@@ -1,6 +1,7 @@
 package com.hrm.common.utils;
 
-import org.springframework.cglib.beans.BeanMap;
+
+import net.sf.cglib.beans.BeanMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class BeanMapUtils {
      */
     public static <T> T mapToBean(Map<String, Object> map, Class<T> clazz) throws Exception {
         T bean = clazz.newInstance();
-        BeanMap beanMap = BeanMap.create(bean);
+        final BeanMap beanMap = BeanMap.create(bean);
         beanMap.putAll(map);
         return bean;
     }

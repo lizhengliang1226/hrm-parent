@@ -8,6 +8,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * @author 17314
+ */
 @SpringBootApplication(scanBasePackages = "com.hrm")
 @EntityScan("com.hrm.domain.employee")
 @EnableEurekaClient

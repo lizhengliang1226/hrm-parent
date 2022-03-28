@@ -1,24 +1,25 @@
 package com.hrm.employee.service;
 
-
 import com.hrm.domain.employee.EmployeeResignation;
-import com.hrm.employee.dao.EmployeeResignationDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.Date;
+/**
+ * @Description 员工离职申请服务
+ * @Author LZL
+ * @Date 2022/3/15-0:57
+ */
+public interface ResignationService {
+    /**
+     * 离职信息保存
+     *
+     * @param resignation
+     */
+    public void save(EmployeeResignation resignation);
 
-@Service
-public class ResignationService {
-    @Autowired
-    EmployeeResignationDao resignationDao;
-
-    public void save(EmployeeResignation resignation) {
-        resignation.setCreateTime(new Date());
-        resignationDao.save(resignation);
-    }
-
-    public EmployeeResignation findById(String userId) {
-        return resignationDao.findByUserId(userId);
-    }
+    /**
+     * 离职信息查询
+     *
+     * @param userId
+     * @return
+     */
+    public EmployeeResignation findById(String userId);
 }

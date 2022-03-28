@@ -22,7 +22,6 @@ import java.util.List;
 public class CompanyController {
 
     private CompanyService companyService;
-
     @Autowired
     public void setCompanyService(CompanyService companyService) {
         this.companyService = companyService;

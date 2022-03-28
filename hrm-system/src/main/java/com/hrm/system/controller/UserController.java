@@ -1,5 +1,6 @@
 package com.hrm.system.controller;
 
+import cn.hutool.crypto.SecureUtil;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
@@ -7,14 +8,13 @@ import com.hrm.common.entity.ResultCode;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.system.service.OssService;
-import com.hrm.system.service.PermissionService;
 import com.hrm.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.crypto.hash.Md5Hash;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import java.util.Map;
  * @Author LZL
  * @Date 2022/3/7-19:35
  */
+@Slf4j
 @RestController
 @CrossOrigin
 @RequestMapping("sys")
@@ -39,12 +41,6 @@ public class UserController extends BaseController {
 
     private UserService userService;
     private OssService ossService;
-    private PermissionService permissionService;
-
-    @Autowired
-    public void setPermissionService(PermissionService permissionService) {
-        this.permissionService = permissionService;
-    }
 
     @Autowired
     public void setOssService(OssService ossService) {
@@ -71,6 +67,13 @@ public class UserController extends BaseController {
     public Result update(@PathVariable(value = "id") String id, @RequestBody User user) {
         user.setId(id);
         userService.update(user);
+        return Result.SUCCESS();
+    }
+
+    @PutMapping(value = "user/{id}/{password}", name = "UPDATE_PASSWORD_API")
+    @ApiOperation(value = "更新密码")
+    public Result updatePassword(@PathVariable(value = "id") String id, @PathVariable("password") String password) {
+        userService.updatePassword(id, password);
         return Result.SUCCESS();
     }
 
@@ -108,10 +111,32 @@ public class UserController extends BaseController {
         map.put("companyId", companyId);
         final Page<User> all = userService.findAll(map);
         final PageResult<User> pageResult = new PageResult(all.getTotalElements(), all.getContent());
-        System.out.println("获取用户列表");
         return new Result<>(ResultCode.SUCCESS, pageResult);
     }
 
+    @GetMapping(value = "user/{id}/{password}", name = "VERIFY_PASSWORD_API")
+    @ApiOperation(value = "验证密码")
+    public Result verifyPassword(@PathVariable("id") String id, @PathVariable("password") String password) {
+        final User byId = userService.findById(id);
+        final String s = SecureUtil.des(byId.getMobile().getBytes(StandardCharsets.UTF_8)).encryptHex(password);
+        if (s.equals(byId.getPassword())) {
+            return new Result<>(ResultCode.SUCCESS);
+        } else {
+            return new Result<>(ResultCode.FAIL);
+        }
+    }
+
+//    public static void main(String[] args) {
+//        final DES des = SecureUtil.des("18685404707".getBytes(StandardCharsets.UTF_8));
+//        final String s = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
+//        System.out.println(s);
+//    }
+
+    /**
+     * 获取文件上传的后端签名
+     *
+     * @return
+     */
     @GetMapping(value = "oss", name = "OSS_POLICY")
     @ApiOperation(value = "获取文件上传的后端签名")
     public Result policy() {
@@ -135,8 +160,8 @@ public class UserController extends BaseController {
         String mobile = loginMap.get("mobile");
         String password = loginMap.get("password");
         try {
-            password = new Md5Hash(password, mobile, 3).toString();
-            UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(mobile, password);
+            final String s = SecureUtil.des(mobile.getBytes(StandardCharsets.UTF_8)).encryptHex(password);
+            UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(mobile, s);
             final Subject subject = SecurityUtils.getSubject();
             subject.login(usernamePasswordToken);
             String sid = (String) subject.getSession().getId();

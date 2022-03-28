@@ -1,0 +1,10 @@
+{
+  "properties": [
+    {
+      "name": "initial-password",
+      "type": "java.lang.String",
+      "defaultValue": "e10adc3949ba59abbe56e057f20f883e",
+      "description": "新增用户初始化密码123456,经过前端md5加密的."
+    }
+  ]
+}

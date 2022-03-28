@@ -2,7 +2,6 @@ package com.hrm.common.config;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -16,8 +15,8 @@ import java.util.List;
  */
 @Configuration
 public class SystemConfigure extends WebMvcConfigurationSupport {
-    @Value("${date-format}")
-    private String dateFormat;
+
+    private final static String DATE_FORMAT = "yyyy-MM-dd";
 
     @Override
     protected void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -26,7 +25,7 @@ public class SystemConfigure extends WebMvcConfigurationSupport {
         // 忽略未知属性
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         // 设置时间格式(时间格式可以通过配置文件获取,增加灵活度)
-        objectMapper.setDateFormat(new SimpleDateFormat(dateFormat));
+        objectMapper.setDateFormat(new SimpleDateFormat(DATE_FORMAT));
         jacksonConverter.setObjectMapper(objectMapper);
         converters.add(jacksonConverter);
     }

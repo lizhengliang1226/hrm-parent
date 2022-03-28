@@ -1,20 +1,25 @@
 package com.hrm.employee.service;
 
 import com.hrm.domain.employee.UserCompanyJobs;
-import com.hrm.employee.dao.UserCompanyJobsDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
-public class UserCompanyJobsService {
-    @Autowired
-    private UserCompanyJobsDao userCompanyJobsDao;
+/**
+ * @Description 员工岗位信息服务
+ * @Author LZL
+ * @Date 2022/3/15-0:55
+ */
+public interface UserCompanyJobsService {
+    /**
+     * 员工岗位信息保存
+     *
+     * @param jobsInfo
+     */
+    public void save(UserCompanyJobs jobsInfo);
 
-    public void save(UserCompanyJobs jobsInfo) {
-        userCompanyJobsDao.save(jobsInfo);
-    }
-
-    public UserCompanyJobs findById(String userId) {
-        return userCompanyJobsDao.findByUserId(userId);
-    }
+    /**
+     * 员工岗位信息查找
+     *
+     * @param userId
+     * @return
+     */
+    public UserCompanyJobs findById(String userId);
 }

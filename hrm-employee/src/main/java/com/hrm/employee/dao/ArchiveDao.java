@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * 数据访问接口
+ *
+ * @author 17314
  */
 public interface ArchiveDao extends JpaRepository<EmployeeArchive, String>, JpaSpecificationExecutor<EmployeeArchive> {
     @Query(value = "SELECT * FROM em_archive WHERE company_id = ?1 AND month = ?2 ORDER BY create_time DESC LIMIT 1;", nativeQuery = true)
