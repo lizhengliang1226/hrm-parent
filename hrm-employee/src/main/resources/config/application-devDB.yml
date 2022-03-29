@@ -1,0 +1,7 @@
+# 开发环境数据库配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.182.129:33306/db_hrm?useSSL=true&useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai
+    username: root
+    password: 991226Ab#

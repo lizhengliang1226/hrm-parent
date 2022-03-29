@@ -1,5 +1,5 @@
 server:
-  port: 9999
+  port: 9003
   servlet:
     encoding:
       force-response: true
@@ -8,7 +8,7 @@ logging:
   level:
     root: info
   file:
-    name: "./logs/sys-pro.log"
+    name: "./logs/employee-dev.log"
   pattern:
     #日志输出的颜色：blue cyan faint green magenta red yellow
     console: "%clr(%d{yyyy/MM/dd-HH:mm:ss}){blue} [%t] %clr(%-5p) %clr(%c{30}){cyan} : %clr(%m){magenta}%n"

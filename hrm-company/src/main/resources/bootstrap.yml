@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: hrm-company # 服务名
+  profiles:
+    active: dev # 环境
+    group:
+      "dev": devDB,devRedis
+      "pro": devDB,devRedis
+  # nacos配置
+  cloud:
+    nacos:
+      config:
+        file-extension: yaml
+      discovery:
+        server-addr: localhost:8848

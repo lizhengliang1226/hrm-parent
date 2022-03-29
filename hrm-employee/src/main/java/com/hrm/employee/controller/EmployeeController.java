@@ -104,11 +104,12 @@ public class EmployeeController extends BaseController {
     @PutMapping(value = "/{id}/jobs")
     public Result saveJobsInfo(@PathVariable(name = "id") String uid, @RequestBody UserCompanyJobs sourceInfo) throws Exception {
         //更新员工岗位信息
-        if (sourceInfo == null) {
-            sourceInfo = new UserCompanyJobs();
-            sourceInfo.setUserId(uid);
-            sourceInfo.setCompanyId(super.companyId);
-        }
+//        if (sourceInfo == null) {
+//            sourceInfo = new UserCompanyJobs();
+//
+//        }
+        sourceInfo.setUserId(uid);
+        sourceInfo.setCompanyId(super.companyId);
         userCompanyJobsServiceImpl.save(sourceInfo);
         return new Result(ResultCode.SUCCESS);
     }

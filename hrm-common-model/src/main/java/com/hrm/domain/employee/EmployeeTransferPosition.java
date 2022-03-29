@@ -49,8 +49,8 @@ public class EmployeeTransferPosition implements Serializable {
     /**
      * HRBP
      */
-    @ApiModelProperty("HRBP")
-    private String hrbp;
+//    @ApiModelProperty("HRBP")
+//    private String hrbp;
     /**
      * 调岗时间
      */
@@ -79,8 +79,8 @@ public class EmployeeTransferPosition implements Serializable {
     /**
      * 纳税城市
      */
-    @ApiModelProperty("纳税城市")
-    private String taxableCity;
+//    @ApiModelProperty("纳税城市")
+//    private String taxableCity;
     /**
      * 现合同开始时间
      */

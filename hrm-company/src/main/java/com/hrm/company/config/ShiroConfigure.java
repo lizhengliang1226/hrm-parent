@@ -2,6 +2,7 @@ package com.hrm.company.config;
 
 import com.hrm.common.shiro.realm.HrmRealm;
 import com.hrm.common.shiro.session.CustomSessionManager;
+import lombok.Setter;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -10,7 +11,7 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,12 +24,12 @@ import java.util.Map;
  * @Date 2022/3/14-5:51
  */
 @Configuration
+@Setter
+@ConfigurationProperties(prefix = "spring.redis")
 public class ShiroConfigure {
 
-    @Value("${spring.redis.host}")
     private String host;
 
-    @Value("${spring.redis.port}")
     private int port;
     /**
      * 匿名访问

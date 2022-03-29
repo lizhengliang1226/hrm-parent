@@ -1,0 +1,37 @@
+server:
+  port: 9999
+spring:
+  application:
+    name: hrm-gateway
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+    gateway:
+      globalcors: # 全局的跨域处理
+        add-to-simple-url-handler-mapping: true  # 解决options请求被拦截
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: # 允许的请求
+              - "http://localhost:8080"
+            allowedMethods:
+              - "GET"
+              - "POST"
+              - "DELETE"
+              - "PUT"
+              - "OPTIONS"
+            allowedHeaders: "*" # 允许携带头信息
+            allowCredentials: true # 允许携带cookie
+            maxAge: 36000 # 跨域有效期
+      routes: # 路由配置
+        - id: hrm-system
+          uri: lb://hrm-system
+          predicates: # 路由断言
+            - Path=/sys/**
+        - id: hrm-company
+          uri: lb://hrm-company
+          predicates: # 路由断言
+            - Path=/company/**
+        - id: hrm-employee
+          uri: lb://hrm-employee
+          predicates: # 路由断言
+            - Path=/employees/**

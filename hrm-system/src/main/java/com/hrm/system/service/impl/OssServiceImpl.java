@@ -6,9 +6,11 @@ import com.aliyun.oss.common.utils.BinaryUtil;
 import com.aliyun.oss.model.MatchMode;
 import com.aliyun.oss.model.PolicyConditions;
 import com.hrm.system.service.OssService;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -21,17 +23,14 @@ import java.util.UUID;
  * @Date 2022/3/11-3:07
  */
 @Service
+@ConfigurationProperties(prefix = "oss")
+@Setter
 public class OssServiceImpl implements OssService {
 
-    @Value("${accessId}")
     private String accessId;
-    @Value("${accessKeySecret}")
     private String accessKeySecret;
-    @Value("${endpoint}")
     private String endpoint;
-    @Value("${bucket}")
     private String bucket;
-    @Value("${host}")
     private String host;
 
     @Override
@@ -50,7 +49,7 @@ public class OssServiceImpl implements OssService {
             policyConds.addConditionItem(PolicyConditions.COND_CONTENT_LENGTH_RANGE, 0, 1048576000);
             policyConds.addConditionItem(MatchMode.StartWith, PolicyConditions.COND_KEY, dir);
             String postPolicy = ossClient.generatePostPolicy(expiration, policyConds);
-            byte[] binaryData = postPolicy.getBytes("utf-8");
+            byte[] binaryData = postPolicy.getBytes(StandardCharsets.UTF_8);
             String encodedPolicy = BinaryUtil.toBase64String(binaryData);
             String postSignature = ossClient.calculatePostSignature(postPolicy);
             Map<String, String> respMap = new LinkedHashMap<String, String>();

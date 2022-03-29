@@ -40,7 +40,7 @@ public class UserCompanyJobs implements Serializable {
     /**
      * 职级
      */
-    private String rank;
+    private String ranks;
     /**
      * 转正评价
      */
@@ -60,7 +60,7 @@ public class UserCompanyJobs implements Serializable {
     /**
      * HRBP
      */
-    private String hrbp;
+//    private String hrbp;
     /**
      * 首次参加工作时间
      */
@@ -80,7 +80,7 @@ public class UserCompanyJobs implements Serializable {
     /**
      * 纳税城市
      */
-    private String taxableCity;
+//    private String taxableCity;
     /**
      * 现合同开始时间
      */

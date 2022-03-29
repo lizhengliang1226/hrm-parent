@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @Description
@@ -67,8 +66,6 @@ public class UserRealm extends HrmRealm {
                 profileResult = new ProfileResult(user, allPerm);
             }
             // 安全数据，密码，realm
-            final Map<String, Object> roles = profileResult.getRoles();
-            final Set<String> apis = (Set<String>) roles.get("apis");
             return new SimpleAuthenticationInfo(profileResult, password, getName());
         }
         return null;

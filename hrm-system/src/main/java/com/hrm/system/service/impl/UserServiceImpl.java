@@ -3,6 +3,7 @@ package com.hrm.system.service.impl;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.DES;
 import com.hrm.common.entity.UserLevel;
+import com.hrm.common.service.BaseService;
 import com.hrm.common.utils.IdWorker;
 import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
@@ -11,22 +12,26 @@ import com.hrm.system.dao.UserDao;
 import com.hrm.system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * @Description
+ * @Description 用户服务
  * @Author LZL
  * @Date 2022/3/8-20:34
  */
 @Service
-public class UserServiceImpl implements UserService {
+@RefreshScope
+@Transactional(rollbackFor = Exception.class)
+public class UserServiceImpl extends BaseService<User> implements UserService {
     private static final String COMPANY_ID = "companyId";
     private static final String DEPARTMENT_ID = "departmentId";
     private static final String HAS_DEPT = "hasDept";
@@ -110,12 +115,15 @@ public class UserServiceImpl implements UserService {
         Specification<User> specification = (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> list = new ArrayList<>(10);
             map.forEach((k, v) -> {
+                // 同一家企业
                 if (COMPANY_ID.equals(k)) {
                     list.add(criteriaBuilder.equal(root.get(COMPANY_ID).as(String.class), v));
                 }
+                // 某一个部门
                 if (DEPARTMENT_ID.equals(k)) {
                     list.add(criteriaBuilder.equal(root.get(DEPARTMENT_ID).as(String.class), v));
                 }
+                // 分配部门与否
                 if (HAS_DEPT.equals(k)) {
                     if ("0".equals(v)) {
                         list.add(criteriaBuilder.isNull(root.get(DEPARTMENT_ID)));
@@ -123,6 +131,7 @@ public class UserServiceImpl implements UserService {
                         list.add(criteriaBuilder.isNotNull(root.get(DEPARTMENT_ID)));
                     }
                 }
+                // 是否在职，1，在职，2，离职，3，全部
                 if (IN_SERVICE_STATUS.equals(k)) {
                     if (!FIND_ALL_FLAG.equals(v)) {
                         list.add(criteriaBuilder.equal(root.get(IN_SERVICE_STATUS).as(String.class), v));
@@ -132,6 +141,11 @@ public class UserServiceImpl implements UserService {
             return criteriaBuilder.and(list.toArray(new Predicate[list.size()]));
         };
         return userDao.findAll(specification, PageRequest.of(Integer.parseInt(page) - 1, Integer.parseInt(size)));
+    }
+
+    @Override
+    public List<User> findSimpleUsers(String companyId) {
+        return userDao.findAll(getSpec(companyId));
     }
 
     @Override

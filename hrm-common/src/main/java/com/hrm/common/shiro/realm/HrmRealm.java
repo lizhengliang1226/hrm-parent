@@ -1,6 +1,7 @@
 package com.hrm.common.shiro.realm;
 
 import com.hrm.domain.system.response.ProfileResult;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -16,6 +17,7 @@ import java.util.Set;
  * @Author LZL
  * @Date 2022/3/14-6:46
  */
+@Slf4j
 public class HrmRealm extends AuthorizingRealm {
 
     @Override

@@ -3,6 +3,7 @@ package com.hrm.system.config;
 import com.hrm.common.shiro.realm.HrmRealm;
 import com.hrm.common.shiro.session.CustomSessionManager;
 import com.hrm.system.shiro.realm.UserRealm;
+import lombok.Setter;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -11,9 +12,10 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisManager;
 import org.crazycake.shiro.RedisSessionDAO;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,15 +24,16 @@ import java.util.Map;
  * @Description shiro配置类
  * @Author LZL
  * @Date 2022/3/14-5:51
+ * 注入userRealm进行登录认证
  */
 @Configuration
+@ConfigurationProperties(prefix = "spring.redis")
+@Setter
+@Import(UserRealm.class)
 public class ShiroConfigure {
 
-    @Value("${spring.redis.host}")
     private String host;
 
-
-    @Value("${spring.redis.port}")
     private int port;
     /**
      * 匿名访问
@@ -41,15 +44,6 @@ public class ShiroConfigure {
      */
     private static final String AUTH_ACCESS = "authc";
 
-    /**
-     * 配置自定义realm
-     *
-     * @return
-     */
-    @Bean
-    public HrmRealm getRealm() {
-        return new UserRealm();
-    }
 
     /**
      * 配置安全管理器

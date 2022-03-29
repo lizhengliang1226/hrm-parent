@@ -2,7 +2,9 @@ package com.hrm.employee.service.impl;
 
 
 import com.hrm.domain.employee.EmployeePositive;
+import com.hrm.domain.employee.UserCompanyJobs;
 import com.hrm.employee.dao.PositiveDao;
+import com.hrm.employee.dao.UserCompanyJobsDao;
 import com.hrm.employee.service.PositiveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.util.Date;
 public class PositiveServiceImpl implements PositiveService {
     @Autowired
     private PositiveDao positiveDao;
+    @Autowired
+    private UserCompanyJobsDao userCompanyJobsDao;
 
     @Override
     public EmployeePositive findById(String uid, Integer status) {
@@ -33,7 +37,11 @@ public class PositiveServiceImpl implements PositiveService {
     @Override
     public void save(EmployeePositive positive) {
         positive.setCreateTime(new Date());
-        positive.setEstatus(1);//未执行
+        positive.setEstatus(2);//未执行
+        final UserCompanyJobs byUserId = userCompanyJobsDao.findByUserId(positive.getUserId());
+        byUserId.setCorrectionEvaluation(positive.getCorrectionEvaluation());
+        byUserId.setStateOfCorrection("已转正");
+        userCompanyJobsDao.save(byUserId);
         positiveDao.save(positive);
     }
 }

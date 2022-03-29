@@ -16,16 +16,19 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 <dependencies>
-    <!--eureka -->
     <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
     </dependency>
     <dependency>
         <groupId>com.hrm</groupId>
         <artifactId>hrm-common</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <scope>compile</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
     </dependency>
 </dependencies>
     <build>

@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Set;
  * @Date 2022/3/9-1:07
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class RoleServiceImpl extends BaseService<Role> implements RoleService {
     private IdWorker idWorker;
     private RoleDao roleDao;

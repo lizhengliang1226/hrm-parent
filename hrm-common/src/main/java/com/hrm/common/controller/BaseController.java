@@ -34,7 +34,6 @@ public class BaseController {
         // 获取session中的安全数据
         final Subject subject = SecurityUtils.getSubject();
         final PrincipalCollection previousPrincipals = subject.getPrincipals();
-
         if (previousPrincipals != null&&!previousPrincipals.isEmpty()) {
             final ProfileResult profileResult = (ProfileResult) previousPrincipals.getPrimaryPrincipal();
             this.companyId = profileResult.getCompanyId();

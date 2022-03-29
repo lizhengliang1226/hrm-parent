@@ -44,12 +44,20 @@ public interface UserService {
     User findByMobile(String mobile);
 
     /**
-     * 查找用户列表
+     * 分页查找用户列表
      *
      * @param map 条件
      * @return 用户列表
      */
     Page<User> findAll(Map<String, Object> map);
+
+    /**
+     * 查找全部用户列表
+     *
+     * @param companyId 企业id
+     * @return 用户列表
+     */
+    List<User> findSimpleUsers(String companyId);
 
     /**
      * 删除用户

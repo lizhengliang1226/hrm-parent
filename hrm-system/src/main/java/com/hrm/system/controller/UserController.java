@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +78,24 @@ public class UserController extends BaseController {
         return Result.SUCCESS();
     }
 
+    @GetMapping(value = "user/{id}/{password}", name = "VERIFY_PASSWORD_API")
+    @ApiOperation(value = "验证密码")
+    public Result verifyPassword(@PathVariable("id") String id, @PathVariable("password") String password) {
+        final User byId = userService.findById(id);
+        final String s = SecureUtil.des(byId.getMobile().getBytes(StandardCharsets.UTF_8)).encryptHex(password);
+        if (s.equals(byId.getPassword())) {
+            return new Result<>(ResultCode.SUCCESS);
+        } else {
+            return new Result<>(ResultCode.FAIL);
+        }
+    }
+
+    //    public static void main(String[] args) {
+//        final DES des = SecureUtil.des("18685404707".getBytes(StandardCharsets.UTF_8));
+//        final String s = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
+//        System.out.println(s);
+//    }
+
     @RequiresPermissions(value = "DELETE_USER_API")
     @DeleteMapping(value = "user/{id}", name = "DELETE_USER_API")
     @ApiOperation(value = "根据id删除用户")
@@ -114,23 +133,20 @@ public class UserController extends BaseController {
         return new Result<>(ResultCode.SUCCESS, pageResult);
     }
 
-    @GetMapping(value = "user/{id}/{password}", name = "VERIFY_PASSWORD_API")
-    @ApiOperation(value = "验证密码")
-    public Result verifyPassword(@PathVariable("id") String id, @PathVariable("password") String password) {
-        final User byId = userService.findById(id);
-        final String s = SecureUtil.des(byId.getMobile().getBytes(StandardCharsets.UTF_8)).encryptHex(password);
-        if (s.equals(byId.getPassword())) {
-            return new Result<>(ResultCode.SUCCESS);
-        } else {
-            return new Result<>(ResultCode.FAIL);
-        }
+    @GetMapping(value = "user/simple", name = "FIND_SIMPLE_USER_LIST_API")
+    @ApiOperation(value = "获取某个企业的简洁用户列表")
+    public Result findUserList() {
+        //暂时都用1企业，之后会改
+        final List<User> all = userService.findSimpleUsers(companyId);
+        List<Map<String, Object>> list = new ArrayList<>();
+        all.forEach(user -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("username", user.getUsername());
+            map.put("id", user.getId());
+            list.add(map);
+        });
+        return new Result<>(ResultCode.SUCCESS, list);
     }
-
-//    public static void main(String[] args) {
-//        final DES des = SecureUtil.des("18685404707".getBytes(StandardCharsets.UTF_8));
-//        final String s = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
-//        System.out.println(s);
-//    }
 
     /**
      * 获取文件上传的后端签名
