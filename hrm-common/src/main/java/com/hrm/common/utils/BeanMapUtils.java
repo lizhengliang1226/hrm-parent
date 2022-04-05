@@ -15,7 +15,7 @@ public class BeanMapUtils {
      * 将对象属性转化为map结合
      */
     public static <T> Map<String, Object> beanToMap(T bean) {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>(20);
         if (bean != null) {
             BeanMap beanMap = BeanMap.create(bean);
             for(Object key : beanMap.keySet()) {

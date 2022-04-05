@@ -13,9 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Description 自定义公共异常处理器
- * @Author LZL
- * @Date 2022/1/12-12:54
+ * 自定义公共异常处理器
+ *
+ * @author LZL
+ * @date 2022/1/12-12:54
  */
 @ControllerAdvice
 public class BaseExceptionHandler {

@@ -17,9 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/9-1:21
+ * @author LZL
+ * @date 2022/3/9-1:21
  */
 @RestController
 @CrossOrigin
@@ -47,6 +46,7 @@ public class RoleController extends BaseController {
     @ApiOperation(value = "更新角色")
     public Result update(@PathVariable(value = "id") String id, @RequestBody Role role) {
         role.setId(id);
+        role.setCompanyId(companyId);
         roleService.update(role);
         return Result.SUCCESS();
     }
@@ -70,16 +70,13 @@ public class RoleController extends BaseController {
     public Result findRolePerms(@PathVariable(value = "id") String id) {
         final Role role = roleService.findById(id);
         List<String> permIds = new ArrayList<>();
-        role.getPermissions().forEach(perm -> {
-            permIds.add(perm.getId());
-        });
+        role.getPermissions().forEach(perm -> permIds.add(perm.getId()));
         return new Result<>(ResultCode.SUCCESS, permIds);
     }
 
     @GetMapping(value = "role", name = "FIND_ROLES_PAGE_API")
     @ApiOperation(value = "带分页获取某个企业的角色列表")
     public Result findSearch(@RequestParam Map map) {
-        //暂时都用1企业，之后会改
         map.put("companyId", companyId);
         final Page<Role> all = roleService.findSearch(map);
         final PageResult<Role> pageResult = new PageResult(all.getTotalElements(), all.getContent());

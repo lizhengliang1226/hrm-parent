@@ -11,9 +11,10 @@ import javax.servlet.ServletResponse;
 import java.io.Serializable;
 
 /**
- * @Description 自定义session管理器
- * @Author LZL
- * @Date 2022/3/14-6:35
+ * 自定义session管理器
+ *
+ * @author LZL
+ * @date 2022/3/14-6:35
  */
 @Slf4j
 public class CustomSessionManager extends DefaultWebSessionManager {

@@ -1,16 +1,24 @@
 package com.hrm.system.controller;
 
 import cn.hutool.crypto.SecureUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
+import com.hrm.domain.company.Department;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
+import com.hrm.system.client.CompanyFeignClient;
 import com.hrm.system.service.OssService;
 import com.hrm.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -20,6 +28,7 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
@@ -29,9 +38,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description 用户管理
- * @Author LZL
- * @Date 2022/3/7-19:35
+ * 用户管理
+ *
+ * @author LZL
+ * @date 2022/3/7-19:35
  */
 @Slf4j
 @RestController
@@ -42,16 +52,17 @@ public class UserController extends BaseController {
 
     private UserService userService;
     private OssService ossService;
+    private CompanyFeignClient companyFeignClient;
 
-    @Autowired
-    public void setOssService(OssService ossService) {
-        this.ossService = ossService;
+    @PostMapping(value = "user/import", name = "IMPORT_USER_API")
+    @ApiOperation(value = "批量保存用户")
+    public Result importUsers(@RequestParam(name = "file") MultipartFile file) throws Exception {
+        final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), User.class, new UserExcelListener());
+        final ExcelReaderSheetBuilder sheet = read.sheet();
+        sheet.doRead();
+        return Result.SUCCESS();
     }
 
-    @Autowired
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping(value = "user", name = "SAVE_USER_API")
     @ApiOperation(value = "保存用户")
@@ -90,12 +101,6 @@ public class UserController extends BaseController {
         }
     }
 
-    //    public static void main(String[] args) {
-//        final DES des = SecureUtil.des("18685404707".getBytes(StandardCharsets.UTF_8));
-//        final String s = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
-//        System.out.println(s);
-//    }
-
     @RequiresPermissions(value = "DELETE_USER_API")
     @DeleteMapping(value = "user/{id}", name = "DELETE_USER_API")
     @ApiOperation(value = "根据id删除用户")
@@ -108,7 +113,6 @@ public class UserController extends BaseController {
     @ApiOperation(value = "根据ID查找用户")
     public Result findById(@PathVariable(value = "id") String id) {
         final User byId = userService.findById(id);
-//        UserResult user = new UserResult(byId);
         return new Result<>(ResultCode.SUCCESS, byId);
     }
 
@@ -125,22 +129,20 @@ public class UserController extends BaseController {
 
     @GetMapping(value = "user", name = "FIND_USER_LIST_API")
     @ApiOperation(value = "获取某个企业的用户列表")
-    public Result findAll(@RequestParam Map map) {
-        //暂时都用1企业，之后会改
+    public Result<PageResult<User>> findAll(@RequestParam Map<String, Object> map) {
         map.put("companyId", companyId);
         final Page<User> all = userService.findAll(map);
-        final PageResult<User> pageResult = new PageResult(all.getTotalElements(), all.getContent());
+        final PageResult<User> pageResult = new PageResult<>(all.getTotalElements(), all.getContent());
         return new Result<>(ResultCode.SUCCESS, pageResult);
     }
 
     @GetMapping(value = "user/simple", name = "FIND_SIMPLE_USER_LIST_API")
     @ApiOperation(value = "获取某个企业的简洁用户列表")
-    public Result findUserList() {
-        //暂时都用1企业，之后会改
+    public Result<List<Map<String, Object>>> findUserList() {
         final List<User> all = userService.findSimpleUsers(companyId);
         List<Map<String, Object>> list = new ArrayList<>();
         all.forEach(user -> {
-            Map<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>(2);
             map.put("username", user.getUsername());
             map.put("id", user.getId());
             list.add(map);
@@ -151,11 +153,11 @@ public class UserController extends BaseController {
     /**
      * 获取文件上传的后端签名
      *
-     * @return
+     * @return 结果集
      */
     @GetMapping(value = "oss", name = "OSS_POLICY")
     @ApiOperation(value = "获取文件上传的后端签名")
-    public Result policy() {
+    public Result<Map<String, String>> policy() {
         return new Result<>(ResultCode.SUCCESS, ossService.policy());
     }
 
@@ -198,4 +200,41 @@ public class UserController extends BaseController {
         return new Result(ResultCode.SUCCESS, profileResult);
     }
 
+    /**
+     * Excel操作的内部类
+     */
+    class UserExcelListener extends AnalysisEventListener<User> {
+
+        @SneakyThrows
+        @Override
+        public void invoke(User user, AnalysisContext analysisContext) {
+            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
+            final Department data = result.getData();
+            user.setDepartmentId(data.getId());
+            user.setDepartmentName(data.getName());
+            user.setCompanyName(companyName);
+            user.setCompanyId(companyId);
+            userService.save(user);
+        }
+
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext context) {
+        }
+
+    }
+
+    @Autowired
+    public void setCompanyFeignClient(CompanyFeignClient companyFeignClient) {
+        this.companyFeignClient = companyFeignClient;
+    }
+
+    @Autowired
+    public void setOssService(OssService ossService) {
+        this.ossService = ossService;
+    }
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
 }

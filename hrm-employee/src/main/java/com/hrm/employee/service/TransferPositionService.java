@@ -3,9 +3,10 @@ package com.hrm.employee.service;
 import com.hrm.domain.employee.EmployeeTransferPosition;
 
 /**
- * @Description 员工调岗申请服务
- * @Author LZL
- * @Date 2022/3/15-0:57
+ * 员工调岗申请服务
+ *
+ * @author LZL
+ * @date 2022/3/15-0:57
  */
 public interface TransferPositionService {
     /**

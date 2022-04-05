@@ -1,10 +1,11 @@
 package com.hrm.employee.service.impl;
 
-import com.hrm.common.service.BaseService;
-import com.hrm.common.utils.IdWorker;
+import com.hrm.common.service.BaseSpecService;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.employee.EmployeeArchive;
 import com.hrm.employee.dao.ArchiveDao;
 import com.hrm.employee.service.ArchiveService;
+import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,15 +22,14 @@ import java.util.Map;
  * @author 17314
  */
 @Service
-public class ArchiveServiceImpl extends BaseService implements ArchiveService {
+public class ArchiveSpecServiceImpl extends BaseSpecService<EmployeeArchive> implements ArchiveService {
     @Autowired
     private ArchiveDao archiveDao;
-    @Autowired
-    private IdWorker idWorker;
+
 
     @Override
     public void save(EmployeeArchive archive) {
-        archive.setId(idWorker.nextId() + "");
+        archive.setId(IdWorker.getIdStr());
         archive.setCreateTime(new Date());
         archiveDao.save(archive);
     }
@@ -67,11 +67,11 @@ public class ArchiveServiceImpl extends BaseService implements ArchiveService {
         return (root, query, cb) -> {
             List<Predicate> predicateList = new ArrayList<Predicate>();
             // 企业id
-            if (searchMap.get("companyId") != null && !"".equals(searchMap.get("companyId"))) {
-                predicateList.add(cb.like(root.get("companyId").as(String.class), (String) searchMap.get("companyId")));
+            if (searchMap.get(SystemConstant.COMPANY_ID) != null && !"".equals(searchMap.get(SystemConstant.COMPANY_ID))) {
+                predicateList.add(cb.like(root.get(SystemConstant.COMPANY_ID).as(String.class), (String) searchMap.get(SystemConstant.COMPANY_ID)));
             }
-            if (searchMap.get("year") != null && !"".equals(searchMap.get("year"))) {
-                predicateList.add(cb.like(root.get("month").as(String.class), (String) searchMap.get("year")));
+            if (searchMap.get(SystemConstant.YEAR) != null && !"".equals(searchMap.get(SystemConstant.YEAR))) {
+                predicateList.add(cb.like(root.get(SystemConstant.MONTH).as(String.class), (String) searchMap.get(SystemConstant.YEAR)));
             }
             return cb.and(predicateList.toArray(new Predicate[predicateList.size()]));
         };

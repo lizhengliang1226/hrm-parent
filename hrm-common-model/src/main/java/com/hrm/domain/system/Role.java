@@ -3,10 +3,7 @@ package com.hrm.domain.system;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -22,10 +19,11 @@ import java.util.Set;
 @Table(name = "pe_role")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert()
-@DynamicUpdate()
+@DynamicInsert
+@DynamicUpdate
+@AllArgsConstructor
+@EqualsAndHashCode
 @ApiModel("角色实体类")
 public class Role implements Serializable {
     private static final long serialVersionUID = 594829320797158219L;
@@ -53,6 +51,7 @@ public class Role implements Serializable {
     @JoinTable(name = "pe_role_permission",
             joinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "permission_id", referencedColumnName = "id")})
-    @ApiModelProperty("角色包含的模块  多对多")
+    @ApiModelProperty("角色包含的权限  多对多")
     private Set<Permission> permissions = new HashSet<Permission>(0);
+
 }

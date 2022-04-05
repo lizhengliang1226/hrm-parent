@@ -1,19 +1,19 @@
 package com.hrm.system.service.impl;
 
-import com.hrm.common.entity.ResultCode;
-import com.hrm.common.exception.CommonException;
+import com.hrm.common.service.BaseSpecService;
 import com.hrm.common.utils.BeanMapUtils;
-import com.hrm.common.utils.IdWorker;
-import com.hrm.common.utils.PermissionConstants;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
-import com.hrm.domain.system.PermissionApi;
-import com.hrm.domain.system.PermissionMenu;
-import com.hrm.domain.system.PermissionPoint;
 import com.hrm.system.dao.PermissionApiDao;
 import com.hrm.system.dao.PermissionDao;
 import com.hrm.system.dao.PermissionMenuDao;
 import com.hrm.system.dao.PermissionPointDao;
 import com.hrm.system.service.PermissionService;
+import com.hrm.system.service.pattern.AbstractPermissionOperateBehavior;
+import com.hrm.system.service.pattern.PermissionApiOperate;
+import com.hrm.system.service.pattern.PermissionMenuOperate;
+import com.hrm.system.service.pattern.PermissionPointOperate;
+import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -24,79 +24,31 @@ import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/10-6:07
+ * @author LZL
+ * @date 2022/3/10-6:07
  */
 @Transactional(rollbackFor = Exception.class)
 @Service
-public class PermissionServiceImpl implements PermissionService {
+public class PermissionServiceImpl extends BaseSpecService<Permission> implements PermissionService {
     private static final long serialVersionUID = 1L;
-    private static final String PID = "pid";
-    private static final String EN_VISIBLE = "enVisible";
-    private static final String TYPE = "type";
-    private static final String QUERY_FLAG = "0";
-
-    private IdWorker idWorker;
     private PermissionDao permissionDao;
     private PermissionApiDao permissionApiDao;
     private PermissionMenuDao permissionMenuDao;
     private PermissionPointDao permissionPointDao;
 
-    @Autowired
-    public void setPermissionApiDao(PermissionApiDao permissionApiDao) {
-        this.permissionApiDao = permissionApiDao;
-    }
-
-    @Autowired
-    public void setPermissionMenuDao(PermissionMenuDao permissionMenuDao) {
-        this.permissionMenuDao = permissionMenuDao;
-    }
-
-    @Autowired
-    public void setPermissionPointDao(PermissionPointDao permissionPointDao) {
-        this.permissionPointDao = permissionPointDao;
-    }
-
-    @Autowired
-    public void setPermissionDao(PermissionDao permissionDao) {
-        this.permissionDao = permissionDao;
-    }
-
-    @Autowired
-    public void setIdWorker(IdWorker idWorker) {
-        this.idWorker = idWorker;
-    }
-
     @Override
     public void save(Map<String, Object> map) throws Exception {
-        String id = idWorker.nextId() + "";
-        //构造不同的权限对象
+        String id = IdWorker.getIdStr();
+        //构造顶级权限对象
         Permission permission = BeanMapUtils.mapToBean(map, Permission.class);
         permission.setId(id);
         final Integer type = permission.getType();
-        //保存时判断类型的目的是构建权限的详细信息，这些信息保存在另外三张表里
-        switch (type) {
-            case PermissionConstants.PY_MENU:
-                PermissionMenu permissionMenu = BeanMapUtils.mapToBean(map, PermissionMenu.class);
-                permissionMenu.setId(id);
-                permissionMenuDao.save(permissionMenu);
-                break;
-            case PermissionConstants.PY_API:
-                PermissionApi permissionApi = BeanMapUtils.mapToBean(map, PermissionApi.class);
-                permissionApi.setId(id);
-                permissionApiDao.save(permissionApi);
-                break;
-            case PermissionConstants.PY_POINT:
-                PermissionPoint permissionPoint = BeanMapUtils.mapToBean(map, PermissionPoint.class);
-                permissionPoint.setId(id);
-                permissionPointDao.save(permissionPoint);
-                break;
-            default:
-                throw new CommonException(ResultCode.FAIL);
-        }
+        //在责任链模式中根据类型判断保存的哪类权限，保存权限详细信息
+        final AbstractPermissionOperateBehavior<PermissionMenuDao> chain = getChainOfPermissionOperate();
+        chain.permOperate(type, permOperate -> permOperate.permSaveOrUpdateBehavior(map, id));
         permissionDao.save(permission);
     }
 
@@ -111,45 +63,18 @@ public class PermissionServiceImpl implements PermissionService {
         permission1.setPid(permission.getPid());
         permission1.setEnVisible(permission.getEnVisible());
         final Integer type = permission.getType();
-        switch (type) {
-            case PermissionConstants.PY_MENU:
-                PermissionMenu permissionMenu = BeanMapUtils.mapToBean(map, PermissionMenu.class);
-                permissionMenu.setId(permission.getId());
-                permissionMenuDao.save(permissionMenu);
-                break;
-            case PermissionConstants.PY_API:
-                PermissionApi permissionApi = BeanMapUtils.mapToBean(map, PermissionApi.class);
-                permissionApi.setId(permission.getId());
-                permissionApiDao.save(permissionApi);
-                break;
-            case PermissionConstants.PY_POINT:
-                PermissionPoint permissionPoint = BeanMapUtils.mapToBean(map, PermissionPoint.class);
-                permissionPoint.setId(permission.getId());
-                permissionPointDao.save(permissionPoint);
-                break;
-            default:
-                throw new CommonException(ResultCode.FAIL);
-        }
+        final AbstractPermissionOperateBehavior<PermissionMenuDao> chain = getChainOfPermissionOperate();
+        chain.permOperate(type, permOperate -> permOperate.permSaveOrUpdateBehavior(map, permission.getId()));
         permissionDao.save(permission1);
     }
 
     @Override
-    public Map findById(String id) throws CommonException {
+    public Map<String, Object> findById(String id) throws Exception {
         Permission permission = permissionDao.findById(id).get();
-        Object obj;
-        if (permission.getType() == PermissionConstants.PY_MENU) {
-            obj = permissionMenuDao.findById(id).get();
-
-        } else if (permission.getType() == PermissionConstants.PY_POINT) {
-            obj = permissionPointDao.findById(id).get();
-
-        } else if (permission.getType() == PermissionConstants.PY_API) {
-            obj = permissionApiDao.findById(id).get();
-
-        } else {
-            throw new CommonException(ResultCode.FAIL);
-        }
-        final Map<String, Object> map1 = BeanMapUtils.beanToMap(obj);
+        AtomicReference<Object> obj = new AtomicReference<>();
+        final AbstractPermissionOperateBehavior<PermissionMenuDao> chain = getChainOfPermissionOperate();
+        chain.permOperate(permission.getType(), permOperate -> obj.set(permOperate.permFindBehavior(permission.getId())));
+        final Map<String, Object> map1 = BeanMapUtils.beanToMap(obj.get());
         map1.put("name", permission.getName());
         map1.put("type", permission.getType());
         map1.put("code", permission.getCode());
@@ -172,15 +97,15 @@ public class PermissionServiceImpl implements PermissionService {
         Specification<Permission> specification = (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> list = new ArrayList<>(10);
             map.forEach((k, v) -> {
-                if (PID.equals(k)) {
-                    list.add(criteriaBuilder.equal(root.get(PID).as(String.class), v));
+                if (SystemConstant.PID.equals(k)) {
+                    list.add(criteriaBuilder.equal(root.get("pid").as(String.class), v));
                 }
-                if (EN_VISIBLE.equals(k)) {
-                    list.add(criteriaBuilder.equal(root.get(EN_VISIBLE).as(String.class), v));
+                if (SystemConstant.EN_VISIBLE.equals(k)) {
+                    list.add(criteriaBuilder.equal(root.get("enVisible").as(String.class), v));
                 }
-                if (TYPE.equals(k)) {
-                    final CriteriaBuilder.In<Object> in = criteriaBuilder.in(root.get(TYPE));
-                    if (QUERY_FLAG.equals(v)) {
+                if (SystemConstant.TYPE.equals(k)) {
+                    final CriteriaBuilder.In<Object> in = criteriaBuilder.in(root.get("type"));
+                    if (SystemConstant.PERM_QUERY_FLAG.equals(v)) {
                         in.value(1).value(2);
                     } else {
                         in.value(Integer.parseInt((String) v));
@@ -195,22 +120,46 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public void deleteById(String id) throws CommonException {
+    public void deleteById(String id) throws Exception {
         Permission permission = permissionDao.findById(id).get();
         final Integer type = permission.getType();
-        switch (type) {
-            case PermissionConstants.PY_MENU:
-                permissionMenuDao.deleteById(id);
-                break;
-            case PermissionConstants.PY_API:
-                permissionApiDao.deleteById(id);
-                break;
-            case PermissionConstants.PY_POINT:
-                permissionPointDao.deleteById(id);
-                break;
-            default:
-                throw new CommonException(ResultCode.FAIL);
-        }
+        final AbstractPermissionOperateBehavior<PermissionMenuDao> chain = getChainOfPermissionOperate();
+        chain.permOperate(type, permOperate -> permOperate.permDeleteBehavior(id));
         permissionDao.deleteById(id);
     }
+
+    /**
+     * 创建责任链的方法
+     *
+     * @return 责任链的头节点
+     */
+    private AbstractPermissionOperateBehavior<PermissionMenuDao> getChainOfPermissionOperate() {
+        AbstractPermissionOperateBehavior<PermissionApiDao> permissionApiOperate = new PermissionApiOperate(SystemConstant.PY_API, permissionApiDao);
+        AbstractPermissionOperateBehavior<PermissionMenuDao> permissionMenuOperate = new PermissionMenuOperate(SystemConstant.PY_MENU, permissionMenuDao);
+        AbstractPermissionOperateBehavior<PermissionPointDao> permissionPointOperate = new PermissionPointOperate(SystemConstant.PY_POINT, permissionPointDao);
+        permissionMenuOperate.setNext(permissionPointOperate);
+        permissionPointOperate.setNext(permissionApiOperate);
+        return permissionMenuOperate;
+    }
+
+    @Autowired
+    public void setPermissionApiDao(PermissionApiDao permissionApiDao) {
+        this.permissionApiDao = permissionApiDao;
+    }
+
+    @Autowired
+    public void setPermissionMenuDao(PermissionMenuDao permissionMenuDao) {
+        this.permissionMenuDao = permissionMenuDao;
+    }
+
+    @Autowired
+    public void setPermissionPointDao(PermissionPointDao permissionPointDao) {
+        this.permissionPointDao = permissionPointDao;
+    }
+
+    @Autowired
+    public void setPermissionDao(PermissionDao permissionDao) {
+        this.permissionDao = permissionDao;
+    }
+
 }

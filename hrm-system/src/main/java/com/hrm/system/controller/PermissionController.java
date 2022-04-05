@@ -4,7 +4,6 @@ package com.hrm.system.controller;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
-import com.hrm.common.exception.CommonException;
 import com.hrm.domain.system.Permission;
 import com.hrm.system.service.PermissionService;
 import io.swagger.annotations.Api;
@@ -16,9 +15,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description 权限管理
- * @Author LZL
- * @Date 2022/3/10-6:04
+ * 权限管理
+ *
+ * @author LZL
+ * @date 2022/3/10-6:04
  */
 @RestController
 @CrossOrigin
@@ -50,14 +50,14 @@ public class PermissionController extends BaseController {
 
     @DeleteMapping(value = "permission/{id}", name = "DELETE_PERM_API")
     @ApiOperation(value = "根据id删除权限")
-    public Result delete(@PathVariable(value = "id") String id) throws CommonException {
+    public Result delete(@PathVariable(value = "id") String id) throws Exception {
         permissionService.deleteById(id);
         return Result.SUCCESS();
     }
 
     @GetMapping(value = "permission/{id}", name = "FIND_PERM_API")
     @ApiOperation(value = "根据ID查找权限")
-    public Result findById(@PathVariable(value = "id") String id) throws CommonException {
+    public Result findById(@PathVariable(value = "id") String id) throws Exception {
         Map map = permissionService.findById(id);
         return new Result<>(ResultCode.SUCCESS, map);
     }

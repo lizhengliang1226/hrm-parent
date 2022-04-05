@@ -11,9 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
 /**
- * @Description feign配置
- * @Author LZL
- * @Date 2022/3/15-0:26
+ * feign配置
+ *
+ * @author LZL
+ * @date 2022/3/15-0:26
  */
 @Configuration
 @Slf4j
@@ -28,9 +29,7 @@ public class FeignConfigure {
                 if (headerNames != null) {
                     while(headerNames.hasMoreElements()) {
                         String name = headerNames.nextElement();
-                        log.info("name: {}", name);
                         String value = request.getHeader(name);
-                        log.info("value: {}", value);
                         requestTemplate.header(name, value);
                     }
                 }

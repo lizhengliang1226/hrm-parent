@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+/**
+ * @author 17314
+ */
 @Service
 public class TransferPositionServiceImpl implements TransferPositionService {
     @Autowired
@@ -28,7 +31,8 @@ public class TransferPositionServiceImpl implements TransferPositionService {
     @Override
     public void save(EmployeeTransferPosition transferPosition) {
         transferPosition.setCreateTime(new Date());
-        transferPosition.setEstatus(1); //未执行
+        //未执行
+        transferPosition.setEstatus(1);
         transferPositionDao.save(transferPosition);
     }
 }

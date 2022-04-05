@@ -35,7 +35,7 @@ public class EmployeeController extends BaseController {
 
     private PositiveServiceImpl positiveServiceImpl;
 
-    private ArchiveServiceImpl archiveServiceImpl;
+    private ArchiveSpecServiceImpl archiveServiceImpl;
 
     @Autowired
     public void setUserCompanyPersonalService(UserCompanyPersonalService userCompanyPersonalService) {
@@ -63,7 +63,7 @@ public class EmployeeController extends BaseController {
     }
 
     @Autowired
-    public void setArchiveService(ArchiveServiceImpl archiveServiceImpl) {
+    public void setArchiveService(ArchiveSpecServiceImpl archiveServiceImpl) {
         this.archiveServiceImpl = archiveServiceImpl;
     }
 
@@ -103,11 +103,6 @@ public class EmployeeController extends BaseController {
      */
     @PutMapping(value = "/{id}/jobs")
     public Result saveJobsInfo(@PathVariable(name = "id") String uid, @RequestBody UserCompanyJobs sourceInfo) throws Exception {
-        //更新员工岗位信息
-//        if (sourceInfo == null) {
-//            sourceInfo = new UserCompanyJobs();
-//
-//        }
         sourceInfo.setUserId(uid);
         sourceInfo.setCompanyId(super.companyId);
         userCompanyJobsServiceImpl.save(sourceInfo);
@@ -195,42 +190,42 @@ public class EmployeeController extends BaseController {
      * 转正表单读取
      */
     @GetMapping(value = "/{id}/positive")
-    public Result findPositive(@PathVariable(name = "id") String uid) {
+    public Result<EmployeePositive> findPositive(@PathVariable(name = "id") String uid) {
         EmployeePositive positive = positiveServiceImpl.findById(uid);
         if (positive == null) {
             positive = new EmployeePositive();
             positive.setUserId(uid);
         }
-        return new Result(ResultCode.SUCCESS, positive);
+        return new Result<>(ResultCode.SUCCESS, positive);
     }
 
     /**
      * 历史归档详情列表
      */
     @GetMapping(value = "/archives/{month}")
-    public Result archives(@PathVariable(name = "month") String month, @RequestParam(name = "type") Integer type) throws Exception {
-        return new Result(ResultCode.SUCCESS);
+    public Result<Object> archives(@PathVariable(name = "month") String month, @RequestParam(name = "type") Integer type) throws Exception {
+        return new Result<>(ResultCode.SUCCESS);
     }
 
     /**
      * 归档更新
      */
     @PutMapping(value = "/archives/{month}")
-    public Result saveArchives(@PathVariable(name = "month") String month) throws Exception {
-        return new Result(ResultCode.SUCCESS);
+    public Result<Object> saveArchives(@PathVariable(name = "month") String month) throws Exception {
+        return new Result<>(ResultCode.SUCCESS);
     }
 
     /**
      * 历史归档列表
      */
     @GetMapping(value = "/archives")
-    public Result findArchives(@RequestParam(name = "pagesize") Integer pagesize, @RequestParam(name = "page") Integer page, @RequestParam(name = "year") String year) throws Exception {
-        Map map = new HashMap();
-        map.put("year",year);
-        map.put("companyId",companyId);
+    public Result<PageResult<EmployeeArchive>> findArchives(@RequestParam(name = "pagesize") Integer pagesize, @RequestParam(name = "page") Integer page, @RequestParam(name = "year") String year) throws Exception {
+        Map<String, Object> map = new HashMap(10);
+        map.put("year", year);
+        map.put("companyId", companyId);
         Page<EmployeeArchive> searchPage = archiveServiceImpl.findSearch(map, page, pagesize);
-        PageResult<EmployeeArchive> pr = new PageResult(searchPage.getTotalElements(), searchPage.getContent());
-        return new Result(ResultCode.SUCCESS,pr);
+        PageResult<EmployeeArchive> pr = new PageResult<>(searchPage.getTotalElements(), searchPage.getContent());
+        return new Result<PageResult<EmployeeArchive>>(ResultCode.SUCCESS, pr);
     }
 
 

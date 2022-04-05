@@ -14,5 +14,5 @@ logging:
     console: "%clr(%d{yyyy/MM/dd-HH:mm:ss}){blue} [%t] %clr(%-5p) %clr(%c{30}){cyan} : %clr(%m){magenta}%n"
   logback:
     rollingpolicy:
-      file-name-pattern: sys.%d{yyyy-MM-dd}.%i.log
+      file-name-pattern: company.%d{yyyy-MM-dd}.%i.log
       max-file-size: 10MB

@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.SelectBeforeUpdate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -21,6 +24,9 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SelectBeforeUpdate
+@DynamicInsert
+@DynamicUpdate
 @ApiModel("菜单权限实体类")
 public class PermissionMenu implements Serializable {
     private static final long serialVersionUID = -1002411490113957485L;

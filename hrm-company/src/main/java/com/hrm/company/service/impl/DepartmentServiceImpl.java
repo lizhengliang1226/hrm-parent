@@ -1,10 +1,10 @@
 package com.hrm.company.service.impl;
 
-import com.hrm.common.service.BaseService;
-import com.hrm.common.utils.IdWorker;
+import com.hrm.common.service.BaseSpecService;
 import com.hrm.company.dao.DepartmentDao;
 import com.hrm.company.service.DepartmentService;
 import com.hrm.domain.company.Department;
+import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,14 +12,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/7-19:18
+ * @author LZL
+ * @date 2022/3/7-19:18
  */
 @Service
-public class DepartmentServiceImpl extends BaseService<Department> implements DepartmentService {
-
-    private IdWorker idWorker;
+public class DepartmentServiceImpl extends BaseSpecService<Department> implements DepartmentService {
 
     private DepartmentDao departmentDao;
 
@@ -28,14 +25,10 @@ public class DepartmentServiceImpl extends BaseService<Department> implements De
         this.departmentDao = departmentDao;
     }
 
-    @Autowired
-    public void setIdWorker(IdWorker idWorker) {
-        this.idWorker = idWorker;
-    }
 
     @Override
     public void save(Department department) {
-        String id = idWorker.nextId() + "";
+        String id = IdWorker.getIdStr();
         department.setId(id);
         department.setCreateTime(new Date());
         departmentDao.save(department);
@@ -60,15 +53,20 @@ public class DepartmentServiceImpl extends BaseService<Department> implements De
 
     @Override
     public List<Department> findAll(String id) {
-        return departmentDao.findAll(getSpec(id));
+        return departmentDao.findAll(getSameCompanySpec(id));
     }
 
     @Override
     public void deleteById(String id) {
-        final List<Department> all = departmentDao.findAll(getAllChild(id));
+        final List<Department> all = departmentDao.findAll(getSameDepartmentSpec(id));
         all.forEach(dept -> {
             departmentDao.deleteById(dept.getId());
         });
         departmentDao.deleteById(id);
+    }
+
+    @Override
+    public Department findByCode(String code, String companyId) {
+        return departmentDao.findByCodeAndCompanyId(code, companyId);
     }
 }

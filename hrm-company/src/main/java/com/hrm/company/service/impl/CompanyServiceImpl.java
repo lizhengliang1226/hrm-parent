@@ -1,29 +1,23 @@
 package com.hrm.company.service.impl;
 
-import com.hrm.common.utils.IdWorker;
 import com.hrm.company.dao.CompanyDao;
 import com.hrm.company.service.CompanyService;
 import com.hrm.domain.company.Company;
+import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/1/12-10:17
+ * @author LZL
+ * @date 2022/1/12-10:17
  */
 @Service
 public class CompanyServiceImpl implements CompanyService {
 
     private CompanyDao companyDao;
-    private IdWorker idWorker;
 
-    @Autowired
-    public void setIdWorker(IdWorker idWorker) {
-        this.idWorker = idWorker;
-    }
 
     @Autowired
     public void setCompanyDao(CompanyDao companyDao) {
@@ -34,11 +28,13 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void add(Company company) {
         //设置id
-        String id = idWorker.nextId() + "";
+        String id = IdWorker.getIdStr();
         company.setId(id);
         //设置默认状态
-        company.setAuditState("0");//审核状态 1-已审核 0-未审核
-        company.setState(1);//公司状态 1-可用 0-不可用
+        //审核状态 1-已审核 0-未审核
+        //公司状态 1-可用 0-不可用
+        company.setAuditState("0");
+        company.setState(1);
         //保存
         companyDao.save(company);
 

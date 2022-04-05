@@ -11,9 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/7-20:28
+ * @author LZL
+ * @date 2022/3/7-20:28
  */
 @Slf4j
 public class BaseController {

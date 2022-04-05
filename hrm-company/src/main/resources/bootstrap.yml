@@ -1,6 +1,6 @@
 spring:
   application:
-    name: hrm-company # 服务名
+    name: "hrm-company" # 服务名
   profiles:
     active: dev # 环境
     group:
@@ -11,5 +11,6 @@ spring:
     nacos:
       config:
         file-extension: yaml
+        server-addr: localhost:8848
       discovery:
         server-addr: localhost:8848

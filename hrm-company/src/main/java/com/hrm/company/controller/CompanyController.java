@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * @Description 企业管理控制器
- * @Author LZL
- * @Date 2022/1/12-10:44
+ * 企业管理控制器
+ *
+ * @author LZL
+ * @date 2022/1/12-10:44
  */
 @CrossOrigin
 @RestController

@@ -1,28 +1,22 @@
-package com.hrm.employee;
+package com.hrm.company;
 
-
-import com.hrm.common.utils.IdWorker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.Bean;
 
 /**
- * @author 17314
+ * 企业微服务
+ *
+ * @author LZL
+ * @date 2022/1/12-9:36
  */
 @SpringBootApplication(scanBasePackages = "com.hrm")
-@EntityScan("com.hrm.domain.employee")
+@EntityScan(value = "com.hrm.domain.company")
 @EnableDiscoveryClient
-public class EmployeeApplication {
-
+public class HrmCompanyApplication {
     public static void main(String[] args) {
-        SpringApplication.run(EmployeeApplication.class, args);
-    }
-
-    @Bean
-    public IdWorker idWorkker() {
-        return new IdWorker(1, 1);
+        SpringApplication.run(HrmCompanyApplication.class, args);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.hrm.domain.system.response;
 
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
@@ -11,9 +12,10 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * @Description 登录成功返回结果
- * @Author LZL
- * @Date 2022/3/11-9:43
+ * 登录成功返回结果
+ *
+ * @author LZL
+ * @date 2022/3/11-9:43
  */
 @Setter
 @Getter
@@ -36,11 +38,11 @@ public class ProfileResult implements Serializable, AuthCachePrincipal {
         userRoles.forEach(r -> {
             final Set<Permission> permissionSet = r.getPermissions();
             permissionSet.forEach(p -> {
-                if (p.getType() == 1) {
+                if (p.getType() == SystemConstant.PY_MENU) {
                     menus.add(p.getCode());
-                } else if (p.getType() == 2) {
+                } else if (p.getType() == SystemConstant.PY_POINT) {
                     points.add(p.getCode());
-                } else {
+                } else if (p.getType() == SystemConstant.PY_API) {
                     apis.add(p.getCode());
                 }
             });
@@ -59,11 +61,11 @@ public class ProfileResult implements Serializable, AuthCachePrincipal {
         Set<String> points = new HashSet<>();
         Set<String> apis = new HashSet<>();
         permissionList.forEach(p -> {
-            if (p.getType() == 1) {
+            if (p.getType() == SystemConstant.PY_MENU) {
                 menus.add(p.getCode());
-            } else if (p.getType() == 2) {
+            } else if (p.getType() == SystemConstant.PY_POINT) {
                 points.add(p.getCode());
-            } else {
+            } else if (p.getType() == SystemConstant.PY_API) {
                 apis.add(p.getCode());
             }
         });

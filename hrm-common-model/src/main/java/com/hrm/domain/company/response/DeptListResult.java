@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/7-20:08
+ * 部门信息返回实体
+ *
+ * @author LZL
+ * @date 2022/3/7-20:08
  */
 @Data
 @AllArgsConstructor
@@ -19,7 +20,6 @@ import java.util.List;
 public class DeptListResult {
     private String companyId;
     private String companyName;
-    //公司联系人
     private String companyManager;
     private List<Department> depts;
 

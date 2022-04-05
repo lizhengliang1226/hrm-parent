@@ -2,6 +2,8 @@ package com.hrm.common.entity;
 
 /**
  * 公共返回码
+ *
+ * @author 17314
  */
 public enum ResultCode {
     /**

@@ -13,4 +13,3 @@ feign:
     config:
       default:
         loggerLevel: BASIC
-

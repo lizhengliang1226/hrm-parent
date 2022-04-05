@@ -6,9 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/14-7:49
+ * @author LZL
+ * @date 2022/3/14-7:49
  */
 @RestController
 public class ErrorController {

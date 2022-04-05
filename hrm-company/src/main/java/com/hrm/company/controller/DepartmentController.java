@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * @author LZL
- * @description
+ *
  * @date 2022/3/7-19:35
  */
 @RestController
@@ -67,6 +67,13 @@ public class DepartmentController extends BaseController {
     public Result findById(@PathVariable(value = "id") String id) {
         final Department byId = departmentService.findById(id);
         return new Result<>(ResultCode.SUCCESS, byId);
+    }
+
+    @GetMapping(value = "department/code/{code}/{companyId}", name = "FIND_DEPT_CODE_API")
+    @ApiOperation(value = "根据部门编码查找部门")
+    public Result<Department> findByCode(@PathVariable String code, @PathVariable String companyId) {
+        final Department department = departmentService.findByCode(code, companyId);
+        return new Result<>(ResultCode.SUCCESS, department);
     }
 
     @GetMapping(value = "department", name = "FIND_DEPT_LIST_API")

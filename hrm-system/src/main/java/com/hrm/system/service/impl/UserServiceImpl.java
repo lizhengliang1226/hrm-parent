@@ -2,20 +2,19 @@ package com.hrm.system.service.impl;
 
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.DES;
-import com.hrm.common.entity.UserLevel;
-import com.hrm.common.service.BaseService;
-import com.hrm.common.utils.IdWorker;
+import com.hrm.common.service.BaseServiceImpl;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Role;
 import com.hrm.domain.system.User;
 import com.hrm.system.dao.RoleDao;
 import com.hrm.system.dao.UserDao;
 import com.hrm.system.service.UserService;
+import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,22 +23,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * @Description 用户服务
- * @Author LZL
- * @Date 2022/3/8-20:34
+ * 用户服务
+ *
+ * @author LZL
+ * @date 2022/3/8-20:34
  */
 @Service
 @RefreshScope
 @Transactional(rollbackFor = Exception.class)
-public class UserServiceImpl extends BaseService<User> implements UserService {
-    private static final String COMPANY_ID = "companyId";
-    private static final String DEPARTMENT_ID = "departmentId";
-    private static final String HAS_DEPT = "hasDept";
-    private static final String IN_SERVICE_STATUS = "inServiceStatus";
+public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> implements UserService {
+
     private static final String FIND_ALL_FLAG = "3";
     @Value("${initial-password}")
     private String initialPassword;
-    private IdWorker idWorker;
+
     private UserDao userDao;
     private RoleDao roleDao;
 
@@ -53,21 +50,17 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         this.userDao = userDao;
     }
 
-    @Autowired
-    public void setIdWorker(IdWorker idWorker) {
-        this.idWorker = idWorker;
-    }
-
     @Override
     public void save(User user) {
-        String id = idWorker.nextId() + "";
+        String id = IdWorker.getIdStr();
         user.setId(id);
         user.setCreateTime(new Date());
+        // 设置可用状态为可用
         user.setEnableState(1);
         //默认在职
         user.setInServiceStatus(1);
         //默认级别为普通用户
-        user.setLevel(UserLevel.NORMAL_USER);
+        user.setLevel(SystemConstant.NORMAL_USER);
         DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
         final String password = des.encryptHex(initialPassword);
         user.setPassword(password);
@@ -99,58 +92,45 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     }
 
     @Override
-    public User findById(String id) {
-        return userDao.findById(id).get();
-    }
-
-    @Override
     public User findByMobile(String mobile) {
         return userDao.findByMobile(mobile);
     }
 
     @Override
     public Page<User> findAll(Map<String, Object> map) {
-        String page = String.valueOf(map.get("page"));
-        String size = String.valueOf(map.get("size"));
-        Specification<User> specification = (root, criteriaQuery, criteriaBuilder) -> {
+        return userDao.findAll((root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> list = new ArrayList<>(10);
             map.forEach((k, v) -> {
                 // 同一家企业
-                if (COMPANY_ID.equals(k)) {
-                    list.add(criteriaBuilder.equal(root.get(COMPANY_ID).as(String.class), v));
+                if (SystemConstant.COMPANY_ID.equals(k)) {
+                    list.add(criteriaBuilder.equal(root.get("companyId").as(String.class), v));
                 }
                 // 某一个部门
-                if (DEPARTMENT_ID.equals(k)) {
-                    list.add(criteriaBuilder.equal(root.get(DEPARTMENT_ID).as(String.class), v));
+                if (SystemConstant.DEPARTMENT_ID.equals(k)) {
+                    list.add(criteriaBuilder.equal(root.get("departmentId").as(String.class), v));
                 }
-                // 分配部门与否
-                if (HAS_DEPT.equals(k)) {
-                    if ("0".equals(v)) {
-                        list.add(criteriaBuilder.isNull(root.get(DEPARTMENT_ID)));
-                    } else {
-                        list.add(criteriaBuilder.isNotNull(root.get(DEPARTMENT_ID)));
+                // 分配部门与否 1,已分配，0，未分配
+                if (SystemConstant.HAS_DEPT.equals(k)) {
+                    if (SystemConstant.ZERO.equals(v)) {
+                        list.add(criteriaBuilder.isNull(root.get("departmentId")));
+                    } else if (SystemConstant.ONE.equals(v)) {
+                        list.add(criteriaBuilder.isNotNull(root.get("departmentId")));
                     }
                 }
                 // 是否在职，1，在职，2，离职，3，全部
-                if (IN_SERVICE_STATUS.equals(k)) {
+                if (SystemConstant.IN_SERVICE_STATUS.equals(k)) {
                     if (!FIND_ALL_FLAG.equals(v)) {
-                        list.add(criteriaBuilder.equal(root.get(IN_SERVICE_STATUS).as(String.class), v));
+                        list.add(criteriaBuilder.equal(root.get("inServiceStatus").as(String.class), v));
                     }
                 }
             });
             return criteriaBuilder.and(list.toArray(new Predicate[list.size()]));
-        };
-        return userDao.findAll(specification, PageRequest.of(Integer.parseInt(page) - 1, Integer.parseInt(size)));
+        }, PageRequest.of(Integer.parseInt(String.valueOf(map.get("page"))) - 1, Integer.parseInt(String.valueOf(map.get("size")))));
     }
 
     @Override
     public List<User> findSimpleUsers(String companyId) {
-        return userDao.findAll(getSpec(companyId));
-    }
-
-    @Override
-    public void deleteById(String id) {
-        userDao.deleteById(id);
+        return userDao.findAll(getSameCompanySpec(companyId));
     }
 
     @Override
@@ -172,6 +152,4 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         final String s = des.encryptHex(password);
         userDao.updatePassword(id, s);
     }
-
-
 }

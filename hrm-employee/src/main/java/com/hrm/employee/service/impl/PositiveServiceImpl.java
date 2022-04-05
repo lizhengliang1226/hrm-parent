@@ -1,6 +1,7 @@
 package com.hrm.employee.service.impl;
 
 
+import com.hrm.common.service.BaseServiceImpl;
 import com.hrm.domain.employee.EmployeePositive;
 import com.hrm.domain.employee.UserCompanyJobs;
 import com.hrm.employee.dao.PositiveDao;
@@ -11,12 +12,23 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+/**
+ * @author 17314
+ */
 @Service
-public class PositiveServiceImpl implements PositiveService {
-    @Autowired
+public class PositiveServiceImpl extends BaseServiceImpl<PositiveDao, EmployeePositive, String> implements PositiveService {
     private PositiveDao positiveDao;
-    @Autowired
     private UserCompanyJobsDao userCompanyJobsDao;
+
+    @Autowired
+    public void setPositiveDao(PositiveDao positiveDao) {
+        this.positiveDao = positiveDao;
+    }
+
+    @Autowired
+    public void setUserCompanyJobsDao(UserCompanyJobsDao userCompanyJobsDao) {
+        this.userCompanyJobsDao = userCompanyJobsDao;
+    }
 
     @Override
     public EmployeePositive findById(String uid, Integer status) {
@@ -30,14 +42,10 @@ public class PositiveServiceImpl implements PositiveService {
     }
 
     @Override
-    public EmployeePositive findById(String uid) {
-        return positiveDao.findByUserId(uid);
-    }
-
-    @Override
     public void save(EmployeePositive positive) {
         positive.setCreateTime(new Date());
-        positive.setEstatus(2);//未执行
+        // 已执行
+        positive.setEstatus(2);
         final UserCompanyJobs byUserId = userCompanyJobsDao.findByUserId(positive.getUserId());
         byUserId.setCorrectionEvaluation(positive.getCorrectionEvaluation());
         byUserId.setStateOfCorrection("已转正");

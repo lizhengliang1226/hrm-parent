@@ -1,6 +1,7 @@
 package com.hrm.system.service;
 
 
+import com.hrm.common.service.BaseService;
 import com.hrm.domain.system.User;
 import org.springframework.data.domain.Page;
 
@@ -8,11 +9,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/8-20:33
+ * @author LZL
+ * @date 2022/3/8-20:33
  */
-public interface UserService {
+public interface UserService extends BaseService<User, String> {
     /**
      * 保存用户
      *
@@ -26,14 +26,6 @@ public interface UserService {
      * @param user 用户
      */
     void update(User user);
-
-    /**
-     * 查找用户
-     *
-     * @param id 用户id
-     * @return 用户
-     */
-    User findById(String id);
 
     /**
      * 查找用户通过手机
@@ -60,13 +52,6 @@ public interface UserService {
     List<User> findSimpleUsers(String companyId);
 
     /**
-     * 删除用户
-     *
-     * @param id 用户id
-     */
-    void deleteById(String id);
-
-    /**
      * 给用户分配角色
      *
      * @param id    用户id
@@ -81,4 +66,5 @@ public interface UserService {
      * @param password 密码
      */
     void updatePassword(String id, String password);
+
 }

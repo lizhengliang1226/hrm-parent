@@ -6,9 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/10-6:30
+ * @author LZL
+ * @date 2022/3/10-6:30
  */
 @AllArgsConstructor
 @NoArgsConstructor

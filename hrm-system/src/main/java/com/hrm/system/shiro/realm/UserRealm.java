@@ -1,7 +1,7 @@
 package com.hrm.system.shiro.realm;
 
-import com.hrm.common.entity.UserLevel;
 import com.hrm.common.shiro.realm.HrmRealm;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/14-6:49
+ * 用户realm
+ *
+ * @author LZL
+ * @date 2022/3/14-6:49
  */
 @Slf4j
 public class UserRealm extends HrmRealm {
@@ -39,9 +40,9 @@ public class UserRealm extends HrmRealm {
     /**
      * 用户信息认证
      *
-     * @param authenticationToken
-     * @return
-     * @throws AuthenticationException
+     * @param authenticationToken 认证数据
+     * @return 认证信息
+     * @throws AuthenticationException 授权失败异常
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
@@ -53,12 +54,12 @@ public class UserRealm extends HrmRealm {
         // 构建安全数据
         ProfileResult profileResult = null;
         if (user != null && user.getPassword().equals(password)) {
-            if (UserLevel.NORMAL_USER.equals(user.getLevel())) {
+            if (SystemConstant.NORMAL_USER.equals(user.getLevel())) {
                 // 普通用户，直接根据用户拥有的角色获取权限
                 profileResult = new ProfileResult(user);
             } else {
                 Map<String, Object> map = new HashMap<>(1);
-                if (UserLevel.COMPANY_ADMIN.equals(user.getLevel())) {
+                if (SystemConstant.COMPANY_ADMIN.equals(user.getLevel())) {
                     // 企业管理员。设置企业可见性为1查询权限给用户
                     map.put("enVisible", "1");
                 }

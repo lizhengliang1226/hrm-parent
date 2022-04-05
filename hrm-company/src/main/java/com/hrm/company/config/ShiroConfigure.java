@@ -19,9 +19,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @Description shiro配置类
- * @Author LZL
- * @Date 2022/3/14-5:51
+ * shiro配置类
+ *
+ * @author LZL
+ * @date 2022/3/14-5:51
  */
 @Configuration
 @Setter
@@ -149,7 +150,11 @@ public class ShiroConfigure {
         return redisManager;
     }
 
-    //cacheManager缓存 redis实现
+    /**
+     * cacheManager缓存 redis实现
+     *
+     * @return RedisCacheManager
+     */
     public RedisCacheManager cacheManager() {
         RedisCacheManager redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager());

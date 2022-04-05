@@ -1,12 +1,13 @@
 package com.hrm.domain.system;
 
+import cn.hutool.core.date.DatePattern;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -27,8 +28,10 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert()
-@DynamicUpdate()
+@DynamicInsert
+@DynamicUpdate
+@EqualsAndHashCode
+@ExcelIgnoreUnannotated
 @ApiModel("用户实体类")
 public class User implements Serializable {
     private static final long serialVersionUID = 4297464181093070302L;
@@ -38,9 +41,11 @@ public class User implements Serializable {
     private String id;
 
     @ApiModelProperty("手机号码")
+    @ExcelProperty(value = "手机号")
     private String mobile;
 
     @ApiModelProperty("用户名称")
+    @ExcelProperty(value = "用户名")
     private String username;
 
     @ApiModelProperty("密码")
@@ -60,27 +65,34 @@ public class User implements Serializable {
     private String companyName;
 
     @ApiModelProperty("部门ID")
+    @ExcelProperty(value = "部门编码")
     private String departmentId;
 
     @ApiModelProperty("部门名称")
     private String departmentName;
 
     @ApiModelProperty("入职时间")
+    @ExcelProperty(value = "入职时间")
+    @DateTimeFormat(DatePattern.NORM_DATE_PATTERN)
     private Date timeOfEntry;
 
     @ApiModelProperty("离职时间")
     private Date timeOfDimission;
 
     @ApiModelProperty("聘用形式")
+    @ExcelProperty(value = "聘用形式")
     private Integer formOfEmployment;
 
     @ApiModelProperty("工号")
+    @ExcelProperty(value = "工号")
     private String workNumber;
 
     @ApiModelProperty("管理形式")
+    @ExcelProperty(value = "管理形式")
     private String formOfManagement;
 
     @ApiModelProperty("工作城市")
+    @ExcelProperty(value = "工作城市")
     private String workingCity;
 
     @ApiModelProperty("转正时间")
@@ -102,4 +114,5 @@ public class User implements Serializable {
     )
     @ApiModelProperty("用户包含的角色-多对多")
     private Set<Role> roles = new HashSet<Role>();
+
 }

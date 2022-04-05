@@ -13,9 +13,8 @@ import org.apache.shiro.subject.PrincipalCollection;
 import java.util.Set;
 
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/14-6:46
+ * @author LZL
+ * @date 2022/3/14-6:46
  */
 @Slf4j
 public class HrmRealm extends AuthorizingRealm {

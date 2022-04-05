@@ -18,9 +18,10 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * @Description OSS服务
- * @Author LZL
- * @Date 2022/3/11-3:07
+ * OSS服务
+ *
+ * @author LZL
+ * @date 2022/3/11-3:07
  */
 @Service
 @ConfigurationProperties(prefix = "oss")

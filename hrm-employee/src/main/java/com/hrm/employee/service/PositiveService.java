@@ -1,13 +1,15 @@
 package com.hrm.employee.service;
 
+import com.hrm.common.service.BaseService;
 import com.hrm.domain.employee.EmployeePositive;
 
 /**
- * @Description 转正服务
- * @Author LZL
- * @Date 2022/3/15-0:57
+ * 转正服务
+ *
+ * @author LZL
+ * @date 2022/3/15-0:57
  */
-public interface PositiveService {
+public interface PositiveService extends BaseService<EmployeePositive, String> {
     /**
      * 查询转正信息
      *
@@ -23,7 +25,7 @@ public interface PositiveService {
      * @param uid
      * @return
      */
-    public EmployeePositive findById(String uid);
+//    public EmployeePositive findById(String uid);
 
     /**
      * 保存转正信息

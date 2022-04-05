@@ -1,32 +1,25 @@
 package com.hrm.common.service;
 
-import org.springframework.data.jpa.domain.Specification;
-
 /**
- * @Description
- * @Author LZL
- * @Date 2022/3/7-20:36
+ * 基本service接口
+ *
+ * @author LZL
+ * @version v1.0
+ * @date 2022/4/1-14:41
  */
-public class BaseService<T> {
+public interface BaseService<T, ID> {
     /**
-     * 查询属于同一家企业的某些信息，比如部门，用户,角色
+     * 根据id删除
      *
-     * @param companyId
-     * @return
+     * @param id id
      */
-    protected Specification<T> getSpec(String companyId) {
-        return (root, criteriaQuery, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("companyId").as(String.class), companyId);
-    }
+    public void deleteById(ID id);
 
     /**
-     * 在删除时查询当前部门下面的所有子部门，进行级联删除
+     * 根据id查找
      *
-     * @param deptId
-     * @return
+     * @param id id
+     * @return 对象实体
      */
-    protected Specification<T> getAllChild(String deptId) {
-        return (root, criteriaQuery, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("pid").as(String.class), deptId);
-    }
+    public T findById(ID id);
 }

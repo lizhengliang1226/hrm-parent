@@ -3,9 +3,10 @@ package com.hrm.employee.service;
 import com.hrm.domain.employee.UserCompanyPersonal;
 
 /**
- * @Description 员工详细信息服务
- * @Author LZL
- * @Date 2022/3/15-0:52
+ * 员工详细信息服务
+ *
+ * @author LZL
+ * @date 2022/3/15-0:52
  */
 public interface UserCompanyPersonalService {
     /**

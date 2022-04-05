@@ -11,6 +11,8 @@ import java.io.Serializable;
 
 /**
  * 员工详细信息表
+ *
+ * @author 17314
  */
 @Entity
 @Table(name = "em_user_company_personal")

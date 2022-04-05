@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.SelectBeforeUpdate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -20,6 +23,9 @@ import java.io.Serializable;
 @ApiModel("权限API实体类")
 @AllArgsConstructor
 @NoArgsConstructor
+@SelectBeforeUpdate
+@DynamicInsert
+@DynamicUpdate
 public class PermissionApi implements Serializable {
 
     private static final long serialVersionUID = -1803315043290784820L;
