@@ -41,11 +41,17 @@ public enum ResultCode {
     //---权限操作返回码----
     //---其他操作返回码----
 
-    //操作是否成功
+    /**
+     * 操作是否成功
+     */
     boolean success;
-    //操作代码
+    /**
+     * 操作代码
+     */
     int code;
-    //提示信息
+    /**
+     * 提示信息
+     */
     String message;
 
     ResultCode(boolean success, int code, String message) {

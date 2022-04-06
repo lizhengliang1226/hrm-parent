@@ -18,7 +18,6 @@ import org.springframework.beans.BeanUtils;
 @NoArgsConstructor
 @ToString
 public class EmployeeReportResult {
-
     private String userId;
     private String username;
     private String departmentName;
@@ -41,7 +40,7 @@ public class EmployeeReportResult {
     /**
      * 护照号
      */
-    private String passportNo;
+//    private String passportNo;
     /**
      * 身份证号
      */

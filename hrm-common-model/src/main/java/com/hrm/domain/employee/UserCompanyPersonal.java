@@ -53,7 +53,7 @@ public class UserCompanyPersonal implements Serializable {
     /**
      * 护照号
      */
-    private String passportNo;
+//    private String passportNo;
     /**
      * 身份证号
      */
