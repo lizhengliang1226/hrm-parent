@@ -1,6 +1,8 @@
 package com.hrm.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.hrm.common.entity.ResultCode;
+import com.hrm.common.exception.CommonException;
 import com.hrm.common.service.BaseServiceImpl;
 import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
@@ -44,10 +46,16 @@ public class RoleServiceImpl extends BaseServiceImpl<RoleDao, Role, String> impl
     }
 
     @Override
-    public void save(Role role) {
-        String id = IdWorker.getIdStr();
-        role.setId(id);
-        roleDao.save(role);
+    public void save(Role role) throws CommonException {
+        final Role byName = roleDao.findByName(role.getName());
+        if (byName == null) {
+            String id = IdWorker.getIdStr();
+            role.setId(id);
+            roleDao.save(role);
+        } else {
+            throw new CommonException(ResultCode.DUPLICATE_ROLE_NAME);
+        }
+
     }
 
     @Override

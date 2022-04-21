@@ -6,6 +6,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
+import com.hrm.common.client.CompanyFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
@@ -13,7 +14,6 @@ import com.hrm.common.entity.ResultCode;
 import com.hrm.domain.company.Department;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
-import com.hrm.system.client.CompanyFeignClient;
 import com.hrm.system.service.OssService;
 import com.hrm.system.service.UserService;
 import io.swagger.annotations.Api;
@@ -56,7 +56,7 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "user/import", name = "IMPORT_USER_API")
     @ApiOperation(value = "批量保存用户")
-    public Result importUsers(@RequestParam(name = "file") MultipartFile file) throws Exception {
+    public Result importUsers(@RequestParam MultipartFile file) throws Exception {
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), User.class, new UserExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
@@ -76,7 +76,7 @@ public class UserController extends BaseController {
 
     @PutMapping(value = "user/{id}", name = "UPDATE_USER_API")
     @ApiOperation(value = "更新用户")
-    public Result update(@PathVariable(value = "id") String id, @RequestBody User user) {
+    public Result update(@PathVariable String id, @RequestBody User user) {
         user.setId(id);
         userService.update(user);
         return Result.SUCCESS();
@@ -84,14 +84,14 @@ public class UserController extends BaseController {
 
     @PutMapping(value = "user/{id}/{password}", name = "UPDATE_PASSWORD_API")
     @ApiOperation(value = "更新密码")
-    public Result updatePassword(@PathVariable(value = "id") String id, @PathVariable("password") String password) {
+    public Result updatePassword(@PathVariable String id, @PathVariable String password) {
         userService.updatePassword(id, password);
         return Result.SUCCESS();
     }
 
     @GetMapping(value = "user/{id}/{password}", name = "VERIFY_PASSWORD_API")
     @ApiOperation(value = "验证密码")
-    public Result verifyPassword(@PathVariable("id") String id, @PathVariable("password") String password) {
+    public Result verifyPassword(@PathVariable String id, @PathVariable String password) {
         final User byId = userService.findById(id);
         final String s = SecureUtil.des(byId.getMobile().getBytes(StandardCharsets.UTF_8)).encryptHex(password);
         if (s.equals(byId.getPassword())) {
@@ -104,21 +104,21 @@ public class UserController extends BaseController {
     @RequiresPermissions(value = "DELETE_USER_API")
     @DeleteMapping(value = "user/{id}", name = "DELETE_USER_API")
     @ApiOperation(value = "根据id删除用户")
-    public Result delete(@PathVariable(value = "id") String id) {
+    public Result delete(@PathVariable String id) {
         userService.deleteById(id);
         return Result.SUCCESS();
     }
 
     @GetMapping(value = "user/{id}", name = "FIND_USER_API")
     @ApiOperation(value = "根据ID查找用户")
-    public Result findById(@PathVariable(value = "id") String id) {
+    public Result findById(@PathVariable String id) {
         final User byId = userService.findById(id);
         return new Result<>(ResultCode.SUCCESS, byId);
     }
 
     @GetMapping(value = "user/roles/{id}", name = "FIND_USER_ROLE_API")
     @ApiOperation(value = "根据ID查找用户拥有的角色数组")
-    public Result findUserRole(@PathVariable(value = "id") String id) {
+    public Result findUserRole(@PathVariable String id) {
         final User user = userService.findById(id);
         List<String> roleIds = new ArrayList<>();
         user.getRoles().forEach(role -> {

@@ -6,3 +6,4 @@ spring:
   banner:
     location: banner.txt
 employee-month-template-path: "/template/员工月度报表导出模板.xlsx"
+employee-pdf-template-path: "/template/员工档案pdf模板.jasper"

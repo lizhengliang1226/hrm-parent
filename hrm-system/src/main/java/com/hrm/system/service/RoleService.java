@@ -1,5 +1,6 @@
 package com.hrm.system.service;
 
+import com.hrm.common.exception.CommonException;
 import com.hrm.common.service.BaseService;
 import com.hrm.domain.system.Role;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,7 @@ public interface RoleService extends BaseService<Role, String> {
      *
      * @param role 角色
      */
-    public void save(Role role);
+    public void save(Role role) throws CommonException;
 
     /**
      * 更新角色

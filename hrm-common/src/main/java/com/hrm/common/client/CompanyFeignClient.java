@@ -1,4 +1,4 @@
-package com.hrm.system.client;
+package com.hrm.common.client;
 
 import com.hrm.common.entity.Result;
 import com.hrm.domain.company.Department;

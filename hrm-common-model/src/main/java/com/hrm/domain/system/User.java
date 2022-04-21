@@ -7,7 +7,10 @@ import com.alibaba.excel.annotation.format.DateTimeFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -30,7 +33,7 @@ import java.util.Set;
 @NoArgsConstructor
 @DynamicInsert
 @DynamicUpdate
-@EqualsAndHashCode
+//@EqualsAndHashCode
 @ExcelIgnoreUnannotated
 @ApiModel("用户实体类")
 public class User implements Serializable {

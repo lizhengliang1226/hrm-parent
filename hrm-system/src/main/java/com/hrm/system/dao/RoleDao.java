@@ -10,4 +10,11 @@ import com.hrm.domain.system.Role;
  * @date 2022/3/9-1:03
  */
 public interface RoleDao extends BaseDao<Role, String> {
+    /**
+     * 查询角色信息通过name
+     *
+     * @param name 角色名
+     * @return 角色信息
+     */
+    Role findByName(String name);
 }

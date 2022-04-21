@@ -15,6 +15,10 @@ import com.hrm.employee.service.impl.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -24,7 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -51,8 +57,40 @@ public class EmployeeController extends BaseController {
     private PositiveServiceImpl positiveServiceImpl;
 
     private ArchiveSpecServiceImpl archiveServiceImpl;
+
     @Value("${employee-month-template-path}")
     private String templateName;
+    @Value("${employee-pdf-template-path}")
+    private String pdfTemplateName;
+
+    /**
+     * 员工信息pdf报表导出
+     *
+     * @param response 响应
+     * @param request  请求
+     */
+    @GetMapping("{id}/pdf")
+    public void exportPdf(HttpServletResponse response, HttpServletRequest request, @PathVariable String id) throws Exception {
+        // 构造数据
+        final HashMap<String, Object> map = new HashMap<>(32);
+        final UserCompanyPersonal userCompanyPersonal = userCompanyPersonalService.findById(id);
+        final UserCompanyJobs userCompanyJobs = userCompanyJobsServiceImpl.findById(id);
+        String staffPhoto = userCompanyPersonal.getStaffPhoto();
+        map.put("staffPhoto", staffPhoto);
+        final Map<String, Object> map1 = BeanMapUtils.beanToMap(userCompanyJobs);
+        final Map<String, Object> map2 = BeanMapUtils.beanToMap(userCompanyPersonal);
+        map.putAll(map1);
+        map.putAll(map2);
+        // 设置响应类型
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        // 填充数据
+        Resource resource = new ClassPathResource(pdfTemplateName);
+        FileInputStream fileInputStream = new FileInputStream(resource.getFile());
+        final JasperPrint jasperPrint = JasperFillManager.fillReport(fileInputStream, map, new JREmptyDataSource());
+        // 响应数据
+        JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
+    }
 
     /**
      * 员工详细信息保存
@@ -89,7 +127,8 @@ public class EmployeeController extends BaseController {
      * 员工岗位信息保存
      */
     @PutMapping(value = "/{id}/jobs")
-    public Result saveJobsInfo(@PathVariable(name = "id") String uid, @RequestBody UserCompanyJobs sourceInfo) throws Exception {
+    public Result saveJobsInfo(@PathVariable(name = "id") String uid, @RequestBody UserCompanyJobs sourceInfo) throws
+            Exception {
         sourceInfo.setUserId(uid);
         sourceInfo.setCompanyId(super.companyId);
         userCompanyJobsServiceImpl.save(sourceInfo);
@@ -114,7 +153,8 @@ public class EmployeeController extends BaseController {
      * 离职表单保存
      */
     @PutMapping(value = "/{id}/leave")
-    public Result saveLeave(@PathVariable(name = "id") String uid, @RequestBody EmployeeResignation resignation) throws Exception {
+    public Result saveLeave(@PathVariable(name = "id") String uid, @RequestBody EmployeeResignation resignation) throws
+            Exception {
         resignation.setUserId(uid);
         resignationServiceImpl.save(resignation);
         return new Result(ResultCode.SUCCESS);
@@ -138,6 +178,7 @@ public class EmployeeController extends BaseController {
      */
     @PostMapping(value = "/import")
     public Result importDatas(@RequestParam(name = "file") MultipartFile attachment) throws Exception {
+        //todo
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -145,7 +186,8 @@ public class EmployeeController extends BaseController {
      * 调岗表单保存
      */
     @PutMapping(value = "/{id}/transferPosition")
-    public Result saveTransferPosition(@PathVariable(name = "id") String uid, @RequestBody EmployeeTransferPosition transferPosition) throws Exception {
+    public Result saveTransferPosition(@PathVariable(name = "id") String uid,
+                                       @RequestBody EmployeeTransferPosition transferPosition) throws Exception {
         transferPosition.setUserId(uid);
         transferPositionServiceImpl.save(transferPosition);
         return new Result(ResultCode.SUCCESS);
@@ -178,6 +220,7 @@ public class EmployeeController extends BaseController {
      */
     @GetMapping(value = "/{id}/positive")
     public Result<EmployeePositive> findPositive(@PathVariable(name = "id") String uid) {
+        log.info("{}", uid);
         EmployeePositive positive = positiveServiceImpl.findById(uid);
         if (positive == null) {
             positive = new EmployeePositive();
@@ -190,8 +233,8 @@ public class EmployeeController extends BaseController {
      * 历史归档详情列表
      */
     @GetMapping(value = "/archives/{month}")
-    public Result<Object> archives(@PathVariable(name = "month") String month, @RequestParam(name = "type") Integer type) throws Exception {
-
+    public Result<Object> archives(@PathVariable String month, @RequestParam Integer type) throws Exception {
+        //TODO
         return new Result<>(ResultCode.SUCCESS);
     }
 
@@ -199,7 +242,8 @@ public class EmployeeController extends BaseController {
      * 归档更新
      */
     @PutMapping(value = "/archives/{month}")
-    public Result<Object> saveArchives(@PathVariable(name = "month") String month) throws Exception {
+    public Result<Object> saveArchives(@PathVariable String month) throws Exception {
+        // TODO
         return new Result<>(ResultCode.SUCCESS);
     }
 
@@ -207,7 +251,9 @@ public class EmployeeController extends BaseController {
      * 历史归档列表
      */
     @GetMapping(value = "/archives")
-    public Result<PageResult<EmployeeArchive>> findArchives(@RequestParam(name = "pagesize") Integer pagesize, @RequestParam(name = "page") Integer page, @RequestParam(name = "year") String year) throws Exception {
+    public Result<PageResult<EmployeeArchive>> findArchives(@RequestParam Integer pagesize,
+                                                            @RequestParam Integer page,
+                                                            @RequestParam String year) throws Exception {
         Map<String, Object> map = new HashMap(10);
         map.put("year", year);
         map.put("companyId", companyId);
@@ -232,10 +278,10 @@ public class EmployeeController extends BaseController {
         // 开始写入
         final WriteSheet sheet = EasyExcel.writerSheet().build();
         EasyExcel.write(response.getOutputStream(), EmployeeReportResult.class)
-                .withTemplate(template.getInputStream()).build()
-                .fill(map, sheet)
-                .fill(list, sheet)
-                .finish();
+                 .withTemplate(template.getInputStream()).build()
+                 .fill(map, sheet)
+                 .fill(list, sheet)
+                 .finish();
     }
 
     @Autowired

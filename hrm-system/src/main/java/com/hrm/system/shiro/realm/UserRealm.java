@@ -54,6 +54,7 @@ public class UserRealm extends HrmRealm {
         // 构建安全数据
         ProfileResult profileResult = null;
         if (user != null && user.getPassword().equals(password)) {
+            log.info("密码比对正确！");
             if (SystemConstant.NORMAL_USER.equals(user.getLevel())) {
                 // 普通用户，直接根据用户拥有的角色获取权限
                 profileResult = new ProfileResult(user);

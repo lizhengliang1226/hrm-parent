@@ -33,14 +33,15 @@ public class ShiroConfigure {
     private String host;
 
     private int port;
+    private String password;
     /**
      * 匿名访问
      */
-    private static final String ANON_ACCESS="anon";
+    private static final String ANON_ACCESS = "anon";
     /**
      * 授权访问
      */
-    private static final String AUTH_ACCESS="authc";
+    private static final String AUTH_ACCESS = "authc";
     /**
      * 配置自定义realm
      * @return
@@ -142,6 +143,7 @@ public class ShiroConfigure {
         RedisManager redisManager = new RedisManager();
         redisManager.setHost(host);
         redisManager.setPort(port);
+        redisManager.setPassword(password);
         return redisManager;
     }
 

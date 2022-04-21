@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 
 /**
- * feign配置
+ * Feign请求转发拦截配置，将请求头信息一起转发
  *
  * @author LZL
  * @date 2022/3/15-0:26

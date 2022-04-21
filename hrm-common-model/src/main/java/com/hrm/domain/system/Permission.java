@@ -2,7 +2,10 @@ package com.hrm.domain.system;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SelectBeforeUpdate;
@@ -24,7 +27,7 @@ import java.io.Serializable;
 @SelectBeforeUpdate
 @DynamicInsert
 @DynamicUpdate
-@EqualsAndHashCode
+//@EqualsAndHashCode
 @ApiModel("权限实体类")
 public class Permission implements Serializable {
 

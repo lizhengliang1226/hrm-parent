@@ -35,7 +35,11 @@ public enum ResultCode {
     /**
      * 登陆失败返回码
      */
-    LOGIN_FAIL(false, 20001, "用户名或密码错误！");
+    LOGIN_FAIL(false, 20001, "用户名或密码错误！"),
+    /**
+     * 角色名重复返回码
+     */
+    DUPLICATE_ROLE_NAME(false, 20002, "角色名重复！");
     //---企业操作返回码----
 
     //---权限操作返回码----

@@ -36,6 +36,7 @@ public class ShiroConfigure {
     private String host;
 
     private int port;
+    private String password;
     /**
      * 匿名访问
      */
@@ -143,6 +144,7 @@ public class ShiroConfigure {
         RedisManager redisManager = new RedisManager();
         redisManager.setHost(host);
         redisManager.setPort(port);
+        redisManager.setPassword(password);
         return redisManager;
     }
 
@@ -156,4 +158,6 @@ public class ShiroConfigure {
         redisCacheManager.setRedisManager(redisManager());
         return redisCacheManager;
     }
+
+
 }

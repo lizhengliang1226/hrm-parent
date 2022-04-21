@@ -27,8 +27,8 @@ public class HrmRealm extends AuthorizingRealm {
     /**
      * 授权
      *
-     * @param principalCollection
-     * @return
+     * @param principalCollection 安全数据
+     * @return 授权信息
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {

@@ -23,8 +23,9 @@ public class BaseController {
 
     /**
      * 使用shiro获取安全数据
-     * @param request
-     * @param response
+     *
+     * @param request  请求
+     * @param response 响应
      */
     @ModelAttribute
     public void setReqAndRes(HttpServletRequest request, HttpServletResponse response) {
