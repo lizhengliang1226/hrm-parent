@@ -1,6 +1,7 @@
 package com.hrm.system.service;
 
 
+import com.hrm.common.exception.CommonException;
 import com.hrm.common.service.BaseService;
 import com.hrm.domain.system.User;
 import org.springframework.data.domain.Page;
@@ -18,14 +19,14 @@ public interface UserService extends BaseService<User, String> {
      *
      * @param user 用户
      */
-    void save(User user);
+    void save(User user) throws CommonException;
 
     /**
      * 更新用户
      *
      * @param user 用户
      */
-    void update(User user);
+    void update(User user) throws CommonException;
 
     /**
      * 查找用户通过手机

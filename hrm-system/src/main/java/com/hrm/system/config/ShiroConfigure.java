@@ -109,6 +109,8 @@ public class ShiroConfigure {
         // 匿名访问
         filterMap.put("/sys/login", ANON_ACCESS);
         filterMap.put("/authError", ANON_ACCESS);
+        // 人脸登录api直接放行
+        filterMap.put("/sys/faceLogin/**", ANON_ACCESS);
         //认证之后访问（登录之后可以访问）
         filterMap.put("/**", AUTH_ACCESS);
         //5.设置过滤器

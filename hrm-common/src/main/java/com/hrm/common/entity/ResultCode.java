@@ -39,7 +39,15 @@ public enum ResultCode {
     /**
      * 角色名重复返回码
      */
-    DUPLICATE_ROLE_NAME(false, 20002, "角色名重复！");
+    DUPLICATE_ROLE_NAME(false, 20002, "角色名重复！"),
+    /**
+     * 人脸过多或人脸不相同
+     */
+    ADD_FACE_FAIL(false, 20003, "人脸过多或与当前人脸不相同！"),
+    /**
+     * 图片没有人脸
+     */
+    IMG_NO_FACE(false, 20004, "图片中没有人脸，请重新上传！");
     //---企业操作返回码----
 
     //---权限操作返回码----

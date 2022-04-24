@@ -11,6 +11,7 @@ import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
+import com.hrm.common.exception.CommonException;
 import com.hrm.domain.company.Department;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
@@ -66,7 +67,7 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "user", name = "SAVE_USER_API")
     @ApiOperation(value = "保存用户")
-    public Result save(@RequestBody User user) {
+    public Result save(@RequestBody User user) throws CommonException {
         //设置保存的企业id，目前使用固定值1，以后会解决
         user.setCompanyId(companyId);
         user.setCompanyName(companyName);
@@ -76,7 +77,7 @@ public class UserController extends BaseController {
 
     @PutMapping(value = "user/{id}", name = "UPDATE_USER_API")
     @ApiOperation(value = "更新用户")
-    public Result update(@PathVariable String id, @RequestBody User user) {
+    public Result update(@PathVariable String id, @RequestBody User user) throws CommonException {
         user.setId(id);
         userService.update(user);
         return Result.SUCCESS();

@@ -110,6 +110,8 @@ public class User implements Serializable {
     @ApiModelProperty("员工照片")
     private String staffPhoto;
 
+    @ApiModelProperty("性别")
+    private String gender;
     @ManyToMany()
     @JsonIgnore
     @JoinTable(name = "pe_user_role", joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "id")},

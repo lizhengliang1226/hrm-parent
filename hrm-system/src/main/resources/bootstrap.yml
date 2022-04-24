@@ -4,8 +4,8 @@ spring:
   profiles:
     active: dev # 环境
     group:
-      "dev": devDB,devRedis,devFileUpload
-      "pro": devDB,devRedis,devFileUpload
+      "dev": devDB,devRedis,devFileUpload,devFaceLogin
+      "pro": devDB,devRedis,devFileUpload,devFaceLogin
   # nacos配置
   cloud:
     nacos:

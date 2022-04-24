@@ -44,6 +44,30 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <!--Redis-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--    二维码生成    -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <!--        腾讯云API-->
+        <dependency>
+            <groupId>com.tencentcloudapi</groupId>
+            <artifactId>tencentcloud-sdk-java</artifactId>
+            <version>3.1.498</version>
+        </dependency>
+        <!--        id生成器-->
         <dependency>
             <groupId>com.lzl</groupId>
             <artifactId>idworker</artifactId>
@@ -60,6 +84,7 @@
             <artifactId>cglib</artifactId>
             <version>3.3.0</version>
         </dependency>
+        <!--        springdatajpa依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -68,21 +93,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>net.sf.jasperreports</groupId>-->
-        <!--            <artifactId>jasperreports</artifactId>-->
-        <!--            <version>5.6.0</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.olap4j</groupId>-->
-        <!--            <artifactId>olap4j</artifactId>-->
-        <!--            <version>1.2.0</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>com.lowagie</groupId>-->
-        <!--            <artifactId>itext</artifactId>-->
-        <!--            <version>2.1.7</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

@@ -63,4 +63,16 @@ public class SystemConstant {
      * API
      */
     public static final int PY_API = 3;
+    /**
+     * 未登录
+     */
+    public static final String NOT_LOGIN = "0";
+    /**
+     * 已登陆
+     */
+    public static final String IS_LOGIN = "1";
+    /**
+     * 二维码未扫描
+     */
+    public static final String NOT_SCAN = "-1";
 }

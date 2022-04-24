@@ -2,6 +2,8 @@ package com.hrm.system.service.impl;
 
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.DES;
+import com.hrm.common.entity.ResultCode;
+import com.hrm.common.exception.CommonException;
 import com.hrm.common.service.BaseServiceImpl;
 import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Role;
@@ -9,6 +11,7 @@ import com.hrm.domain.system.User;
 import com.hrm.system.dao.RoleDao;
 import com.hrm.system.dao.UserDao;
 import com.hrm.system.service.UserService;
+import com.hrm.system.utils.TencentAiFaceUtil;
 import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,9 +39,11 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
     private static final String FIND_ALL_FLAG = "3";
     @Value("${initial-password}")
     private String initialPassword;
-
+    private TencentAiFaceUtil tencentAiFaceUtil;
     private UserDao userDao;
     private RoleDao roleDao;
+    @Value("${tencent-face.groupId}")
+    private String groupId;
 
     @Autowired
     public void setRoleDao(RoleDao roleDao) {
@@ -50,8 +55,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         this.userDao = userDao;
     }
 
+    @Autowired
+    public void setTencentAiFaceUtil(TencentAiFaceUtil tencentAiFaceUtil) {
+        this.tencentAiFaceUtil = tencentAiFaceUtil;
+    }
+
     @Override
-    public void save(User user) {
+    public void save(User user) throws CommonException {
         String id = IdWorker.getIdStr();
         user.setId(id);
         user.setCreateTime(new Date());
@@ -64,11 +74,34 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
         final String password = des.encryptHex(initialPassword);
         user.setPassword(password);
+        // 添加用户到人员库
+        addUserToPersonnel(user);
         userDao.save(user);
     }
 
+    /**
+     * 添加用户到人员库
+     *
+     * @param user 用户
+     * @throws CommonException 异常
+     */
+    private void addUserToPersonnel(User user) throws CommonException {
+        // 添加用户到人员库
+        final boolean addPerson = tencentAiFaceUtil.createPerson(
+                groupId,
+                user.getUsername(),
+                user.getId(),
+                Long.parseLong(user.getGender()),
+                0L,
+                user.getStaffPhoto());
+        // 添加失败一定是因为没有人脸
+        if (!addPerson) {
+            throw new CommonException(ResultCode.IMG_NO_FACE);
+        }
+    }
+
     @Override
-    public void update(User user) {
+    public void update(User user) throws CommonException {
         User user1 = userDao.findById(user.getId()).get();
         // 设置用户的其他信息
         user1.setWorkNumber(user.getWorkNumber());
@@ -83,6 +116,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
             user1.setPassword(newPass);
         }
         user1.setMobile(newMobile);
+        // 如果头像发生改变，，需要增加到人脸库
+        if (!user1.getStaffPhoto().equals(user.getStaffPhoto())) {
+            final boolean addFace = tencentAiFaceUtil.addFace(user1.getId(), user.getStaffPhoto());
+            if (!addFace) {
+                throw new CommonException(ResultCode.ADD_FACE_FAIL);
+            }
+        }
         user1.setStaffPhoto(user.getStaffPhoto());
         user1.setDepartmentId(user.getDepartmentId());
         user1.setDepartmentName(user.getDepartmentName());
