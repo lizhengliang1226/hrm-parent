@@ -45,7 +45,8 @@ public class UserRealm extends HrmRealm {
      * @throws AuthenticationException 授权失败异常
      */
     @Override
-    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken)
+            throws AuthenticationException {
         // 获取用户名和密码
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         final String password = new String(usernamePasswordToken.getPassword());

@@ -79,6 +79,12 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         userDao.save(user);
     }
 
+//    public static void main(String[] args) {
+//        DES des = SecureUtil.des("13123124".getBytes(StandardCharsets.UTF_8));
+//        final String password = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
+//        System.out.println(password);
+//    }
+
     /**
      * 添加用户到人员库
      *

@@ -9,6 +9,7 @@
         <module>hrm-company</module>
         <module>hrm-system</module>
         <module>hrm-employee</module>
+        <module>hrm-social-security</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

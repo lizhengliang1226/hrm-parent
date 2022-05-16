@@ -231,10 +231,26 @@ public class EmployeeController extends BaseController {
 
     /**
      * 历史归档详情列表
+     * 某个月的离职与入职人员列表
+     * type: 1-全部 2-离职 3-入职
      */
     @GetMapping(value = "/archives/{month}")
-    public Result<Object> archives(@PathVariable String month, @RequestParam Integer type) throws Exception {
-        //TODO
+    public Result archives(@PathVariable String month, @RequestParam Integer type) throws Exception {
+        //根据月份和类型查询对应的离职和入职人员列表信息
+        if (type == 1) {
+            // 查询该月全部
+            // 获取月度报表数据
+            List<EmployeeReportResult> list = userCompanyPersonalService.findMonthlyReport(companyId, month);
+            return new Result(ResultCode.SUCCESS, list);
+        } else if (type == 2) {
+            // 查询离职
+        } else if (type == 3) {
+            // 查询入职
+        } else {
+            return new Result<>(ResultCode.FAIL);
+        }
+
+
         return new Result<>(ResultCode.SUCCESS);
     }
 

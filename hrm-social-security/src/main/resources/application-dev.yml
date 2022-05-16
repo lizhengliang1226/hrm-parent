@@ -1,0 +1,18 @@
+server:
+  port: 9004
+  servlet:
+    encoding:
+      force-response: true
+# 日志配置
+logging:
+  level:
+    root: info
+  file:
+    name: "./logs/social-dev.log"
+  pattern:
+    #日志输出的颜色：blue cyan faint green magenta red yellow
+    console: "%clr(%d{yyyy/MM/dd-HH:mm:ss}){blue} [%t] %clr(%-5p) %clr(%c{30}){cyan} : %clr(%m){magenta}%n"
+  logback:
+    rollingpolicy:
+      file-name-pattern: social.%d{yyyy-MM-dd}.%i.log
+      max-file-size: 10MB

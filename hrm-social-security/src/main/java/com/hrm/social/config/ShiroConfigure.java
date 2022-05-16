@@ -1,8 +1,7 @@
-package com.hrm.system.config;
+package com.hrm.social.config;
 
 import com.hrm.common.shiro.realm.HrmRealm;
 import com.hrm.common.shiro.session.CustomSessionManager;
-import com.hrm.system.shiro.realm.UserRealm;
 import lombok.Setter;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -15,7 +14,6 @@ import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,15 +23,14 @@ import java.util.Map;
  *
  * @author LZL
  * @date 2022/3/14-5:51
- * 注入userRealm进行登录认证
  */
 @Configuration
-@ConfigurationProperties(prefix = "spring.redis")
 @Setter
-@Import(UserRealm.class)
+@ConfigurationProperties(prefix = "spring.redis")
 public class ShiroConfigure {
 
     private String host;
+
     private int port;
     private String password;
     /**
@@ -45,6 +42,15 @@ public class ShiroConfigure {
      */
     private static final String AUTH_ACCESS = "authc";
 
+    /**
+     * 配置自定义realm
+     *
+     * @return
+     */
+    @Bean
+    public HrmRealm getRealm() {
+        return new HrmRealm();
+    }
 
     /**
      * 配置安全管理器
@@ -106,10 +112,7 @@ public class ShiroConfigure {
          */
         Map<String, String> filterMap = new LinkedHashMap<>();
         // 匿名访问
-        filterMap.put("/sys/login", ANON_ACCESS);
         filterMap.put("/authError", ANON_ACCESS);
-        // 人脸登录api直接放行
-        filterMap.put("/sys/faceLogin/**", ANON_ACCESS);
         //认证之后访问（登录之后可以访问）
         filterMap.put("/**", AUTH_ACCESS);
         //5.设置过滤器
@@ -159,6 +162,4 @@ public class ShiroConfigure {
         redisCacheManager.setRedisManager(redisManager());
         return redisCacheManager;
     }
-
-
 }

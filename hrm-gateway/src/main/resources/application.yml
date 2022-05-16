@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: hrm-gateway
+  redis:
+    host: 43.138.155.170
+    port: 6379
+    password: 123456
   cloud:
     nacos:
       server-addr: 43.138.155.170:80
@@ -39,3 +43,9 @@ spring:
           uri: lb://hrm-employee
           predicates: # 路由断言
             - Path=/employees/**
+        - id: hrm-social-security
+          uri: lb://hrm-social-security
+          predicates: # 路由断言
+            - Path=/social/**
+  banner:
+    location: banner.txt
