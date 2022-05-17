@@ -16,17 +16,8 @@
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
 <dependencies>
-    <dependency>
-        <groupId>net.sf.jasperreports</groupId>
-        <artifactId>jasperreports</artifactId>
-        <version>6.9.0</version>
-    </dependency>
-    <dependency>
-        <groupId>net.sf.jasperreports</groupId>
-        <artifactId>jasperreports-fonts</artifactId>
-        <version>6.9.0</version>
-    </dependency>
-    <!-- nacos客户端依赖包 -->
+
+<!-- nacos客户端依赖包 -->
     <dependency>
         <groupId>com.alibaba.cloud</groupId>
         <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>

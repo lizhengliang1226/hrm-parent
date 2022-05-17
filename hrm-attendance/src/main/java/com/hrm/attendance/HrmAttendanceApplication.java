@@ -1,12 +1,10 @@
-package com.hrm.social;
+package com.hrm.attendance;
 
-import com.hrm.social.client.EmployeeFeignClient;
-import com.hrm.social.client.SystemFeignClient;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Import;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 
@@ -18,12 +16,12 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
  * @date 2022/5/15-9:23
  */
 @SpringBootApplication(scanBasePackages = "com.hrm")
-@EntityScan(value = "com.hrm.domain.social")
+@EntityScan(value = "com.hrm.domain.attendance")
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {SystemFeignClient.class, EmployeeFeignClient.class})
 @Import({OpenEntityManagerInViewFilter.class})
-public class HrmSocialSecurityApplication {
+@MapperScan("com.hrm.attendance.mapper")
+public class HrmAttendanceApplication {
     public static void main(String[] args) {
-        SpringApplication.run(HrmSocialSecurityApplication.class);
+        SpringApplication.run(HrmAttendanceApplication.class);
     }
 }

@@ -79,9 +79,9 @@ public class SocialSecurityController extends BaseController {
 
     @GetMapping(value = "settings")
     @ApiOperation(value = "查询企业是否设置社保")
-    public Result findSettings() {
+    public Result<CompanySettings> findSettings() {
         final CompanySettings byId = companySettingsService.findById(companyId);
-        return new Result(ResultCode.SUCCESS, byId);
+        return new Result<>(ResultCode.SUCCESS, byId);
     }
 
     @PostMapping(value = "list")

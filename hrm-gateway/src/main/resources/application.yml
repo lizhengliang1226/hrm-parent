@@ -47,5 +47,13 @@ spring:
           uri: lb://hrm-social-security
           predicates: # 路由断言
             - Path=/social/**
+        - id: hrm-attendance-cfg
+          uri: lb://hrm-attendance
+          predicates: # 路由断言
+            - Path=/cfg/**
+        - id: hrm-attendance
+          uri: lb://hrm-attendance
+          predicates: # 路由断言
+            - Path=/attendances/**
   banner:
     location: banner.txt
