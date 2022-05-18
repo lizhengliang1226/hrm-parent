@@ -13,4 +13,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  */
 public interface AttendanceCompanySettingsDao
         extends JpaRepository<AttendanceCompanySettings, String>, JpaSpecificationExecutor<AttendanceCompanySettings> {
+
 }

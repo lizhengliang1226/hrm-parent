@@ -75,10 +75,12 @@ public class AttendanceServiceImpl implements AttendanceService {
 		final PageResult<AtteItemBO> listPageResult = new PageResult<>();
 		listPageResult.setTotal(users.getTotalElements());
 		listPageResult.setRows(list);
-		Map map = new HashMap();
+		Map<String, Object> map = new HashMap();
 		map.put("data", listPageResult);
-		map.put("tobeTaskCount", 0);
+		map.put("tobeTaskCount", 11);
 		map.put("monthOfReport", dataMonth.substring(4));
+		map.put("days", DateUtils.getMonthDays(dataMonth, DatePattern.SIMPLE_MONTH_PATTERN));
+		map.put("dataMonth", dataMonth);
 		return map;
 	}
 
@@ -106,10 +108,17 @@ public class AttendanceServiceImpl implements AttendanceService {
 		for (User user : users) {
 			ArchiveMonthlyInfo info = new ArchiveMonthlyInfo(user);
 			//统计每个用户的考勤记录
-			Map map = attendanceDao.statisticalByUser(user.getId(), atteDate + "%");
+			Map<String, Object> map = attendanceDao.statisticalByUser(user.getId(), atteDate + "%");
 			info.setStatisData(map);
 			list.add(info);
 		}
 		return list;
+	}
+
+	@Override
+	public void newReport(String yearMonth, String companyId) {
+		AttendanceCompanySettings attendanceCompanySettings = attendanceCompanySettingsDao.findById(companyId).get();
+		attendanceCompanySettings.setDataMonth(yearMonth);
+		attendanceCompanySettingsDao.save(attendanceCompanySettings);
 	}
 }

@@ -1,6 +1,7 @@
 package com.hrm.domain.attendance.entity;
 
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.hrm.domain.attendance.base.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.Map;
 /**
  * 考勤归档信息详情表
  */
+@TableName("atte_archive_monthly_info")
 @Entity
 @EqualsAndHashCode(callSuper = true)
 @Table(name = "atte_archive_monthly_info")
@@ -33,7 +35,7 @@ public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
 
     private String workNumber;
     private String mobile;
-    private String atteSolution;
+//    private String atteSolution;
 
     private String department;
     private String workCity;
@@ -120,6 +122,10 @@ public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
      * 计薪天数（正式）
      */
     private String salaryOfficialDays;
+    /**
+     * 归档日期
+     */
+    private String archiveDate;
 
 
     public ArchiveMonthlyInfo(User user) {
@@ -131,7 +137,7 @@ public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
     }
 
 
-    public void setStatisData(Map map) {
+    public void setStatisData(Map<String, Object> map) {
         // 正常旷工迟到早退事假调休
         this.normalDays = (String) map.get("at1").toString();
         this.absenceDays = (String) map.get("at2").toString();

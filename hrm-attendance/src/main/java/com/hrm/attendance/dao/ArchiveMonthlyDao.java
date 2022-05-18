@@ -27,4 +27,8 @@ public interface ArchiveMonthlyDao
     List<ArchiveMonthly> findByCompanyIdAndArchiveYear(String companyId, String archiveYear);
 
 
+    List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndArchiveMonth(String companyId, String substring, String substring1);
+
+
+    List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndDepartmentId(String companyId, String year, String departmentId);
 }

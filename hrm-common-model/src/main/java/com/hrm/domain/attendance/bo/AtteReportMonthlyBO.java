@@ -229,7 +229,7 @@ public class AtteReportMonthlyBO implements Serializable {
     /**
      * 考勤方案
      */
-    private String atteSolution;
+//    private String atteSolution;
 
     /**
      * 工作城市

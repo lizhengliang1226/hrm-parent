@@ -93,6 +93,10 @@ public enum AttendanceStatusEnum {
      */
     RETROACTIVE(20, "补签"),
     /**
+     * 未打卡
+     */
+    NOT_CLOCK(23, "未打卡"),
+    /**
      * 休息
      */
     REST(21, "休息");

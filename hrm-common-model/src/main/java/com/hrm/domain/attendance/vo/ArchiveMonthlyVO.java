@@ -18,7 +18,7 @@ public class ArchiveMonthlyVO {
     /**
      * 总人数
      */
-    private String totalNumber;
+    private Integer totalNumber;
 
     /**
      * 全勤人数

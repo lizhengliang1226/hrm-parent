@@ -78,7 +78,7 @@ public class DepartmentController extends BaseController {
 
     @GetMapping(value = "department", name = "FIND_DEPT_LIST_API")
     @ApiOperation(value = "获取某个企业的部门列表")
-    public Result findAll() {
+    public Result<DeptListResult> findAll() {
         //暂时都用1企业，之后会改
         final List<Department> all = departmentService.findAll(companyId);
         DeptListResult deptListResult = new DeptListResult(companyService.findById(companyId), all);

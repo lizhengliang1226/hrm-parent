@@ -30,14 +30,20 @@ public interface AttendanceService {
 	 */
 	public void editAtte(Attendance attendance);
 
-	/**
-	 * 查询考勤归档数据
-	 *
-	 * @param atteDate
-	 * @param companyId
-	 * @return
-	 */
-	public List<ArchiveMonthlyInfo> getReports(String atteDate, String companyId);
+    /**
+     * 查询考勤归档数据
+     *
+     * @param atteDate
+     * @param companyId
+     * @return
+     */
+    public List<ArchiveMonthlyInfo> getReports(String atteDate, String companyId);
 
-
+    /**
+     * 新建某年某月某家企业的考勤报表设置信息
+     *
+     * @param yearMonth
+     * @param companyId
+     */
+    void newReport(String yearMonth, String companyId);
 }

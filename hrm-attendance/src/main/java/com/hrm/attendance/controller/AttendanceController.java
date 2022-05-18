@@ -12,6 +12,7 @@ import com.hrm.common.entity.ResultCode;
 import com.hrm.common.utils.DateUtils;
 import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.Attendance;
+import com.hrm.domain.attendance.vo.ArchiveMonthlyVO;
 import com.hrm.domain.attendance.vo.AtteUploadVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -100,6 +101,34 @@ public class AttendanceController extends BaseController {
         return new Result(ResultCode.SUCCESS);
     }
 
+    @GetMapping("newReports")
+    @ApiOperation(value = "新建考勤报表数据")
+    public Result newAtteReportData(String atteDate) throws Exception {
+        attendanceService.newReport(atteDate, companyId);
+        return new Result(ResultCode.SUCCESS);
+    }
+
+    @GetMapping("reports/year")
+    @ApiOperation(value = "查询考勤历史归档数据")
+    public Result atteHistoryArchiveData(String departmentId, String year) throws Exception {
+        List<ArchiveMonthlyVO> list = archiveService.findAtteHistoryData(departmentId, year, companyId);
+        return new Result(ResultCode.SUCCESS, list);
+    }
+
+    @PostMapping("reports/{id}")
+    @ApiOperation(value = "查询考勤历史归档详情数据")
+    public Result atteHistoryArchiveDetailData(@PathVariable String id) throws Exception {
+        List<ArchiveMonthlyInfo> list = archiveService.findAtteHistoryDetailData(id);
+        return new Result(ResultCode.SUCCESS, list);
+    }
+
+    @GetMapping("archive/{userId}/{yearMonth}")
+    @ApiOperation(value = "根据用户id和月份查询考勤明细")
+    public Result userAtteHistoryArchiveDetailData(@PathVariable String userId, @PathVariable String yearMonth) throws Exception {
+        ArchiveMonthlyInfo archive = archiveService.findUserMonthlyDetail(userId, yearMonth);
+        return new Result(ResultCode.SUCCESS, archive);
+    }
+
     @GetMapping("aaa")
     @ApiOperation(value = "生成考勤数据")
     public Result getaaage() throws IOException, ParseException {
@@ -124,7 +153,7 @@ public class AttendanceController extends BaseController {
                     atteUploadVo.setOutTime(parse1);
                     atteUploadVo.setMobile("15112263614");
                     atteUploadVo.setUsername("lizhengliang");
-                    atteUploadVo.setWorkNumber("14756");
+                    atteUploadVo.setWorkNumber("2321");
                     list.add(atteUploadVo);
                 }
             }

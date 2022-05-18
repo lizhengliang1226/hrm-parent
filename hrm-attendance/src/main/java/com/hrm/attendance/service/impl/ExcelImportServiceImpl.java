@@ -127,12 +127,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
                 }
             }
-//            final Attendance ad = attendanceDao.findByUserIdAndDay(user.getId(), attendance.getDay());
-//            if (ad == null) {
-            attendance.setId(IdWorker.getIdStr());
-            attendance.setCreateDate(new Date());
-            atList.add(attendance);
-//            }
+            final Attendance ad = attendanceDao.findByUserIdAndDay(user.getId(), attendance.getDay());
+            if (ad == null) {
+                attendance.setId(IdWorker.getIdStr());
+                attendance.setCreateDate(new Date());
+                atList.add(attendance);
+            }
         }
 
         @Override

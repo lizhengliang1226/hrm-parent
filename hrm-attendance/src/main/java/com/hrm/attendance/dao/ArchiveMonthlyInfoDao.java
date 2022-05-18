@@ -19,4 +19,20 @@ public interface ArchiveMonthlyInfoDao
      * @return
      */
     List<ArchiveMonthlyInfo> findByAtteArchiveMonthlyId(String atteArchiveMonthlyId);
+
+    /**
+     * 根据父id删除多条归档记录
+     *
+     * @param id
+     */
+    void deleteByAtteArchiveMonthlyId(String id);
+
+    /**
+     * 根据userid和月份查询用户当月的考勤归档明细
+     *
+     * @param userId
+     * @param yearMonth
+     * @return
+     */
+    ArchiveMonthlyInfo findByUserIdAndArchiveDate(String userId, String yearMonth);
 }
