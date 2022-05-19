@@ -25,10 +25,10 @@ import java.util.Date;
 @AllArgsConstructor
 @DynamicInsert
 @DynamicUpdate
-public class ArchiveDetail implements Serializable {
+public class SocialSecrityArchiveDetail implements Serializable {
     private static final long serialVersionUID = -5571547188954376291L;
 
-    public ArchiveDetail(String userId, String mobile, String username, String departmentName) {
+    public SocialSecrityArchiveDetail(String userId, String mobile, String username, String departmentName) {
         this.userId = userId;
         this.mobile = mobile;
         this.username = username;

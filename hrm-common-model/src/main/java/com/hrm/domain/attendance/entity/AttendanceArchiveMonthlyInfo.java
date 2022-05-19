@@ -24,7 +24,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
+public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializable {
 
     @Id
     private String id;
@@ -128,7 +128,7 @@ public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
     private String archiveDate;
 
 
-    public ArchiveMonthlyInfo(User user) {
+    public AttendanceArchiveMonthlyInfo(User user) {
         this.userId = user.getId();
         this.name = user.getUsername();
         this.workNumber = user.getWorkNumber();
@@ -145,5 +145,7 @@ public class ArchiveMonthlyInfo extends BaseEntity implements Serializable {
         this.earlyTimes = (String) map.get("at4").toString();
         this.leaveDays = (String) map.get("at8").toString();
         this.dayOffLeaveDays = (String) map.get("at16").toString();
+        this.actualAtteOfficialDays = this.normalDays;
+        this.salaryOfficialDays = this.normalDays;
     }
 }

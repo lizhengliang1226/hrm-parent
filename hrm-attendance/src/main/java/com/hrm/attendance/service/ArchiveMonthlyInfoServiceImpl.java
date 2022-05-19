@@ -2,7 +2,7 @@ package com.hrm.attendance.service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hrm.attendance.mapper.ArchiveMonthlyInfoMapper;
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,5 +13,5 @@ import org.springframework.stereotype.Service;
  * @date 2022/5/18-15:58
  */
 @Service
-public class ArchiveMonthlyInfoServiceImpl extends ServiceImpl<ArchiveMonthlyInfoMapper, ArchiveMonthlyInfo> {
+public class ArchiveMonthlyInfoServiceImpl extends ServiceImpl<ArchiveMonthlyInfoMapper, AttendanceArchiveMonthlyInfo> {
 }

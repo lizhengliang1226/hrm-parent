@@ -8,7 +8,7 @@ import com.hrm.attendance.dao.UserDao;
 import com.hrm.attendance.service.ArchiveMonthlyInfoServiceImpl;
 import com.hrm.attendance.service.ArchiveService;
 import com.hrm.domain.attendance.entity.ArchiveMonthly;
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.User;
 import com.hrm.domain.attendance.vo.ArchiveMonthlyVO;
 import com.hrm.domain.company.Department;
@@ -99,13 +99,13 @@ public class ArchiveServiceImpl implements ArchiveService {
     }
 
     @Override
-    public List<ArchiveMonthlyInfo> findAtteHistoryDetailData(String id) {
+    public List<AttendanceArchiveMonthlyInfo> findAtteHistoryDetailData(String id) {
         return archiveMonthlyInfoDao.findByAtteArchiveMonthlyId(id);
     }
 
     @Override
-    public ArchiveMonthlyInfo findUserMonthlyDetail(String userId, String yearMonth) {
-        final ArchiveMonthlyInfo byUserIdAndArchiveDate = archiveMonthlyInfoDao.findByUserIdAndArchiveDate(userId, yearMonth);
+    public AttendanceArchiveMonthlyInfo findUserMonthlyDetail(String userId, String yearMonth) {
+        final AttendanceArchiveMonthlyInfo byUserIdAndArchiveDate = archiveMonthlyInfoDao.findByUserIdAndArchiveDate(userId, yearMonth);
         return byUserIdAndArchiveDate;
     }
 
@@ -124,23 +124,24 @@ public class ArchiveServiceImpl implements ArchiveService {
         final List<Department> depts = companyFeignClient.findAll().getData().getDepts();
         for (Department dept : depts) {
             ArchiveMonthly archiveMonthly = buildArchiveMonthlyData(archiveDate, companyId, users, dept.getId());
-            final List<ArchiveMonthlyInfo> amiList = buildArchiveMonthlyInfoData(archiveDate, archiveMonthly, dept.getId(), companyId);
+            final List<AttendanceArchiveMonthlyInfo> amiList = buildArchiveMonthlyInfoData(archiveDate, archiveMonthly, dept.getId(), companyId);
             amisImpl.saveBatch(amiList);
             atteArchiveMonthlyDao.save(archiveMonthly);
         }
     }
 
-    private List<ArchiveMonthlyInfo> buildArchiveMonthlyInfoData(String archiveDate,
-                                                                 ArchiveMonthly archiveMonthly,
-                                                                 String departmentId,
-                                                                 String companyId) {
-        List<ArchiveMonthlyInfo> amiList = new ArrayList<>(64);
+    private List<AttendanceArchiveMonthlyInfo> buildArchiveMonthlyInfoData(String archiveDate,
+                                                                           ArchiveMonthly archiveMonthly,
+                                                                           String departmentId,
+                                                                           String companyId) {
+        List<AttendanceArchiveMonthlyInfo> amiList = new ArrayList<>(64);
         //2.保存归档明细表数据
         final List<User> deptUsers = userDao.findByCompanyIdAndDepartmentId(companyId, departmentId);
         for (User user : deptUsers) {
-            ArchiveMonthlyInfo info = new ArchiveMonthlyInfo(user);
+            AttendanceArchiveMonthlyInfo info = new AttendanceArchiveMonthlyInfo(user);
             //统计每个用户的考勤记录
             Map map = attendanceDao.statisticalByUser(user.getId(), archiveDate + "%");
+            info.setSalaryStandards("通用标准");
             info.setStatisData(map);
             info.setId(IdWorker.getIdStr());
             info.setAtteArchiveMonthlyId(archiveMonthly.getId());

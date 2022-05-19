@@ -2,7 +2,7 @@ package com.hrm.social.service;
 
 
 import com.hrm.domain.social.Archive;
-import com.hrm.domain.social.ArchiveDetail;
+import com.hrm.domain.social.SocialSecrityArchiveDetail;
 
 import java.util.List;
 
@@ -18,23 +18,23 @@ public interface ArchiveService {
 	 */
 	public Archive findArchive(String companyId, String yearMonth);
 
-	/**
-	 * 根据归档历史id,查询归档明细
-	 *
-	 * @param id
-	 * @return
-	 */
-	public List<ArchiveDetail> findAllDetailByArchiveId(String id);
+    /**
+     * 根据归档历史id,查询归档明细
+     *
+     * @param id
+     * @return
+     */
+    public List<SocialSecrityArchiveDetail> findAllDetailByArchiveId(String id);
 
-	/**
-	 * 获取当月归档信息
-	 *
-	 * @param yearMonth
-	 * @param companyId
-	 * @return
-	 * @throws Exception
-	 */
-	public List<ArchiveDetail> getReports(String yearMonth, String companyId) throws Exception;
+    /**
+     * 获取当月归档信息
+     *
+     * @param yearMonth
+     * @param companyId
+     * @return
+     * @throws Exception
+     */
+    public List<SocialSecrityArchiveDetail> getReports(String yearMonth, String companyId) throws Exception;
 
 
 	/**
@@ -55,12 +55,12 @@ public interface ArchiveService {
 	 */
 	List<Archive> findArchiveByYear(String year, String companyId);
 
-	/**
-	 * 根据用户id查询某年月的归档明细
-	 *
-	 * @param userId
-	 * @param yearMonth
-	 * @return
-	 */
-	ArchiveDetail findUserArchiveDetail(String userId, String yearMonth);
+    /**
+     * 根据用户id查询某年月的归档明细
+     *
+     * @param userId
+     * @param yearMonth
+     * @return
+     */
+    SocialSecrityArchiveDetail findUserArchiveDetail(String userId, String yearMonth);
 }

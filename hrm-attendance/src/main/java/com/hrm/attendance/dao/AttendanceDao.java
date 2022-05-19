@@ -48,6 +48,7 @@ public interface AttendanceDao extends CrudRepository<Attendance, String>, JpaRe
             "       COUNT(CASE WHEN adt_status=4 THEN 1 END) at4," +
             "       COUNT(CASE WHEN adt_status=8 THEN 1 END) at8," +
             "       COUNT(CASE WHEN adt_status=16 THEN 1 END) at16" +
+
             "       FROM atte_attendance WHERE  user_id=?1 AND DAY LIKE ?2", nativeQuery = true)
     Map<String, Object> statisticalByUser(String id, String s);
 

@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.hrm.common.entity.Result;
 import com.hrm.domain.employee.UserCompanyPersonal;
 import com.hrm.domain.social.Archive;
-import com.hrm.domain.social.ArchiveDetail;
 import com.hrm.domain.social.CityPaymentItem;
+import com.hrm.domain.social.SocialSecrityArchiveDetail;
 import com.hrm.domain.social.UserSocialSecurity;
 import com.hrm.social.client.EmployeeFeignClient;
 import com.hrm.social.dao.ArchiveDao;
@@ -46,22 +46,22 @@ public class ArchiveServiceImpl implements ArchiveService {
     }
 
     @Override
-    public List<ArchiveDetail> findAllDetailByArchiveId(String id) {
+    public List<SocialSecrityArchiveDetail> findAllDetailByArchiveId(String id) {
         return archiveDetailDao.findByArchiveId(id);
     }
 
     @Override
-    public List<ArchiveDetail> getReports(String yearMonth, String companyId) throws Exception {
+    public List<SocialSecrityArchiveDetail> getReports(String yearMonth, String companyId) throws Exception {
         //查询用户的社保列表 (用户和基本社保数据)
         Page<Map> userSocialSecurityItemPage = userSocialSecurityDao.findPage(companyId, null);
-        List<ArchiveDetail> list = new ArrayList<>();
+        List<SocialSecrityArchiveDetail> list = new ArrayList<>();
         for (Map map : userSocialSecurityItemPage) {
             String userId = (String) map.get("id");
             log.info(userId);
             String mobile = (String) map.get("mobile");
             String username = (String) map.get("username");
             String departmentName = (String) map.get("departmentName");
-            ArchiveDetail vo = new ArchiveDetail(userId, mobile, username, departmentName);
+            SocialSecrityArchiveDetail vo = new SocialSecrityArchiveDetail(userId, mobile, username, departmentName);
             vo.setTimeOfEntry((Date) map.get("timeOfEntry"));
             //获取个人信息
             Result personalResult = employeeFeignClient.findPersonalInfo(vo.getUserId());
@@ -81,7 +81,7 @@ public class ArchiveServiceImpl implements ArchiveService {
 
     }
 
-    private void getOtherData(ArchiveDetail vo, String yearMonth) {
+    private void getOtherData(SocialSecrityArchiveDetail vo, String yearMonth) {
         //养老保险、医疗保险、失业保险、工伤保险和生育保险
         /**
          * 1、在职期间交纳了社保养老保险金的职工，在退休之后是可按月领取企业退休职工养老金的。
@@ -102,7 +102,7 @@ public class ArchiveServiceImpl implements ArchiveService {
      * @param vo
      * @param yearMonth
      */
-    private void getSocialSecurityData(ArchiveDetail vo, String yearMonth) {
+    private void getSocialSecurityData(SocialSecrityArchiveDetail vo, String yearMonth) {
         // 查询用户社保信息
         UserSocialSecurity userSocialSecurity = userSocialService.findById(vo.getUserId());
         if (userSocialSecurity == null) {
@@ -148,15 +148,19 @@ public class ArchiveServiceImpl implements ArchiveService {
     @Override
     public void archive(String yearMonth, String companyId) throws Exception {
         //1.查询归档明细数据
-        List<ArchiveDetail> archiveDetails = getReports(yearMonth, companyId);
+        List<SocialSecrityArchiveDetail> socialSecrityArchiveDetails = getReports(yearMonth, companyId);
         //1.1 计算当月,企业与员工支出的所有社保金额
         BigDecimal enterMoney = new BigDecimal(0);
         BigDecimal personMoney = new BigDecimal(0);
-        for (ArchiveDetail archiveDetail : archiveDetails) {
-            BigDecimal t1 = archiveDetail.getProvidentFundEnterprises() == null ? new BigDecimal(0) : archiveDetail.getProvidentFundEnterprises();
-            BigDecimal t2 = archiveDetail.getSocialSecurityEnterprise() == null ? new BigDecimal(0) : archiveDetail.getSocialSecurityEnterprise();
-            BigDecimal t3 = archiveDetail.getProvidentFundIndividual() == null ? new BigDecimal(0) : archiveDetail.getProvidentFundIndividual();
-            BigDecimal t4 = archiveDetail.getSocialSecurityIndividual() == null ? new BigDecimal(0) : archiveDetail.getSocialSecurityIndividual();
+        for (SocialSecrityArchiveDetail socialSecrityArchiveDetail : socialSecrityArchiveDetails) {
+            BigDecimal t1 = socialSecrityArchiveDetail.getProvidentFundEnterprises() == null ? new BigDecimal(
+                    0) : socialSecrityArchiveDetail.getProvidentFundEnterprises();
+            BigDecimal t2 = socialSecrityArchiveDetail.getSocialSecurityEnterprise() == null ? new BigDecimal(
+                    0) : socialSecrityArchiveDetail.getSocialSecurityEnterprise();
+            BigDecimal t3 = socialSecrityArchiveDetail.getProvidentFundIndividual() == null ? new BigDecimal(
+                    0) : socialSecrityArchiveDetail.getProvidentFundIndividual();
+            BigDecimal t4 = socialSecrityArchiveDetail.getSocialSecurityIndividual() == null ? new BigDecimal(
+                    0) : socialSecrityArchiveDetail.getSocialSecurityIndividual();
             enterMoney = enterMoney.add(t1).add(t2);
             personMoney = enterMoney.add(t3).add(t4);
         }
@@ -181,11 +185,11 @@ public class ArchiveServiceImpl implements ArchiveService {
         // 缴纳总金额
         archive.setTotal(enterMoney.add(personMoney));
         archiveDao.save(archive);
-        for (ArchiveDetail archiveDetail : archiveDetails) {
-            archiveDetail.setId(IdWorker.getIdStr());
-            archiveDetail.setArchiveId(archive.getId());
-            archiveDetail.setYearsMonth(yearMonth);
-            archiveDetailDao.save(archiveDetail);
+        for (SocialSecrityArchiveDetail socialSecrityArchiveDetail : socialSecrityArchiveDetails) {
+            socialSecrityArchiveDetail.setId(IdWorker.getIdStr());
+            socialSecrityArchiveDetail.setArchiveId(archive.getId());
+            socialSecrityArchiveDetail.setYearsMonth(yearMonth);
+            archiveDetailDao.save(socialSecrityArchiveDetail);
         }
     }
 
@@ -195,7 +199,7 @@ public class ArchiveServiceImpl implements ArchiveService {
     }
 
     @Override
-    public ArchiveDetail findUserArchiveDetail(String userId, String yearMonth) {
+    public SocialSecrityArchiveDetail findUserArchiveDetail(String userId, String yearMonth) {
         return archiveDetailDao.findByUserIdAndYearsMonth(userId, yearMonth);
     }
 

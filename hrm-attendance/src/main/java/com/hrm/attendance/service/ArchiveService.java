@@ -1,7 +1,7 @@
 package com.hrm.attendance.service;
 
 
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.vo.ArchiveMonthlyVO;
 
 import java.util.List;
@@ -25,20 +25,20 @@ public interface ArchiveService {
 	 */
 	List<ArchiveMonthlyVO> findAtteHistoryData(String departmentId, String year, String companyId);
 
-	/**
-	 * 根据主档id查询所有的子档
-	 *
-	 * @param id
-	 * @return
-	 */
-	List<ArchiveMonthlyInfo> findAtteHistoryDetailData(String id);
+    /**
+     * 根据主档id查询所有的子档
+     *
+     * @param id
+     * @return
+     */
+    List<AttendanceArchiveMonthlyInfo> findAtteHistoryDetailData(String id);
 
-	/**
-	 * 根据id和年份查询归档明细
-	 *
-	 * @param userId
-	 * @param yearMonth
-	 * @return
-	 */
-	ArchiveMonthlyInfo findUserMonthlyDetail(String userId, String yearMonth);
+    /**
+     * 根据id和年份查询归档明细
+     *
+     * @param userId
+     * @param yearMonth
+     * @return
+     */
+    AttendanceArchiveMonthlyInfo findUserMonthlyDetail(String userId, String yearMonth);
 }

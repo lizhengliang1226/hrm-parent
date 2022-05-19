@@ -1,8 +1,8 @@
 package com.hrm.attendance.service;
 
 
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.Attendance;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 
 import java.text.ParseException;
 import java.util.List;
@@ -30,14 +30,14 @@ public interface AttendanceService {
 	 */
 	public void editAtte(Attendance attendance);
 
-    /**
-     * 查询考勤归档数据
-     *
-     * @param atteDate
-     * @param companyId
-     * @return
-     */
-    public List<ArchiveMonthlyInfo> getReports(String atteDate, String companyId);
+	/**
+	 * 查询考勤归档数据
+	 *
+	 * @param atteDate
+	 * @param companyId
+	 * @return
+	 */
+	public List<AttendanceArchiveMonthlyInfo> getReports(String atteDate, String companyId);
 
     /**
      * 新建某年某月某家企业的考勤报表设置信息

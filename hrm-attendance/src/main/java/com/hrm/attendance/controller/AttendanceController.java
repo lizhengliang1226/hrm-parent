@@ -10,8 +10,8 @@ import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.utils.DateUtils;
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.Attendance;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.vo.ArchiveMonthlyVO;
 import com.hrm.domain.attendance.vo.AtteUploadVo;
 import io.swagger.annotations.Api;
@@ -90,7 +90,7 @@ public class AttendanceController extends BaseController {
     @GetMapping("reports")
     @ApiOperation(value = "查询考勤归档数据")
     public Result findAttendanceArchive(String atteDate) throws Exception {
-        List<ArchiveMonthlyInfo> list = attendanceService.getReports(atteDate, companyId);
+        List<AttendanceArchiveMonthlyInfo> list = attendanceService.getReports(atteDate, companyId);
         return new Result(ResultCode.SUCCESS, list);
     }
 
@@ -118,14 +118,14 @@ public class AttendanceController extends BaseController {
     @PostMapping("reports/{id}")
     @ApiOperation(value = "查询考勤历史归档详情数据")
     public Result atteHistoryArchiveDetailData(@PathVariable String id) throws Exception {
-        List<ArchiveMonthlyInfo> list = archiveService.findAtteHistoryDetailData(id);
+        List<AttendanceArchiveMonthlyInfo> list = archiveService.findAtteHistoryDetailData(id);
         return new Result(ResultCode.SUCCESS, list);
     }
 
     @GetMapping("archive/{userId}/{yearMonth}")
     @ApiOperation(value = "根据用户id和月份查询考勤明细")
     public Result userAtteHistoryArchiveDetailData(@PathVariable String userId, @PathVariable String yearMonth) throws Exception {
-        ArchiveMonthlyInfo archive = archiveService.findUserMonthlyDetail(userId, yearMonth);
+        AttendanceArchiveMonthlyInfo archive = archiveService.findUserMonthlyDetail(userId, yearMonth);
         return new Result(ResultCode.SUCCESS, archive);
     }
 

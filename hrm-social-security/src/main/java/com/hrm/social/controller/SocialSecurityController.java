@@ -121,7 +121,7 @@ public class SocialSecurityController extends BaseController {
 
     @GetMapping(value = "/{id}")
     @ApiOperation(value = "查询用户社保数据")
-    public Result findUserSocialInfo(@PathVariable(value = "id") String userId) {
+    public Result<Map<String, Object>> findUserSocialInfo(@PathVariable(value = "id") String userId) {
         Map map = new HashMap(2);
         // 用户信息
         final Object user = systemFeignClient.findById(userId).getData();
@@ -139,7 +139,7 @@ public class SocialSecurityController extends BaseController {
         return new Result(ResultCode.SUCCESS, list);
     }
 
-    @PutMapping(value = "/{id}")
+    @PutMapping
     @ApiOperation(value = "保存或更新用户社保数据")
     public Result saveUserSocialInfo(@RequestBody UserSocialSecurity userSocialInfo) {
         userSocialService.save(userSocialInfo);
@@ -172,7 +172,7 @@ public class SocialSecurityController extends BaseController {
     @GetMapping(value = "historys/{yearMonth}")
     @ApiOperation(value = "查询当月或历史员工社保信息")
     public Result historyDetail(@PathVariable String yearMonth, int opType) throws Exception {
-        List<ArchiveDetail> list = new ArrayList<>(16);
+        List<SocialSecrityArchiveDetail> list = new ArrayList<>(16);
         if (opType == 1) {
             // 未归档，查询当月
             list = archiveService.getReports(yearMonth, companyId);
@@ -215,9 +215,9 @@ public class SocialSecurityController extends BaseController {
 
     @GetMapping(value = "historys/data")
     @ApiOperation(value = "根据用户id和年月查询归档明细")
-    public Result userHistoryArchiveData(String userId, String yearMonth) throws Exception {
-        ArchiveDetail archiveDetail = archiveService.findUserArchiveDetail(userId, yearMonth);
-        return new Result(ResultCode.SUCCESS, archiveDetail);
+    public Result userHistoryArchiveData(@RequestBody Map<String, String> map) throws Exception {
+        SocialSecrityArchiveDetail socialSecrityArchiveDetail = archiveService.findUserArchiveDetail(map.get("userId"), map.get("yearMonth"));
+        return new Result(ResultCode.SUCCESS, socialSecrityArchiveDetail);
     }
 
     @GetMapping(value = "updateSocialContributions")

@@ -7,8 +7,8 @@ import com.hrm.attendance.service.AttendanceService;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.DateUtils;
 import com.hrm.domain.attendance.bo.AtteItemBO;
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.Attendance;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.AttendanceCompanySettings;
 import com.hrm.domain.attendance.entity.User;
 import com.lzl.IdWorker;
@@ -100,13 +100,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 
 	@Override
-	public List<ArchiveMonthlyInfo> getReports(String atteDate, String companyId) {
+	public List<AttendanceArchiveMonthlyInfo> getReports(String atteDate, String companyId) {
 		// 查询所有企业用户
 		List<User> users = userDao.findByCompanyId(companyId);
 		//2.循环遍历用户列表,统计每个用户当月的考勤记录
-		List<ArchiveMonthlyInfo> list = new ArrayList<>();
+		List<AttendanceArchiveMonthlyInfo> list = new ArrayList<>();
 		for (User user : users) {
-			ArchiveMonthlyInfo info = new ArchiveMonthlyInfo(user);
+			AttendanceArchiveMonthlyInfo info = new AttendanceArchiveMonthlyInfo(user);
 			//统计每个用户的考勤记录
 			Map<String, Object> map = attendanceDao.statisticalByUser(user.getId(), atteDate + "%");
 			info.setStatisData(map);

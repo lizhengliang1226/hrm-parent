@@ -1,7 +1,7 @@
 package com.hrm.attendance.dao;
 
 
-import com.hrm.domain.attendance.entity.ArchiveMonthlyInfo;
+import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
@@ -9,7 +9,8 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface ArchiveMonthlyInfoDao
-        extends CrudRepository<ArchiveMonthlyInfo, String>, JpaRepository<ArchiveMonthlyInfo, String>, JpaSpecificationExecutor<ArchiveMonthlyInfo> {
+        extends CrudRepository<AttendanceArchiveMonthlyInfo, String>, JpaRepository<AttendanceArchiveMonthlyInfo, String>,
+        JpaSpecificationExecutor<AttendanceArchiveMonthlyInfo> {
 
 
     /**
@@ -18,7 +19,7 @@ public interface ArchiveMonthlyInfoDao
      * @param atteArchiveMonthlyId
      * @return
      */
-    List<ArchiveMonthlyInfo> findByAtteArchiveMonthlyId(String atteArchiveMonthlyId);
+    List<AttendanceArchiveMonthlyInfo> findByAtteArchiveMonthlyId(String atteArchiveMonthlyId);
 
     /**
      * 根据父id删除多条归档记录
@@ -34,5 +35,5 @@ public interface ArchiveMonthlyInfoDao
      * @param yearMonth
      * @return
      */
-    ArchiveMonthlyInfo findByUserIdAndArchiveDate(String userId, String yearMonth);
+    AttendanceArchiveMonthlyInfo findByUserIdAndArchiveDate(String userId, String yearMonth);
 }

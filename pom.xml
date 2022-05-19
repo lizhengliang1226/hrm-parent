@@ -11,6 +11,7 @@
         <module>hrm-employee</module>
         <module>hrm-social-security</module>
         <module>hrm-attendance</module>
+        <module>hrm-salary</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>

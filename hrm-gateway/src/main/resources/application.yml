@@ -55,5 +55,9 @@ spring:
           uri: lb://hrm-attendance
           predicates: # 路由断言
             - Path=/attendances/**
+        - id: hrm-salary
+          uri: lb://hrm-salary
+          predicates: # 路由断言
+            - Path=/salary/**
   banner:
     location: banner.txt

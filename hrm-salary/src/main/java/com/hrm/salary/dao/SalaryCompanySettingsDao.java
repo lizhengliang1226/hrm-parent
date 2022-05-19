@@ -1,0 +1,14 @@
+package com.hrm.salary.dao;
+
+
+import com.hrm.domain.salary.SalaryCompanySettings;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+/**
+ * 自定义dao接口继承
+ * JpaRepository<实体类，主键>
+ * JpaSpecificationExecutor<实体类>
+ */
+public interface SalaryCompanySettingsDao extends JpaRepository<SalaryCompanySettings, String>, JpaSpecificationExecutor<SalaryCompanySettings> {
+}
