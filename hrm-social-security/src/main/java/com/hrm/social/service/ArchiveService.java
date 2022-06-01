@@ -1,6 +1,7 @@
 package com.hrm.social.service;
 
 
+import com.hrm.common.entity.PageResult;
 import com.hrm.domain.social.Archive;
 import com.hrm.domain.social.SocialSecrityArchiveDetail;
 
@@ -24,7 +25,7 @@ public interface ArchiveService {
      * @param id
      * @return
      */
-    public List<SocialSecrityArchiveDetail> findAllDetailByArchiveId(String id);
+    public PageResult<SocialSecrityArchiveDetail> findAllDetailByArchiveId(String id, Integer page, Integer pageSize);
 
     /**
      * 获取当月归档信息
@@ -34,7 +35,7 @@ public interface ArchiveService {
      * @return
      * @throws Exception
      */
-    public List<SocialSecrityArchiveDetail> getReports(String yearMonth, String companyId) throws Exception;
+    public PageResult<SocialSecrityArchiveDetail> getReports(String yearMonth, String companyId, Integer page, Integer pageSize) throws Exception;
 
 
 	/**

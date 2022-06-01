@@ -4,6 +4,8 @@ package com.hrm.salary.dao;
 import com.hrm.domain.salary.SalaryArchiveDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -26,5 +28,7 @@ public interface ArchiveDetailDao extends JpaRepository<SalaryArchiveDetail, Str
      *
      * @param id
      */
+    @Modifying
+    @Query("delete from SalaryArchiveDetail where archiveId=?1")
     void deleteByArchiveId(String id);
 }

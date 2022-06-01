@@ -13,3 +13,7 @@ spring:
         order_updates: true
   banner:
     location: banner.txt
+social-month-template-path: "/template/社保月度报表导出模板.xlsx"
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

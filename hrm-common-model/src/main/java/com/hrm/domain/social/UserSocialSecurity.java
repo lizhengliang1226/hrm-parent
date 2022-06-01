@@ -121,6 +121,12 @@ public class UserSocialSecurity implements Serializable {
      * 公积金城市
      */
     private String providentFundCity;
+    /**
+     * 社保企业缴纳
+     */
     private BigDecimal socialSecurityCompanyBase;
+    /**
+     * 社保个人缴纳
+     */
     private BigDecimal socialSecurityPersonalBase;
 }

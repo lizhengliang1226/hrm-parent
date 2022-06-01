@@ -34,4 +34,9 @@ public class ResignationServiceImpl implements ResignationService {
     public EmployeeResignation findById(String userId) {
         return resignationDao.findByUserId(userId);
     }
+
+    @Override
+    public Integer findDepartureNum(String month, String companyId) {
+        return resignationDao.countOfDeparture(month + "%", companyId);
+    }
 }

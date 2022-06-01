@@ -1,5 +1,7 @@
 package com.hrm.domain.company;
 
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -22,12 +24,14 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "co_department")
+@TableName(value = "co_department")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SelectBeforeUpdate
 @DynamicInsert
 @DynamicUpdate
+@ExcelIgnoreUnannotated
 @ApiModel("部门实体类")
 public class Department implements Serializable {
     private static final long serialVersionUID = -9084332495284489553L;

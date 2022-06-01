@@ -122,5 +122,4 @@ public class AttendanceSettingsController extends BaseController {
         return new Result(ResultCode.SUCCESS);
     }
 
-
 }

@@ -1,28 +1,33 @@
 package com.hrm.social.controller;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.hrm.common.client.EmployeeFeignClient;
+import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.domain.social.*;
-import com.hrm.domain.system.City;
-import com.hrm.social.client.EmployeeFeignClient;
-import com.hrm.social.client.SystemFeignClient;
+import com.hrm.domain.social.vo.UserSocialSecuritySimpleVo;
 import com.hrm.social.service.ArchiveService;
 import com.hrm.social.service.CompanySettingsService;
 import com.hrm.social.service.PaymentItemService;
 import com.hrm.social.service.UserSocialService;
-import com.lzl.IdWorker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +51,8 @@ public class SocialSecurityController extends BaseController {
     private EmployeeFeignClient emFeignClient;
     private PaymentItemService paymentItemService;
     private ArchiveService archiveService;
+    @Value("${social-month-template-path}")
+    private String templateName;
 
     @Autowired
     public void setArchiveService(ArchiveService archiveService) {
@@ -77,6 +84,7 @@ public class SocialSecurityController extends BaseController {
         this.companySettingsService = companySettingsService;
     }
 
+    @RequiresPermissions("API_SOCIAL_MONTH_FIND")
     @GetMapping(value = "settings")
     @ApiOperation(value = "查询企业是否设置社保")
     public Result<CompanySettings> findSettings() {
@@ -87,11 +95,9 @@ public class SocialSecurityController extends BaseController {
     @PostMapping(value = "list")
     @ApiOperation(value = "查询企业员工的社保信息列表")
     public Result findSocialList(@RequestBody Map map) {
-        final Integer page = (Integer) map.get("page");
-        final Integer pageSize = (Integer) map.get("pageSize");
-        final Page<Map> all = userSocialService.findAll(page, pageSize, companyId);
-        PageResult res = new PageResult<>(all.getTotalElements(), all.getContent());
-        return new Result(ResultCode.SUCCESS, res);
+        map.put("companyId", companyId);
+        final PageResult<UserSocialSecuritySimpleVo> all = userSocialService.findAll(map);
+        return new Result(ResultCode.SUCCESS, all);
     }
 
     @PostMapping(value = "settings")
@@ -119,6 +125,7 @@ public class SocialSecurityController extends BaseController {
         return new Result(ResultCode.SUCCESS, map);
     }
 
+    @RequiresPermissions("API_SOCIAL_DETAIL_FIND")
     @GetMapping(value = "/{id}")
     @ApiOperation(value = "查询用户社保数据")
     public Result<Map<String, Object>> findUserSocialInfo(@PathVariable(value = "id") String userId) {
@@ -126,7 +133,8 @@ public class SocialSecurityController extends BaseController {
         // 用户信息
         final Object user = systemFeignClient.findById(userId).getData();
         // 用户社保信息
-        final UserSocialSecurity byId = userSocialService.findById(userId);
+        UserSocialSecurity byId = userSocialService.findById(userId);
+        byId.setUserId(userId);
         map.put("user", user);
         map.put("userSocialSecurity", byId);
         return new Result(ResultCode.SUCCESS, map);
@@ -139,6 +147,7 @@ public class SocialSecurityController extends BaseController {
         return new Result(ResultCode.SUCCESS, list);
     }
 
+    @RequiresPermissions("API_SOCIAL_DETAIL_UPDATE")
     @PutMapping
     @ApiOperation(value = "保存或更新用户社保数据")
     public Result saveUserSocialInfo(@RequestBody UserSocialSecurity userSocialInfo) {
@@ -149,38 +158,37 @@ public class SocialSecurityController extends BaseController {
     @ApiOperation(value = "导出员工社保信息月度报表")
     @GetMapping(value = "/export/{month}")
     public void export(@PathVariable String month, HttpServletResponse response) throws Exception {
-        //todo
-        //        // 获取月度报表数据
-////        List<EmployeeReportResult> list = userCompanyPersonalService.findMonthlyReport(companyId, month);
-//        // 准备表头数据
-//        Map<String, Object> map = new HashMap<>();
-//        map.put("month", month);
-//        // 模板位置
-////        Resource template = new ClassPathResource(templateName);
-//        // 设置响应数据格式为流
-//        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
-//        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-//        // 开始写入
-//        final WriteSheet sheet = EasyExcel.writerSheet().build();
-//        EasyExcel.write(response.getOutputStream(), EmployeeReportResult.class)
-//                 .withTemplate(template.getInputStream()).build()
-//                 .fill(map, sheet)
-//                 .fill(list, sheet)
-//                 .finish();
+        final PageResult<SocialSecrityArchiveDetail> reports = archiveService.getReports(month, companyId, null, null);
+        final List<SocialSecrityArchiveDetail> rows = reports.getRows();
+        // 准备表头数据
+        Map<String, Object> map = new HashMap<>();
+        map.put("month", month);
+        // 模板位置
+        Resource template = new ClassPathResource(templateName);
+        // 设置响应数据格式为流
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        // 开始写入
+        final WriteSheet sheet = EasyExcel.writerSheet().build();
+        EasyExcel.write(response.getOutputStream(), SocialSecrityArchiveDetail.class)
+                 .withTemplate(template.getInputStream()).build()
+                 .fill(map, sheet)
+                 .fill(rows, sheet)
+                 .finish();
     }
 
     @GetMapping(value = "historys/{yearMonth}")
     @ApiOperation(value = "查询当月或历史员工社保信息")
-    public Result historyDetail(@PathVariable String yearMonth, int opType) throws Exception {
-        List<SocialSecrityArchiveDetail> list = new ArrayList<>(16);
+    public Result historyDetail(@PathVariable String yearMonth, int opType, Integer page, Integer pagesize) throws Exception {
+        PageResult<SocialSecrityArchiveDetail> list = null;
         if (opType == 1) {
             // 未归档，查询当月
-            list = archiveService.getReports(yearMonth, companyId);
+            list = archiveService.getReports(yearMonth, companyId, page, pagesize);
         } else {
             // 已归档,查询归档信息
             final Archive archive = archiveService.findArchive(companyId, yearMonth);
             if (archive != null) {
-                list = archiveService.findAllDetailByArchiveId(archive.getId());
+                list = archiveService.findAllDetailByArchiveId(archive.getId(), page, pagesize);
             }
         }
         return new Result(ResultCode.SUCCESS, list);
@@ -207,7 +215,7 @@ public class SocialSecurityController extends BaseController {
     }
 
     @GetMapping(value = "historys/{year}/list")
-    @ApiOperation(value = "查询历史归档列表")
+    @ApiOperation(value = "查询历史归档主档列表")
     public Result historyArchiveList(@PathVariable String year) throws Exception {
         final List<Archive> archiveByYear = archiveService.findArchiveByYear(year, companyId);
         return new Result(ResultCode.SUCCESS, archiveByYear);
@@ -220,31 +228,11 @@ public class SocialSecurityController extends BaseController {
         return new Result(ResultCode.SUCCESS, socialSecrityArchiveDetail);
     }
 
-    @GetMapping(value = "updateSocialContributions")
-    @ApiOperation(value = "更新社保的缴纳比例")
-    public Result user() throws Exception {
-        final List<PaymentItem> all = paymentItemService.findAllPaymentItems();
-        final List<City> all1 = systemFeignClient.findAll().getData();
-        all1.forEach(city -> {
-            final String id = city.getId();
-            all.forEach(baoxian -> {
-                final String name = baoxian.getName();
-                final BigDecimal scaleCompany = baoxian.getScaleCompany();
-                final BigDecimal scalePersonal = baoxian.getScalePersonal();
-                final Boolean switchCompany = baoxian.getSwitchCompany();
-                final Boolean switchPersonal = baoxian.getSwitchPersonal();
-                final CityPaymentItem cityPaymentItem = new CityPaymentItem();
-                cityPaymentItem.setId(IdWorker.getIdStr());
-                cityPaymentItem.setCityId(id);
-                cityPaymentItem.setPaymentItemId(baoxian.getId());
-                cityPaymentItem.setSwitchCompany(switchCompany);
-                cityPaymentItem.setSwitchPersonal(switchPersonal);
-                cityPaymentItem.setScaleCompany(scaleCompany);
-                cityPaymentItem.setScalePersonal(scalePersonal);
-                cityPaymentItem.setName(name);
-                paymentItemService.saveCityPaymentItem(cityPaymentItem);
-            });
-        });
-        return new Result(ResultCode.SUCCESS);
+
+    @PostMapping(value = "import")
+    @ApiOperation(value = "批量保存社保数据")
+    public Result importSocial(@RequestParam MultipartFile file) throws Exception {
+        userSocialService.importSocialExcel(file, companyId);
+        return Result.SUCCESS();
     }
 }

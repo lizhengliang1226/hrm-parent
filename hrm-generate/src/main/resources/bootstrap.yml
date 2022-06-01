@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: hrm-generate # 服务名
+  profiles:
+    active: dev # 环境
+    group:
+      "dev": devDB,devRedis
+      "pro": devDB,devRedis
+  # nacos配置
+  cloud:
+    nacos:
+      config:
+        file-extension: yaml
+        server-addr: 43.138.155.170:80
+      discovery:
+        server-addr: 43.138.155.170:80

@@ -3,6 +3,8 @@ package com.hrm.employee.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.fastjson.JSON;
+import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
@@ -12,6 +14,7 @@ import com.hrm.domain.employee.*;
 import com.hrm.domain.employee.response.EmployeeReportResult;
 import com.hrm.employee.service.UserCompanyPersonalService;
 import com.hrm.employee.service.impl.*;
+import com.lzl.IdWorker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +61,14 @@ public class EmployeeController extends BaseController {
 
     private PositiveServiceImpl positiveServiceImpl;
 
-    private ArchiveSpecServiceImpl archiveServiceImpl;
+    private ArchiveServiceImpl archiveServiceImpl;
 
     @Value("${employee-month-template-path}")
     private String templateName;
     @Value("${employee-pdf-template-path}")
     private String pdfTemplateName;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 员工信息pdf报表导出
@@ -98,17 +105,21 @@ public class EmployeeController extends BaseController {
     @PutMapping(value = "/{id}/personalInfo")
     public Result savePersonalInfo(@PathVariable(name = "id") String uid, @RequestBody Map map) throws Exception {
         UserCompanyPersonal sourceInfo = BeanMapUtils.mapToBean(map, UserCompanyPersonal.class);
-        System.out.println(sourceInfo.getMobile());
-        System.out.println(sourceInfo.getUsername());
-        System.out.println(map);
+        log.info("{}", sourceInfo);
+        System.out.println(JSON.toJSONString(sourceInfo));
         if (sourceInfo == null) {
             sourceInfo = new UserCompanyPersonal();
         }
+
         sourceInfo.setUserId(uid);
         sourceInfo.setCompanyId(companyId);
         userCompanyPersonalService.save(sourceInfo);
+        redisTemplate.boundHashOps("userDetailList").put(uid, sourceInfo);
         return new Result(ResultCode.SUCCESS);
     }
+
+    @Autowired
+    private SystemFeignClient stemFeignClient;
 
     /**
      * 员工个人信息读取
@@ -234,14 +245,19 @@ public class EmployeeController extends BaseController {
      * 某个月的离职与入职人员列表
      * type: 1-全部 2-离职 3-入职
      */
-    @GetMapping(value = "/archives/{month}")
-    public Result archives(@PathVariable String month, @RequestParam Integer type) throws Exception {
+    @GetMapping(value = "/archives/{yearMonth}")
+    public Result archives(@PathVariable String yearMonth,
+                           @RequestParam Integer type,
+                           @RequestParam Integer page,
+                           @RequestParam Integer pagesize) throws Exception {
         //根据月份和类型查询对应的离职和入职人员列表信息
         if (type == 1) {
             // 查询该月全部
             // 获取月度报表数据
-            List<EmployeeReportResult> list = userCompanyPersonalService.findMonthlyReport(companyId, month);
-            return new Result(ResultCode.SUCCESS, list);
+            Page<Map> list = userCompanyPersonalService.findMonthlyReport(companyId, yearMonth.substring(0, 4) + "-" + yearMonth.substring(4), page,
+                                                                          pagesize);
+            PageResult<Map> pageResult = new PageResult<>(list.getTotalElements(), list.getContent());
+            return new Result(ResultCode.SUCCESS, pageResult);
         } else if (type == 2) {
             // 查询离职
         } else if (type == 3) {
@@ -255,34 +271,63 @@ public class EmployeeController extends BaseController {
     }
 
     /**
-     * 归档更新
+     * 点击归档，归档更新
      */
     @PutMapping(value = "/archives/{month}")
     public Result<Object> saveArchives(@PathVariable String month) throws Exception {
-        // TODO
+        final String month1 = month.substring(0, 4) + "-" + month.substring(4);
+        EmployeeArchive e1 = archiveServiceImpl.findByMonth(month);
+        // 查询总人数
+        Page<Map> list = userCompanyPersonalService.findMonthlyReport(companyId, month1, 1, 9999);
+        // 查询在职人数
+        final Integer onJob = userCompanyPersonalService.numOfJobStatus(companyId, month1, 1);
+        // 查询离职人数
+        Integer num = resignationServiceImpl.findDepartureNum(month1, companyId);
+        if (e1 != null) {
+            // 已归档，则将原归档覆盖
+            e1.setCompanyId(companyId);
+            e1.setDepartures(num);
+            e1.setTotals((int) list.getTotalElements());
+            e1.setPayrolls(onJob);
+            e1.setOpUser(username);
+            archiveServiceImpl.save(e1);
+        } else {
+            // 未归档新建归档
+            EmployeeArchive e = new EmployeeArchive();
+            e.setCompanyId(companyId);
+            e.setOpUser(username);
+            e.setDepartures(num);
+            e.setMonth(month);
+            e.setTotals((int) list.getTotalElements());
+            e.setPayrolls(onJob);
+            e.setId(IdWorker.getIdStr());
+            archiveServiceImpl.save(e);
+        }
         return new Result<>(ResultCode.SUCCESS);
     }
 
     /**
-     * 历史归档列表
+     * 历史归档主列表
      */
     @GetMapping(value = "/archives")
-    public Result<PageResult<EmployeeArchive>> findArchives(@RequestParam Integer pagesize,
-                                                            @RequestParam Integer page,
-                                                            @RequestParam String year) throws Exception {
-        Map<String, Object> map = new HashMap(10);
-        map.put("year", year);
-        map.put("companyId", companyId);
-        Page<EmployeeArchive> searchPage = archiveServiceImpl.findSearch(map, page, pagesize);
-        PageResult<EmployeeArchive> pr = new PageResult<>(searchPage.getTotalElements(), searchPage.getContent());
-        return new Result<PageResult<EmployeeArchive>>(ResultCode.SUCCESS, pr);
+    public Result findArchives(@RequestParam String year) throws Exception {
+        List<EmployeeArchive> searchPage = archiveServiceImpl.findSearch(year + "%", companyId);
+        return new Result<>(ResultCode.SUCCESS, searchPage);
     }
 
     @ApiOperation(value = "导出员工月度报表")
     @GetMapping(value = "/export/{month}")
     public void export(@PathVariable String month, HttpServletResponse response) throws Exception {
         // 获取月度报表数据
-        List<EmployeeReportResult> list = userCompanyPersonalService.findMonthlyReport(companyId, month);
+        Page<Map> list = userCompanyPersonalService.findMonthlyReport(companyId, month.substring(0, 4) + "-" + month.substring(4), null, null);
+        // 转换数据
+        List<EmployeeReportResult> list1 = new ArrayList<>();
+        for (Map map : list.getContent()) {
+            final EmployeeReportResult err = new EmployeeReportResult();
+            err.setMap(map);
+
+            list1.add(err);
+        }
         // 准备表头数据
         Map<String, Object> map = new HashMap<>();
         map.put("month", month);
@@ -293,10 +338,10 @@ public class EmployeeController extends BaseController {
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         // 开始写入
         final WriteSheet sheet = EasyExcel.writerSheet().build();
-        EasyExcel.write(response.getOutputStream(), EmployeeReportResult.class)
+        EasyExcel.write(response.getOutputStream(), Map.class)
                  .withTemplate(template.getInputStream()).build()
                  .fill(map, sheet)
-                 .fill(list, sheet)
+                 .fill(list1, sheet)
                  .finish();
     }
 
@@ -326,7 +371,7 @@ public class EmployeeController extends BaseController {
     }
 
     @Autowired
-    public void setArchiveService(ArchiveSpecServiceImpl archiveServiceImpl) {
+    public void setArchiveService(ArchiveServiceImpl archiveServiceImpl) {
         this.archiveServiceImpl = archiveServiceImpl;
     }
 }

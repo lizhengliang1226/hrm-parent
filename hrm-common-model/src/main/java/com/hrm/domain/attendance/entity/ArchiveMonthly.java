@@ -1,6 +1,7 @@
 package com.hrm.domain.attendance.entity;
 
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.hrm.domain.attendance.base.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Table(name = "atte_archive_monthly")
+@TableName(value = "atte_archive_monthly")
 @Data
 @Entity
 @NoArgsConstructor

@@ -10,7 +10,9 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import java.util.List;
 
 /**
- * @author itcast
+ * 归档主档dao
+ *
+ * @author 17314
  */
 public interface ArchiveMonthlyDao
         extends PagingAndSortingRepository<ArchiveMonthly, String>, CrudRepository<ArchiveMonthly, String>, JpaRepository<ArchiveMonthly, String>,
@@ -26,9 +28,23 @@ public interface ArchiveMonthlyDao
      */
     List<ArchiveMonthly> findByCompanyIdAndArchiveYear(String companyId, String archiveYear);
 
+    /**
+     * 查询归档
+     *
+     * @param companyId
+     * @param archiveYear
+     * @param archiveMonth
+     * @return
+     */
+    List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndArchiveMonth(String companyId, String archiveYear, String archiveMonth);
 
-    List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndArchiveMonth(String companyId, String substring, String substring1);
-
-
+    /**
+     * 查询归档
+     *
+     * @param companyId
+     * @param year
+     * @param departmentId
+     * @return
+     */
     List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndDepartmentId(String companyId, String year, String departmentId);
 }

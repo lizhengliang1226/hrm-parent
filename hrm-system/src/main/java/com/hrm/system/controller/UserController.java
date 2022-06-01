@@ -15,6 +15,7 @@ import com.hrm.common.exception.CommonException;
 import com.hrm.domain.company.Department;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
+import com.hrm.system.redis.RedisService;
 import com.hrm.system.service.OssService;
 import com.hrm.system.service.UserService;
 import io.swagger.annotations.Api;
@@ -50,6 +51,12 @@ import java.util.Map;
 @RequestMapping("sys")
 @Api(tags = "用户管理")
 public class UserController extends BaseController {
+    private RedisService redisService;
+
+    @Autowired
+    public void setRedisService(RedisService redisService) {
+        this.redisService = redisService;
+    }
 
     private UserService userService;
     private OssService ossService;
@@ -107,6 +114,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "根据id删除用户")
     public Result delete(@PathVariable String id) {
         userService.deleteById(id);
+        redisService.deleteUser(id);
         return Result.SUCCESS();
     }
 
@@ -199,6 +207,20 @@ public class UserController extends BaseController {
         final PrincipalCollection previousPrincipals = subject.getPrincipals();
         final ProfileResult profileResult = (ProfileResult) previousPrincipals.getPrimaryPrincipal();
         return new Result(ResultCode.SUCCESS, profileResult);
+    }
+
+    @GetMapping(value = "build")
+    @ApiOperation(value = "构建用户基础信息缓存")
+    public Result buildUserData() {
+        redisService.buildUserData(companyId);
+        return Result.SUCCESS();
+    }
+
+    @GetMapping(value = "findUserInfo")
+    @ApiOperation(value = "查询用户基础信息by缓存")
+    public Result findUserData(String key) {
+        final User userInfoByRedisTemplate = redisService.getUserInfoByRedisTemplate(key);
+        return new Result(ResultCode.SUCCESS, userInfoByRedisTemplate);
     }
 
     /**

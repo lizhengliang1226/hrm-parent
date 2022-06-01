@@ -32,7 +32,7 @@ public interface CityService {
     public City findById(String id);
 
     /**
-     * 查询列表
+     * 查询城市列表
      */
     public List<City> findAll();
 }

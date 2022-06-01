@@ -111,6 +111,7 @@ public class User implements Serializable {
     private String staffPhoto;
 
     @ApiModelProperty("性别")
+    @ExcelProperty(value = "性别")
     private String gender;
     @ManyToMany()
     @JsonIgnore

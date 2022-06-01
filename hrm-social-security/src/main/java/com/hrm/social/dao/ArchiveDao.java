@@ -22,7 +22,7 @@ public interface ArchiveDao extends JpaRepository<Archive, String>, JpaSpecifica
     public Archive findByCompanyIdAndYearsMonth(String companyId, String yearsMonth);
 
     /**
-     * 根据企业id和年份查询某年的归档列表
+     * 根据企业id和年份查询某年的归档主档列表
      *
      * @param companyId
      * @param year

@@ -30,22 +30,28 @@ public class CompanySettingsController extends BaseController {
 		return new Result(ResultCode.SUCCESS, companySettings);
 	}
 
-	/**
-	 * 保存企业工资设置
-	 */
-	@RequestMapping(value = "/company-settings", method = RequestMethod.POST)
-	public Result saveCompanySettings(@RequestBody SalaryCompanySettings companySettings) throws Exception {
-		companySettings.setCompanyId(companyId);
-		companySettingsService.save(companySettings);
-		return new Result(ResultCode.SUCCESS);
-	}
+    /**
+     * 保存企业工资设置
+     */
+    @RequestMapping(value = "/company-settings", method = RequestMethod.POST)
+    public Result saveCompanySettings(@RequestBody SalaryCompanySettings companySettings) throws Exception {
+        companySettings.setCompanyId(companyId);
+        companySettingsService.save(companySettings);
+        return new Result(ResultCode.SUCCESS);
+    }
 
-	@GetMapping(value = "/reports/newReport")
-	public Result newReport(String yearMonth) {
-		SalaryCompanySettings companySettings = new SalaryCompanySettings();
-		companySettings.setCompanyId(companyId);
-		companySettings.setDataMonth(yearMonth);
-		companySettingsService.save(companySettings);
-		return new Result(ResultCode.SUCCESS);
-	}
+    /**
+     * 新建报表
+     *
+     * @param yearMonth
+     * @return
+     */
+    @GetMapping(value = "/reports/newReport")
+    public Result newReport(String yearMonth) {
+        SalaryCompanySettings companySettings = new SalaryCompanySettings();
+        companySettings.setCompanyId(companyId);
+        companySettings.setDataMonth(yearMonth);
+        companySettingsService.save(companySettings);
+        return new Result(ResultCode.SUCCESS);
+    }
 }

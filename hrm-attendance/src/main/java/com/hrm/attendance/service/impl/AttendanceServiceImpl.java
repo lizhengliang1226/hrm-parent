@@ -3,6 +3,8 @@ package com.hrm.attendance.service.impl;
 
 import cn.hutool.core.date.DatePattern;
 import com.hrm.attendance.dao.*;
+import com.hrm.attendance.mapper.ArchiveMonthlyInfoMapper;
+import com.hrm.attendance.mapper.AttendanceMapper;
 import com.hrm.attendance.service.AttendanceService;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.DateUtils;
@@ -10,21 +12,17 @@ import com.hrm.domain.attendance.bo.AtteItemBO;
 import com.hrm.domain.attendance.entity.Attendance;
 import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.AttendanceCompanySettings;
-import com.hrm.domain.attendance.entity.User;
 import com.lzl.IdWorker;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 考勤服务
@@ -36,89 +34,111 @@ import java.util.Map;
 @Transactional(rollbackFor = Exception.class)
 public class AttendanceServiceImpl implements AttendanceService {
 
-	@Autowired
-	private AttendanceDao attendanceDao;
+    @Autowired
+    private AttendanceDao attendanceDao;
 
-	@Autowired
-	private DeductionDictDao deductionDictDao;
-	@Autowired
-	private AttendanceCompanySettingsDao attendanceCompanySettingsDao;
-	@Autowired
-	private AttendanceConfigDao attendanceConfigDao;
-	@Autowired
-	private UserDao userDao;
+    @Autowired
+    private DeductionDictDao deductionDictDao;
+    @Autowired
+    private AttendanceCompanySettingsDao attendanceCompanySettingsDao;
+    @Autowired
+    private AttendanceConfigDao attendanceConfigDao;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private ArchiveMonthlyInfoDao archiveMonthlyInfoDao;
+    @Autowired
+    private AttendanceMapper attendanceMapper;
 
-	@Override
-	public Map getAtteDate(String companyId, int page, int pageSize) throws ParseException {
-		// 获取要查询哪个月的考勤记录
-		final AttendanceCompanySettings data = attendanceCompanySettingsDao.findById(companyId).get();
-		final String dataMonth = data.getDataMonth();
-		// 获取该企业的所有用户
-		final Page<User> users = userDao.findAll((root, criteriaQuery, criteriaBuilder) ->
-														 criteriaBuilder.equal(root.get("companyId").as(String.class), companyId)
-				, PageRequest.of(page - 1, pageSize));
-		List<AtteItemBO> list = new ArrayList<>(16);
-		users.getContent().forEach(u -> {
-			// 遍历用户查询出所有用户在当月的考勤记录
-			final AtteItemBO atteItemBO = new AtteItemBO();
-			// 构建基础信息
-			BeanUtils.copyProperties(u, atteItemBO);
-			// 获取查询月有多少天
-			String end = DateUtils.getMonthDays(dataMonth, DatePattern.SIMPLE_MONTH_PATTERN) + "";
-			String endTime = dataMonth + end;
-			String startTime = dataMonth + "01";
-			// 查询出某个用户当月的考勤记录
-			final List<Attendance> adList = attendanceDao.findByUserIdAndDayBetween(u.getId(), startTime, endTime);
-			atteItemBO.setAttendanceRecord(adList);
-			list.add(atteItemBO);
-		});
-		final PageResult<AtteItemBO> listPageResult = new PageResult<>();
-		listPageResult.setTotal(users.getTotalElements());
-		listPageResult.setRows(list);
-		Map<String, Object> map = new HashMap();
-		map.put("data", listPageResult);
-		map.put("tobeTaskCount", 11);
-		map.put("monthOfReport", dataMonth.substring(4));
-		map.put("days", DateUtils.getMonthDays(dataMonth, DatePattern.SIMPLE_MONTH_PATTERN));
-		map.put("dataMonth", dataMonth);
-		return map;
-	}
-
-
-	@Override
-	public void editAtte(Attendance attendance) {
-		//1.查询考勤是否存在,更新
-		Attendance vo = attendanceDao.findByUserIdAndDay(attendance.getUserId(), attendance.getDay());
-		//2.如果不存在,设置对象id,保存
-		if (vo == null) {
-			attendance.setId(IdWorker.getIdStr());
-		} else {
-			attendance.setId(vo.getId());
-		}
-		attendanceDao.save(attendance);
-	}
+    @Override
+    public Map getAtteData(Map map1) throws ParseException {
+        final String companyId = (String) map1.get("companyId");
+        final Integer page = (Integer) map1.get("page");
+        final Integer pagesize = (Integer) map1.get("pagesize");
+        final String keyword = (String) map1.get("keyword");
+        if (keyword != null && keyword.length() > 0) {
+            map1.put("keyword", "%" + keyword + "%");
+        }
+        map1.put("page", (page - 1) * pagesize);
+        // 查询企业考勤月份设置
+        final AttendanceCompanySettings data = attendanceCompanySettingsDao.findById(companyId).get();
+        // 获取月份
+        final String dataMonth = data.getDataMonth();
+        String days = DateUtils.getMonthDays(dataMonth, DatePattern.SIMPLE_MONTH_PATTERN) + "";
+        String endTime = dataMonth + days;
+        String startTime = dataMonth + "01";
+        map1.put("start", startTime);
+        map1.put("end", endTime);
+        final List<AtteItemBO> monthAtteData = attendanceMapper.findMonthAtteData(map1);
+        final Integer integer = attendanceMapper.countsOfUserAtte(map1);
+        for (AtteItemBO monthAtteDatum : monthAtteData) {
+            log.info("{}", monthAtteDatum);
+        }
+        log.info("{}", monthAtteData.size());
+        final PageResult<AtteItemBO> listPageResult = new PageResult<>();
+        listPageResult.setTotal(Long.valueOf(integer));
+        listPageResult.setRows(monthAtteData);
+        Map<String, Object> map = new HashMap(16);
+        // 每个员工考勤记录
+        map.put("data", listPageResult);
+        // 待办任务数，随便写的一个，这个功能没做
+        map.put("tobeTaskCount", 11);
+        // 考勤月份05
+        map.put("monthOfReport", dataMonth.substring(4));
+        // 当月有几天31
+        map.put("days", DateUtils.getMonthDays(dataMonth, DatePattern.SIMPLE_MONTH_PATTERN));
+        // 考勤年月202205
+        map.put("dataMonth", dataMonth);
+        return map;
+    }
 
 
-	@Override
-	public List<AttendanceArchiveMonthlyInfo> getReports(String atteDate, String companyId) {
-		// 查询所有企业用户
-		List<User> users = userDao.findByCompanyId(companyId);
-		//2.循环遍历用户列表,统计每个用户当月的考勤记录
-		List<AttendanceArchiveMonthlyInfo> list = new ArrayList<>();
-		for (User user : users) {
-			AttendanceArchiveMonthlyInfo info = new AttendanceArchiveMonthlyInfo(user);
-			//统计每个用户的考勤记录
-			Map<String, Object> map = attendanceDao.statisticalByUser(user.getId(), atteDate + "%");
-			info.setStatisData(map);
-			list.add(info);
-		}
-		return list;
-	}
+    @Override
+    public void saveOrUpdateAtte(Attendance attendance) {
+        //1.查询考勤是否存在,更新
+        Attendance vo = attendanceDao.findByUserIdAndDay(attendance.getUserId(), attendance.getDay());
+        //2.如果不存在,设置对象id,保存
+        if (vo == null) {
+            attendance.setId(IdWorker.getIdStr());
+        } else {
+            attendance.setId(vo.getId());
+        }
+        attendanceDao.save(attendance);
+    }
 
-	@Override
-	public void newReport(String yearMonth, String companyId) {
-		AttendanceCompanySettings attendanceCompanySettings = attendanceCompanySettingsDao.findById(companyId).get();
-		attendanceCompanySettings.setDataMonth(yearMonth);
-		attendanceCompanySettingsDao.save(attendanceCompanySettings);
-	}
+
+    @Override
+    public PageResult<AttendanceArchiveMonthlyInfo> getReports(String atteDate, String companyId, int page, int pagesize) {
+        Map map = new HashMap() {{
+            put("month", atteDate + "%");
+            put("page", (page - 1) * pagesize);
+            put("pagesize", pagesize);
+        }};
+        final List<AttendanceArchiveMonthlyInfo> attendanceArchiveMonthlyInfos1 = archiveMonthlyInfos.userAtteDays(map);
+        final long integer = archiveMonthlyInfos.countsOfAtteDatabase(atteDate + "%");
+        return new PageResult<>(
+                integer, attendanceArchiveMonthlyInfos1);
+    }
+
+    @Autowired
+    private ArchiveMonthlyInfoMapper archiveMonthlyInfos;
+
+    @Override
+    public void newReport(String yearMonth, String companyId) {
+        AttendanceCompanySettings attendanceCompanySettings = attendanceCompanySettingsDao.findById(companyId).get();
+        attendanceCompanySettings.setDataMonth(yearMonth);
+        attendanceCompanySettingsDao.save(attendanceCompanySettings);
+    }
+
+    @Override
+    public AttendanceCompanySettings findMonthById(String companyId) {
+        final Optional<AttendanceCompanySettings> byId = attendanceCompanySettingsDao.findById(companyId);
+        return byId.orElse(null);
+    }
+
+    @Override
+    public void saveSetMonth(AttendanceCompanySettings companySettings) {
+        companySettings.setIsSettings(1);
+        attendanceCompanySettingsDao.save(companySettings);
+    }
 }

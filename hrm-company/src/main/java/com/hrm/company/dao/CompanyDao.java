@@ -9,5 +9,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
  * @date 2022/1/12-10:02
  */
 public interface CompanyDao extends JpaRepository<Company, String>, JpaSpecificationExecutor<Company> {
-
+    /**
+     * 根据管理者id查找企业
+     *
+     * @param id
+     * @return
+     */
+    Company findByManagerId(String id);
 }

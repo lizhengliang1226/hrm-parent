@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 用户数据访问接口
  *
@@ -31,4 +33,12 @@ public interface UserDao extends BaseDao<User, String> {
     @Transactional(rollbackFor = Exception.class)
     @Query(value = "update User set password=?2 where id=?1")
     void updatePassword(String id, String password);
+
+    /**
+     * 根据企业id查询企业的所有用户
+     *
+     * @param companyId
+     * @return
+     */
+    List<User> findByCompanyId(String companyId);
 }

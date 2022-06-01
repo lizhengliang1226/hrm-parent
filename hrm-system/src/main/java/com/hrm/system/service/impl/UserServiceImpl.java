@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
     private RoleDao roleDao;
     @Value("${tencent-face.groupId}")
     private String groupId;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Autowired
     public void setRoleDao(RoleDao roleDao) {
@@ -74,9 +77,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
         final String password = des.encryptHex(initialPassword);
         user.setPassword(password);
-        // 添加用户到人员库
-        addUserToPersonnel(user);
+        if (user.getStaffPhoto() != null && user.getStaffPhoto().length() > 0) {
+            // 添加用户到人员库
+            addUserToPersonnel(user);
+        }
         userDao.save(user);
+        redisTemplate.boundValueOps(id).set(user);
+        redisTemplate.boundValueOps(user.getMobile()).set(user);
     }
 
 //    public static void main(String[] args) {
@@ -109,9 +116,6 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
     @Override
     public void update(User user) throws CommonException {
         User user1 = userDao.findById(user.getId()).get();
-        // 设置用户的其他信息
-        user1.setWorkNumber(user.getWorkNumber());
-        user1.setUsername(user.getUsername());
         final String oldMobile = user1.getMobile();
         final String newMobile = user.getMobile();
         // 如果手机号发生了改变需要重新加密密码
@@ -121,19 +125,31 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
             final String newPass = SecureUtil.des(newMobile.getBytes(StandardCharsets.UTF_8)).encryptHex(oldPass);
             user1.setPassword(newPass);
         }
-        user1.setMobile(newMobile);
-        // 如果头像发生改变，，需要增加到人脸库
-        if (!user1.getStaffPhoto().equals(user.getStaffPhoto())) {
-            final boolean addFace = tencentAiFaceUtil.addFace(user1.getId(), user.getStaffPhoto());
-            if (!addFace) {
-                throw new CommonException(ResultCode.ADD_FACE_FAIL);
+        // 有照片
+        if (user.getStaffPhoto() != null && user.getStaffPhoto().length() > 0) {
+            // 判断原来是不是添加过
+            if (user1.getStaffPhoto() == null) {
+                // 原来没有添加过，就新增人员
+                addUserToPersonnel(user);
+            } else if (!user.getStaffPhoto().equals(user1.getStaffPhoto())) {
+                // 已添加过且人脸不同了，就新增人脸
+                final boolean addFace = tencentAiFaceUtil.addFace(user1.getId(), user.getStaffPhoto());
+                if (!addFace) {
+                    throw new CommonException(ResultCode.ADD_FACE_FAIL);
+                }
             }
         }
+        // 设置用户的其他信息
+        user1.setGender(user.getGender());
+        user1.setMobile(newMobile);
+        user1.setWorkNumber(user.getWorkNumber());
+        user1.setUsername(user.getUsername());
         user1.setStaffPhoto(user.getStaffPhoto());
         user1.setDepartmentId(user.getDepartmentId());
         user1.setDepartmentName(user.getDepartmentName());
         user1.setFormOfEmployment(user.getFormOfEmployment());
         user1.setTimeOfEntry(user.getTimeOfEntry());
+        user1.setWorkingCity(user.getWorkingCity());
         userDao.save(user1);
     }
 

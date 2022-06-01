@@ -22,6 +22,15 @@ public interface AttendanceDao extends CrudRepository<Attendance, String>, JpaRe
     Attendance findByUserIdAndDay(String id, String day);
 
     /**
+     * 查询考勤记录通过用户id和日期
+     *
+     * @param id
+     * @param day
+     * @return
+     */
+    List<Attendance> findByUserIdAndDayLike(String id, String day);
+
+    /**
      * 查询某年某个月的某人的所有考勤记录
      *
      * @param start

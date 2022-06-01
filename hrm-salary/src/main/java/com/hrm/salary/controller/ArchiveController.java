@@ -2,6 +2,7 @@ package com.hrm.salary.controller;
 
 
 import com.hrm.common.controller.BaseController;
+import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.domain.salary.SalaryArchive;
@@ -34,11 +35,13 @@ public class ArchiveController extends BaseController {
 
     @GetMapping("reports/{yearMonth}")
     @ApiOperation(value = "按月获取薪资报表")
-    public Result findUserSalaryInfo(@PathVariable String yearMonth, int opType) throws Exception {
+    public Result findUserSalaryInfo(@PathVariable String yearMonth, int opType, int page, int pagesize) throws Exception {
+        PageResult<SalaryArchiveDetail> objectPageResult = new PageResult<>();
         List<SalaryArchiveDetail> list = new ArrayList<>(16);
         if (opType == 1) {
             // 未归档，查询当月
-            list = archiveService.getReports(yearMonth, companyId);
+            objectPageResult = archiveService.getReports(yearMonth, companyId, page, pagesize);
+
         } else {
             // 已归档,查询归档信息
             final SalaryArchive archive = archiveService.findSalaryArchive(companyId, yearMonth);
@@ -46,7 +49,7 @@ public class ArchiveController extends BaseController {
                 list = archiveService.findSalaryArchiveDetail(archive.getId());
             }
         }
-        return new Result(ResultCode.SUCCESS, list);
+        return new Result(ResultCode.SUCCESS, objectPageResult);
 
     }
 

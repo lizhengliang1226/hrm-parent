@@ -1,14 +1,15 @@
 package com.hrm.company.controller;
 
+import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
+import com.hrm.common.entity.ResultCode;
 import com.hrm.company.service.CompanyService;
 import com.hrm.domain.company.Company;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 企业管理控制器
@@ -59,13 +60,23 @@ public class CompanyController {
         return result;
     }
 
+    @GetMapping(value = "manager/{id}")
+    @ApiOperation(value = "根据企业管理ID查找企业")
+    public Result<Company> findByManagerId(@PathVariable(value = "id") String id) {
+        final Company company = companyService.findByManagerId(id);
+        Result<Company> result = Result.SUCCESS();
+        result.setData(company);
+        return result;
+    }
+
     @GetMapping(name = "FIND_COMPANY_LIST_API")
     @ApiOperation(value = "获取企业列表")
-    public Result findAll() {
-        final List<Company> all = companyService.findAll();
-        Result<List<Company>> result = Result.SUCCESS();
-        result.setData(all);
-        return result;
+    public Result findAll(int page, int size) {
+        final Page<Company> all = companyService.findAll(page, size);
+        final PageResult<Company> companyPageResult = new PageResult<>(all.getTotalElements(), all.getContent());
+//        Result<List<Company>> result = Result.SUCCESS();
+//        result.setData(all);
+        return new Result(ResultCode.SUCCESS, companyPageResult);
     }
 
 }

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrm.attendance.mapper.AttendanceMapper">
+
+    <resultMap id="AtteResultMap" type="com.hrm.domain.attendance.bo.AtteItemBO">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="workNumber" property="workNumber"/>
+        <result column="departmentName" property="departmentName"/>
+        <result column="mobile" property="mobile"/>
+        <result column="departmentId" property="departmentId"/>
+        <collection property="attendanceRecord" ofType="com.hrm.domain.attendance.entity.Attendance">
+            <id property="id" column="atteId"/>
+            <result property="companyId" column="companyId"/>
+            <result property="departmentId" column="departmentId"/>
+            <result property="userId" column="userId"/>
+            <result property="adtStatus" column="adtStatus"/>
+            <result property="jobStatus" column="jobStatus"/>
+            <result property="adtInTime" column="adtInTime"/>
+            <result property="adtOutTime" column="adtOutTime"/>
+            <result property="day" column="day"/>
+        </collection>
+    </resultMap>
+
+
+    <select id="findMonthAtteData" resultMap="AtteResultMap"
+            parameterType="java.util.Map">
+        select a.id,
+        a.username,
+        a.work_number workNumber,
+        a.department_name departmentName,
+        a.mobile,
+        a.department_id departmentId,
+        b.id atteId,
+        a.company_id companyId,
+        b.user_id userId,
+        b.adt_status adtStatus,
+        b.adt_in_time adtInTime,
+        b.adt_out_time adtOutTime,
+        b.`day`,
+        b.job_status jobStatus
+        from (
+        select * from bs_user c where c.company_id=#{companyId}
+        <if test="departmentChecks!=null  and departmentChecks.size()>0 ">
+            and c.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and c.username like #{keyword}
+        </if>
+        limit #{page},#{pagesize}
+        ) a
+        left join atte_attendance b on a.id = b.user_id
+        where 1 = 1 and b.`day` between #{start} and #{end}
+    </select>
+
+    <select id="countsOfUserAtte" resultType="Integer">
+        select count(distinct c.id) from bs_user c where c.company_id=#{companyId}
+        <if test="departmentChecks!=null  and departmentChecks.size()>0 ">
+            and c.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and c.username like #{keyword}
+        </if>
+    </select>
+</mapper>

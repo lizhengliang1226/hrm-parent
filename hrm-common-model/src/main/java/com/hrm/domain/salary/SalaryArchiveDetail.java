@@ -3,8 +3,6 @@ package com.hrm.domain.salary;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
-import com.hrm.domain.social.SocialSecrityArchiveDetail;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -198,7 +196,7 @@ public class SalaryArchiveDetail implements Serializable {
      * 计薪标准
      */
     @ExcelProperty(order = 12)
-    private BigDecimal salaryStandard;
+    private String salaryStandard;
 
     //薪资相关
     /**
@@ -337,9 +335,226 @@ public class SalaryArchiveDetail implements Serializable {
         return getSocialSecurityIndividual().add(getProvidentFundIndividual());
     }
 
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getArchiveId() {
+        return archiveId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public String getWorkNumber() {
+        return workNumber;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public String getIdNumber() {
+        return idNumber;
+    }
+
+    public String getInServiceStatus() {
+        return inServiceStatus;
+    }
+
+    public Integer getFormOfEmployment() {
+        return formOfEmployment;
+    }
+
+    public String getBankCardNumber() {
+        return bankCardNumber;
+    }
+
+    public String getOpeningBank() {
+        return openingBank;
+    }
+
+    public BigDecimal getOldAgeIndividual() {
+        return oldAgeIndividual;
+    }
+
+    public BigDecimal getMedicalIndividual() {
+        return medicalIndividual;
+    }
+
+    public BigDecimal getUnemployedIndividual() {
+        return unemployedIndividual;
+    }
+
+    public BigDecimal getaPersonOfGreatDisease() {
+        return aPersonOfGreatDisease;
+    }
+
+    public BigDecimal getSocialSecurity() {
+        return socialSecurity;
+    }
+
+    public BigDecimal getTotalProvidentFundIndividual() {
+        return totalProvidentFundIndividual;
+    }
+
+    public BigDecimal getPensionEnterprise() {
+        return pensionEnterprise;
+    }
+
+    public BigDecimal getMedicalEnterprise() {
+        return medicalEnterprise;
+    }
+
+    public BigDecimal getUnemployedEnterprise() {
+        return unemployedEnterprise;
+    }
+
+    public BigDecimal getIndustrialInjuryEnterprise() {
+        return industrialInjuryEnterprise;
+    }
+
+    public BigDecimal getChildbearingEnterprise() {
+        return childbearingEnterprise;
+    }
+
+    public BigDecimal getBigDiseaseEnterprise() {
+        return bigDiseaseEnterprise;
+    }
+
+    public BigDecimal getSocialSecurityProvidentFundEnterprises() {
+        return socialSecurityProvidentFundEnterprises;
+    }
+
+    public BigDecimal getTaxToProvidentFund() {
+        return taxToProvidentFund;
+    }
+
+    public BigDecimal getOfficialSalaryDays() {
+        return officialSalaryDays;
+    }
+
+    public String getAttendanceDeductionMonthly() {
+        return attendanceDeductionMonthly;
+    }
+
+    public String getSalaryStandard() {
+        return salaryStandard;
+    }
+
+    public BigDecimal getCurrentSalaryTotalBase() {
+        return currentSalaryTotalBase;
+    }
+
+    public BigDecimal getCurrentBaseSalary() {
+        return currentBaseSalary;
+    }
+
+    public BigDecimal getBaseSalaryByMonth() {
+        return baseSalaryByMonth;
+    }
+
+    public String getTaxCountingMethod() {
+        return taxCountingMethod;
+    }
+
+    public BigDecimal getBaseSalaryToTaxByMonth() {
+        return baseSalaryToTaxByMonth;
+    }
+
+    public BigDecimal getSalary() {
+        return salary;
+    }
+
+    public BigDecimal getSalaryByTax() {
+        return salaryByTax;
+    }
+
+    public BigDecimal getPaymentBeforeTax() {
+        return paymentBeforeTax;
+    }
+
+    public BigDecimal getTax() {
+        return tax;
+    }
+
+    public BigDecimal getSalaryAfterTax() {
+        return salaryAfterTax;
+    }
+
+    public BigDecimal getPayment() {
+        return payment;
+    }
+
+    public String getPaymentRemark() {
+        return paymentRemark;
+    }
+
+    public BigDecimal getSalaryCost() {
+        return salaryCost;
+    }
+
+    public BigDecimal getEnterpriseLaborCost() {
+        return enterpriseLaborCost;
+    }
+
+    public BigDecimal getSalaryChangeAmount() {
+        return salaryChangeAmount;
+    }
+
+    public BigDecimal getSalaryChangeScale() {
+        return salaryChangeScale;
+    }
+
+    public String getEffectiveTimeOfPayAdjustment() {
+        return effectiveTimeOfPayAdjustment;
+    }
+
+    public String getCauseOfSalaryAdjustment() {
+        return causeOfSalaryAdjustment;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public Integer getPaymentMonths() {
+        return paymentMonths;
+    }
 
     //设置用户属性
     public void setUser(Map map) {
+        this.bankCardNumber = (String) map.get("bankCardNumber");
+        this.openingBank = (String) map.get("openingBank");
+        this.pensionEnterprise = (BigDecimal) map.get("pensionEnterprise");
+        this.medicalEnterprise = (BigDecimal) map.get("medicalEnterprise");
+        this.unemployedEnterprise = (BigDecimal) map.get("unemployedEnterprise");
+        this.industrialInjuryEnterprise = (BigDecimal) map.get("industrialInjuryEnterprise");
+        this.childbearingEnterprise = (BigDecimal) map.get("childbearingEnterprise");
+        this.bigDiseaseEnterprise = (BigDecimal) map.get("bigDiseaseEnterprise");
+        this.socialSecurity = (BigDecimal) map.get("socialSecurity");
+        this.totalProvidentFundIndividual = (BigDecimal) map.get("totalProvidentFund");
+        this.oldAgeIndividual = (BigDecimal) map.get("oldAgeIndividual");
+        this.medicalIndividual = (BigDecimal) map.get("medicalIndividual");
+        this.unemployedIndividual = (BigDecimal) map.get("unemployedIndividual");
+        this.aPersonOfGreatDisease = (BigDecimal) map.get("aPersonOfGreatDisease");
+        this.taxToProvidentFund = (BigDecimal) map.get("taxToProvidentFund");
+        this.taxCountingMethod = (String) map.get("taxCountingMethod");
+        this.baseSalaryToTaxByMonth = (BigDecimal) map.get("baseSalaryToTaxByMonth");
+        this.salaryStandard = (String) map.get("salaryStandard");
         this.idNumber = (String) map.get("idNumber");
         this.formOfEmployment = (Integer) map.get("formOfEmployment");
         this.username = map.get("username").toString();
@@ -348,49 +563,47 @@ public class SalaryArchiveDetail implements Serializable {
         this.userId = map.get("id").toString();
         this.workNumber = (String) map.get("workNumber").toString();
         this.inServiceStatus = map.get("inServiceStatus").toString();
-        final BigDecimal currentBasicSalary = (BigDecimal) map.get("currentBasicSalary");
-        final BigDecimal currentPostWage = (BigDecimal) map.get("currentPostWage");
-        this.currentSalaryTotalBase = currentBasicSalary.add(currentPostWage);
+        final BigDecimal currentBasicSalary = (BigDecimal) map.get("currentBaseSalary");
+        final BigDecimal currentPostWage = (BigDecimal) map.get("baseSalaryByMonth");
         this.currentBaseSalary = currentBasicSalary;
         this.baseSalaryByMonth = currentPostWage;
-        this.officialSalaryDays = (BigDecimal) map.get("salaryOfficialDays");
+        this.officialSalaryDays = (BigDecimal) map.get("officialSalaryDays");
         this.providentFundIndividual = (BigDecimal) map.get("providentFundIndividual");
         this.providentFundEnterprises = (BigDecimal) map.get("providentFundEnterprises");
         this.socialSecurityEnterprise = (BigDecimal) map.get("socialSecurityEnterprise");
         this.socialSecurityIndividual = (BigDecimal) map.get("socialSecurityIndividual");
-        //社保合计
-        this.socialSecurityProvidentFundEnterprises = this.providentFundEnterprises.add(this.socialSecurityEnterprise);
-
+        this.socialSecurityProvidentFundEnterprises = (BigDecimal) map.get("socialSecurityProvidentFundEnterprises");
+        this.currentSalaryTotalBase = (BigDecimal) map.get("currentSalaryTotalBase");
     }
 
     //设置社保属性
-    public void setSocialInfo(SocialSecrityArchiveDetail socialInfo) {
-        this.providentFundIndividual = socialInfo.getProvidentFundIndividual();
-        this.providentFundEnterprises = socialInfo.getProvidentFundEnterprises();
-        this.socialSecurityEnterprise = socialInfo.getSocialSecurityEnterprise();
-        this.socialSecurityIndividual = socialInfo.getSocialSecurityIndividual();
-        //社保合计
-        this.socialSecurityProvidentFundEnterprises = this.providentFundEnterprises.add(this.socialSecurityEnterprise);
-    }
+//    public void setSocialInfo(SocialSecrityArchiveDetail socialInfo) {
+//        this.providentFundIndividual = socialInfo.getProvidentFundIndividual();
+//        this.providentFundEnterprises = socialInfo.getProvidentFundEnterprises();
+//        this.socialSecurityEnterprise = socialInfo.getSocialSecurityEnterprise();
+//        this.socialSecurityIndividual = socialInfo.getSocialSecurityIndividual();
+//        //社保合计
+//        this.socialSecurityProvidentFundEnterprises = this.providentFundEnterprises.add(this.socialSecurityEnterprise);
+//    }
 
     //设置考勤属性
-    public void setAtteInfo(AttendanceArchiveMonthlyInfo atteInfo) {
-        //员工考勤天数
-        this.officialSalaryDays = new BigDecimal(atteInfo.getSalaryOfficialDays());
-    }
+//    public void setAtteInfo(AttendanceArchiveMonthlyInfo atteInfo) {
+//        //员工考勤天数
+//        this.officialSalaryDays = new BigDecimal(atteInfo.getSalaryOfficialDays());
+//    }
 
     //设置员工工资属性
-    public void setUserSalary(UserSalary userSalary) {
-        if (userSalary != null) {
-            this.currentSalaryTotalBase = userSalary.getCurrentBasicSalary().add(userSalary.getCurrentPostWage());
-            this.currentBaseSalary = userSalary.getCurrentBasicSalary();
-            this.baseSalaryByMonth = userSalary.getCurrentBasicSalary();
-        } else {
-            this.currentSalaryTotalBase = BigDecimal.ZERO;
-            this.currentBaseSalary = BigDecimal.ZERO;
-            this.baseSalaryByMonth = BigDecimal.ZERO;
-        }
-    }
+//    public void setUserSalary(UserSalary userSalary) {
+//        if (userSalary != null) {
+//            this.currentSalaryTotalBase = userSalary.getCurrentBasicSalary().add(userSalary.getCurrentPostWage());
+//            this.currentBaseSalary = userSalary.getCurrentBasicSalary();
+//            this.baseSalaryByMonth = userSalary.getCurrentBasicSalary();
+//        } else {
+//            this.currentSalaryTotalBase = BigDecimal.ZERO;
+//            this.currentBaseSalary = BigDecimal.ZERO;
+//            this.baseSalaryByMonth = BigDecimal.ZERO;
+//        }
+//    }
 
     // 计算工资
     public void calSalary(Settings settings) {
@@ -432,10 +645,10 @@ public class SalaryArchiveDetail implements Serializable {
         } else {
             this.attendanceDeductionMonthly = "0";
         }
-
-
+        // 去掉考勤扣款后的薪资，再加上补助
         this.currentSalaryTotalBase = attendanceMoney.add(money);
-
+        //薪资合计
+        this.salary = this.currentSalaryTotalBase;
 
         //计算应纳税工资 (岗位工资 + 基本工资 + 补助 - 缴纳公积金和社保)
 
@@ -445,8 +658,10 @@ public class SalaryArchiveDetail implements Serializable {
         //计算税(扣除员工社保和员工公积金部门)
         this.tax = getTax(salaryByTax);
         this.paymentBeforeTax = this.salaryByTax;
+
         //计算实发工资
         this.payment = attendanceMoney.subtract(tax);
+        this.salaryAfterTax = payment;
         this.payment = this.payment.compareTo(BigDecimal.ZERO) >= 0 ? this.payment : BigDecimal.ZERO;
 
     }

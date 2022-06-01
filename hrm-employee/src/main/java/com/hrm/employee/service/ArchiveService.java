@@ -1,10 +1,8 @@
 package com.hrm.employee.service;
 
 import com.hrm.domain.employee.EmployeeArchive;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 月度员工归档服务
@@ -52,11 +50,15 @@ public interface ArchiveService {
     /**
      * 分页查询月度归档信息
      *
-     * @param map
-     * @param page
-     * @param size
      * @return
      */
-    public Page<EmployeeArchive> findSearch(Map<String, Object> map, int page, int size);
+    public List<EmployeeArchive> findSearch(String year, String companyId);
 
+    /**
+     * 根据月份查询归档主档信息
+     *
+     * @param month1
+     * @return
+     */
+    EmployeeArchive findByMonth(String month1);
 }

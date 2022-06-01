@@ -1,6 +1,8 @@
 package com.hrm.system.shiro.realm;
 
+import com.hrm.common.client.CompanyFeignClient;
 import com.hrm.common.shiro.realm.HrmRealm;
+import com.hrm.domain.company.Company;
 import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.User;
@@ -26,6 +28,12 @@ public class UserRealm extends HrmRealm {
 
     private UserService userService;
     private PermissionService permissionService;
+    private CompanyFeignClient client;
+
+    @Autowired
+    public void setClient(CompanyFeignClient client) {
+        this.client = client;
+    }
 
     @Autowired
     public void setPermissionService(PermissionService permissionService) {
@@ -52,9 +60,10 @@ public class UserRealm extends HrmRealm {
         final String password = new String(usernamePasswordToken.getPassword());
         final String mobile = usernamePasswordToken.getUsername();
         final User user = userService.findByMobile(mobile);
+        final Company company = client.findByManagerId(mobile).getData();
         // 构建安全数据
         ProfileResult profileResult = null;
-        if (user != null && user.getPassword().equals(password)) {
+        if (user != null && user.getEnableState() == 1 && user.getPassword().equals(password)) {
             log.info("密码比对正确！");
             if (SystemConstant.NORMAL_USER.equals(user.getLevel())) {
                 // 普通用户，直接根据用户拥有的角色获取权限
@@ -68,6 +77,14 @@ public class UserRealm extends HrmRealm {
                 List<Permission> allPerm = permissionService.findAll(map);
                 profileResult = new ProfileResult(user, allPerm);
             }
+            // 安全数据，密码，realm
+            return new SimpleAuthenticationInfo(profileResult, password, getName());
+        } else if (company != null && company.getState() == 1 && company.getPassword().equals(password)) {
+            Map<String, Object> map = new HashMap<>(1);
+            // 企业管理员。设置企业可见性为1查询权限给用户
+            map.put("enVisible", "1");
+            List<Permission> allPerm = permissionService.findAll(map);
+            profileResult = new ProfileResult(company, allPerm);
             // 安全数据，密码，realm
             return new SimpleAuthenticationInfo(profileResult, password, getName());
         }

@@ -28,6 +28,8 @@ public interface ExtraDutyRuleDao extends JpaRepository<ExtraDutyRule, String>, 
 
 
     /**
+     * 查询加班规则
+     *
      * @param companyId
      * @param departmentId
      * @return

@@ -39,13 +39,13 @@ public class Attendance extends BaseEntity implements Serializable {
     private long jobStatus;
 
     private Date adtInTime;
-    private String adtInPlace;
-    private String adtInHourse;
+//    private String adtInPlace;
+//    private String adtInHourse;
 
-    private String adtInCoordinate;
+    //    private String adtInCoordinate;
     private Date adtOutTime;
-    private String adtOutPlace;
-    private String adtOutHourse;
+    //    private String adtOutPlace;
+//    private String adtOutHourse;
     private String day;
 
     public Attendance(AtteUploadVo vo, User user) {

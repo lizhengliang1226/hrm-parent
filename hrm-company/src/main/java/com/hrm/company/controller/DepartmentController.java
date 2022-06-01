@@ -1,5 +1,10 @@
 package com.hrm.company.controller;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
@@ -9,9 +14,12 @@ import com.hrm.domain.company.Department;
 import com.hrm.domain.company.response.DeptListResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +35,7 @@ public class DepartmentController extends BaseController {
 
     private DepartmentService departmentService;
     private CompanyService companyService;
-
+    private List<Department> list = new ArrayList<>();
     @Autowired
     public void setCompanyService(CompanyService companyService) {
         this.companyService = companyService;
@@ -83,5 +91,38 @@ public class DepartmentController extends BaseController {
         final List<Department> all = departmentService.findAll(companyId);
         DeptListResult deptListResult = new DeptListResult(companyService.findById(companyId), all);
         return new Result<>(ResultCode.SUCCESS, deptListResult);
+    }
+
+    @PostMapping(value = "department/import")
+    @ApiOperation(value = "批量保存部门")
+    public Result importDepartments(@RequestParam MultipartFile file) throws Exception {
+        final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), Department.class, new DepartmentExcelListener());
+        final ExcelReaderSheetBuilder sheet = read.sheet();
+        sheet.doRead();
+        return Result.SUCCESS();
+    }
+
+    /**
+     * Excel操作的内部类
+     */
+    class DepartmentExcelListener extends AnalysisEventListener<Department> {
+
+        @SneakyThrows
+        @Override
+        public void invoke(Department department, AnalysisContext analysisContext) {
+//            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
+//            final Department data = result.getData();
+//            user.setDepartmentId(data.getId());
+//            user.setDepartmentName(data.getName());
+//            user.setCompanyName(companyName);
+//            user.setCompanyId(companyId);
+//            userService.save(user);
+
+        }
+
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext context) {
+        }
+
     }
 }

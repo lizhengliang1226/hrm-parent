@@ -1,9 +1,9 @@
 package com.hrm.employee.service;
 
 import com.hrm.domain.employee.UserCompanyPersonal;
-import com.hrm.domain.employee.response.EmployeeReportResult;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * 员工详细信息服务
@@ -34,5 +34,14 @@ public interface UserCompanyPersonalService {
      * @param month     月份
      * @return 员工详细信息列表
      */
-    List<EmployeeReportResult> findMonthlyReport(String companyId, String month);
+    Page<Map> findMonthlyReport(String companyId, String month, Integer page, Integer pageSize);
+
+    /**
+     * 查询企业某月的在职或离职人数
+     *
+     * @param companyId
+     * @param month
+     * @return
+     */
+    Integer numOfJobStatus(String companyId, String month, int status);
 }

@@ -3,6 +3,7 @@ package com.hrm.salary.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.hrm.common.client.AttendanceClient;
 import com.hrm.common.client.SocialSecurityClient;
+import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.salary.SalaryArchive;
@@ -17,6 +18,8 @@ import com.hrm.salary.service.ArchiveService;
 import com.hrm.salary.service.SalaryArchiveDetailServiceImpl;
 import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,19 +55,19 @@ public class ArchiveServiceImpl implements ArchiveService {
     }
 
     @Override
-    public List<SalaryArchiveDetail> getReports(String yearMonth, String companyId) throws Exception {
+    public PageResult<SalaryArchiveDetail> getReports(String yearMonth, String companyId, int page, int pagesize) throws Exception {
         List<SalaryArchiveDetail> list = new ArrayList<>(16);
         final Optional<Settings> byId = set.findById(companyId);
         final Settings settings = byId.orElse(null);
         // 查询企业所有用户
-        final List<Map> content = userSalaryDao.findArchivePage(companyId, yearMonth, null).getContent();
-        for (Map map : content) {
+        final Page<Map> archivePage = userSalaryDao.findArchivePage(companyId, yearMonth, PageRequest.of(page - 1, pagesize));
+        for (Map map : archivePage.getContent()) {
             SalaryArchiveDetail s = new SalaryArchiveDetail();
             s.setUser(map);
             s.calSalary(settings);
             list.add(s);
         }
-        return list;
+        return new PageResult<>(archivePage.getTotalElements(), list);
     }
 
     @Override
@@ -88,12 +91,13 @@ public class ArchiveServiceImpl implements ArchiveService {
     }
 
     private void archiveData(String yearMonth, String companyId) throws Exception {
-        final List<SalaryArchiveDetail> reports = getReports(yearMonth, companyId);
+        final PageResult<SalaryArchiveDetail> reports = getReports(yearMonth, companyId, 1, 10000);
+
         BigDecimal paybefortax = BigDecimal.ZERO;
         BigDecimal fi = BigDecimal.ZERO;
         final SalaryArchive salaryArchive = new SalaryArchive();
         salaryArchive.setId(IdWorker.getIdStr());
-        for (SalaryArchiveDetail report : reports) {
+        for (SalaryArchiveDetail report : reports.getRows()) {
             paybefortax = paybefortax.add(report.getPaymentBeforeTax());
             fi = fi.add(report.getSocialSecurityProvidentFundEnterprises());
             report.setArchiveId(salaryArchive.getId());
@@ -105,7 +109,7 @@ public class ArchiveServiceImpl implements ArchiveService {
         salaryArchive.setFiveInsurances(fi);
         salaryArchive.setCreationTime(new Date());
         archiveDao.save(salaryArchive);
-        salaryArchiveDetailServiceImpl.saveBatch(reports);
+        salaryArchiveDetailServiceImpl.saveBatch(reports.getRows());
     }
 
     /**

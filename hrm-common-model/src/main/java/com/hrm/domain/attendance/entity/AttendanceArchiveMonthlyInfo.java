@@ -45,7 +45,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
     private String sickLeaveDays;
     private String longSickLeaveDays;
 
-    private String marraiageLeaveDays;
+    private String marriageLeaveDays;
     private String funeralLeaveDays;
     /**
      * 产假
@@ -61,7 +61,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
     /**
      * 探亲假
      */
-    private String homeLeavaDays;
+    private String homeLeaveDays;
 
     /**
      * 工伤假
@@ -84,7 +84,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
     private String laterTimes;
     private String earlyTimes;
 
-    private Integer signedTimes;
+
     /**
      * 日均时长（自然日）
      */
@@ -107,6 +107,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
     /**
      * 计薪天数调整
      */
+
     private String salaryAdjustmentDays;
 
     /**
@@ -126,7 +127,13 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
      * 归档日期
      */
     private String archiveDate;
-
+    /**
+     * 补签
+     */
+    private Integer retrocative;
+    private Integer rest;
+    private Integer notClock;
+    private Integer leaveEarlyAndLate;
 
     public AttendanceArchiveMonthlyInfo(User user) {
         this.userId = user.getId();

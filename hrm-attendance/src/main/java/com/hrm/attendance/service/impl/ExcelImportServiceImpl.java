@@ -8,6 +8,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
+import com.alibaba.fastjson.JSON;
 import com.hrm.attendance.dao.AttendanceConfigDao;
 import com.hrm.attendance.dao.AttendanceDao;
 import com.hrm.attendance.dao.UserDao;
@@ -24,6 +25,7 @@ import com.lzl.IdWorker;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,9 +61,11 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     private String wordingDays;
     @Autowired
     private AttendanceMapperService ams;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
     private List<Attendance> atList = new ArrayList<>();
     private List<AttendanceConfig> atcList = new ArrayList<>();
+
 
     /**
      * 处理考勤数据的文件上传
@@ -70,10 +74,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
      */
     @Override
     public void importAttendanceExcel(MultipartFile file, String companyId) throws Exception {
+        // 查询每个部门的考勤配置信息
         atcList = attendanceConfigDao.findAll();
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), AtteUploadVo.class, new AttendanceExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
+        // 批量保存
         ams.saveBatch(atList);
     }
 
@@ -85,7 +91,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         @SneakyThrows
         @Override
         public void invoke(AtteUploadVo atteUploadVo, AnalysisContext analysisContext) {
-            final User user = userDao.findByMobile(atteUploadVo.getMobile());
+            final Object o = redisTemplate.boundValueOps(atteUploadVo.getMobile()).get();
+            final User user = JSON.parseObject(o.toString(), User.class);
+//            final User user = userDao.findByMobile(atteUploadVo.getMobile());
             Attendance attendance = new Attendance(atteUploadVo, user);
             attendance.setDay(atteUploadVo.getAtteDate());
             // 设置考勤状态
@@ -127,12 +135,12 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
                 }
             }
-            final Attendance ad = attendanceDao.findByUserIdAndDay(user.getId(), attendance.getDay());
-            if (ad == null) {
-                attendance.setId(IdWorker.getIdStr());
-                attendance.setCreateDate(new Date());
-                atList.add(attendance);
-            }
+//            final Attendance ad = attendanceDao.findByUserIdAndDay(user.getId(), attendance.getDay());
+//            if (ad == null) {
+            attendance.setId(IdWorker.getIdStr());
+            attendance.setCreateDate(new Date());
+            atList.add(attendance);
+//            }
         }
 
         @Override

@@ -45,4 +45,29 @@ public interface ArchiveDao extends JpaRepository<EmployeeArchive, String>, JpaS
      */
     @Query(value = "SELECT count(DISTINCT month) FROM em_archive WHERE company_id = ?1 AND month LIKE ?2", nativeQuery = true)
     long countAllData(String companyId, String year);
+
+    /**
+     * 根据年份查询出某一年所有月份的归档主表信息
+     *
+     * @param companyId
+     * @param year
+     * @return
+     */
+    @Query(value = "  select * " +
+            "    from\n" +
+            "        em_archive employeear0_ \n" +
+            "    where\n" +
+            "        employeear0_.company_id=?1 \n" +
+            "        and " +
+            "            employeear0_.month like ?2\n" +
+            "       ", nativeQuery = true)
+    List<EmployeeArchive> findByCompanyIdAndMonthLike(String companyId, String year);
+
+    /**
+     * 根据月份查询主档信息
+     *
+     * @param month1
+     * @return
+     */
+    EmployeeArchive findByMonth(String month1);
 }

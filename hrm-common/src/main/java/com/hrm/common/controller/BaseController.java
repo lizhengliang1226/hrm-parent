@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * BaseController，所有控制器的父类，会事先将session中的安全数据读出来进行赋值
+ *
  * @author LZL
  * @date 2022/3/7-20:28
  */
@@ -20,10 +22,13 @@ public class BaseController {
     protected HttpServletResponse response;
     protected String companyId;
     protected String companyName;
+    protected String username;
+    protected String mobile;
+    protected String managerId;
 
     /**
      * 使用shiro获取安全数据
-     *
+     * 前置处理器
      * @param request  请求
      * @param response 响应
      */
@@ -38,6 +43,9 @@ public class BaseController {
             final ProfileResult profileResult = (ProfileResult) previousPrincipals.getPrimaryPrincipal();
             this.companyId = profileResult.getCompanyId();
             this.companyName = profileResult.getCompany();
+            this.username = profileResult.getUsername();
+            this.mobile = profileResult.getMobile();
+            this.managerId = profileResult.getManagerId();
         }
 
     }

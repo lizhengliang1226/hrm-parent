@@ -1,7 +1,8 @@
 package com.hrm.social;
 
-import com.hrm.social.client.EmployeeFeignClient;
-import com.hrm.social.client.SystemFeignClient;
+import com.hrm.common.client.EmployeeFeignClient;
+import com.hrm.common.client.SystemFeignClient;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -22,6 +23,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 @EnableDiscoveryClient
 @EnableFeignClients(clients = {SystemFeignClient.class, EmployeeFeignClient.class})
 @Import({OpenEntityManagerInViewFilter.class})
+@MapperScan("com.hrm.social.mapper")
 public class HrmSocialSecurityApplication {
     public static void main(String[] args) {
         SpringApplication.run(HrmSocialSecurityApplication.class);

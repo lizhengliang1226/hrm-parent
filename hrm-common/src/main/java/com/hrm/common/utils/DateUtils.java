@@ -25,6 +25,13 @@ public class DateUtils {
         return start1.after(end2);
     }
 
+    /**
+     * 返回某年某月每一天的字符数组 202201 -> 20220101，20220102，20220103.....20220130
+     *
+     * @param month
+     * @param pattern
+     * @return
+     */
     public static String[] getMonthEveryDay(String month, String pattern) {
         final int i = DateUtil.endOfMonth(DateUtil.parse(month, pattern)).dayOfMonth();
         String[] r = new String[i];
@@ -38,6 +45,13 @@ public class DateUtils {
         return r;
     }
 
+    /**
+     * 获取某个月的天数，比如二月返回28
+     *
+     * @param month
+     * @param pattern
+     * @return
+     */
     public static int getMonthDays(String month, String pattern) {
         return DateUtil.endOfMonth(DateUtil.parse(month, pattern)).dayOfMonth();
     }

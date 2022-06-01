@@ -6,6 +6,11 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * 考勤项bo，记录员工的考勤记录
+ *
+ * @author 17314
+ */
 @Data
 public class AtteItemBO {
 

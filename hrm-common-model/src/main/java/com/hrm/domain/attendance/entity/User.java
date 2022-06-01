@@ -66,7 +66,7 @@ public class User implements Serializable {
     private String companyName;
 
     @ApiModelProperty("部门ID")
-    @ExcelProperty(value = "部门编码")
+    @ExcelProperty(value = "部门ID")
     private String departmentId;
 
     @ApiModelProperty("部门名称")

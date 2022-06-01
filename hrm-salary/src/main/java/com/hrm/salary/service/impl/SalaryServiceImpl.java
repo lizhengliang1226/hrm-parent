@@ -51,7 +51,7 @@ public class SalaryServiceImpl implements SalaryService {
         return optional.orElse(null);
     }
 
-    //分页查询当月薪资列表
+
     @Override
     public PageResult<SalaryItemVo> findAll(Integer page, Integer pageSize, String companyId) {
         Page<Map> page1 = userSalaryDao.findPage(companyId, PageRequest.of(page - 1, pageSize));

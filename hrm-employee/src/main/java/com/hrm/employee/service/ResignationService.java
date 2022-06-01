@@ -23,4 +23,12 @@ public interface ResignationService {
      * @return
      */
     public EmployeeResignation findById(String userId);
+
+    /**
+     * 根据月份查询当月离职人数
+     *
+     * @param month
+     * @return
+     */
+    Integer findDepartureNum(String month, String companyId);
 }

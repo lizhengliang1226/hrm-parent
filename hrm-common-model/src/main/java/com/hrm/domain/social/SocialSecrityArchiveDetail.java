@@ -1,7 +1,7 @@
 package com.hrm.domain.social;
 
 
-import com.hrm.domain.employee.UserCompanyPersonal;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,12 +14,14 @@ import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * 社保归档明细表
  */
 @Entity
 @Table(name = "ss_archive_detail")
+@TableName(value = "ss_archive_detail")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -35,30 +37,45 @@ public class SocialSecrityArchiveDetail implements Serializable {
         this.firstLevelDepartment = departmentName;
     }
 
-    public void setUserSocialSecurity(UserSocialSecurity userSocialSecurity) {
-        this.householdRegistrationType = userSocialSecurity.getHouseholdRegistration();
-        this.participatingInTheCity = userSocialSecurity.getParticipatingInTheCity();
-        this.providentFundCity = userSocialSecurity.getProvidentFundCity();
-        this.socialSecurityNotes = userSocialSecurity.getSocialSecurityNotes();
-        this.providentFundNotes = userSocialSecurity.getProvidentFundNotes();
-        this.socialSecurityBase = userSocialSecurity.getSocialSecurityBase();
-        this.providentFundBase = userSocialSecurity.getProvidentFundBase();
-        this.accumulationFundEnterpriseBase = userSocialSecurity.getProvidentFundBase();
-        this.proportionOfProvidentFundEnterprises = userSocialSecurity.getEnterpriseProportion();
-        this.personalRatioOfProvidentFund = userSocialSecurity.getPersonalProportion();
-        this.individualBaseOfProvidentFund = userSocialSecurity.getProvidentFundBase();
-        this.providentFundEnterprises = userSocialSecurity.getEnterpriseProvidentFundPayment();
-        this.providentFundIndividual = userSocialSecurity.getPersonalProvidentFundPayment();
+    public void setUserSocialSecurity(Map map) {
+        // 社保基数
+        final BigDecimal socialSecurityBase = BigDecimal.valueOf((Integer) map.get("SocialSecurityBase"));
+        // 公积金基数
+        final BigDecimal providentFundBase = BigDecimal.valueOf((Integer) map.get("providentFundBase"));
+        this.householdRegistrationType = (Integer) map.get("householdRegistrationType");
+        this.participatingInTheCity = (String) map.get("participatingInTheCity");
+        this.providentFundCity = (String) map.get("providentFundCity");
+        this.socialSecurityNotes = (String) map.get("socialSecurityNotes");
+        this.providentFundNotes = (String) map.get("providentFundNotes");
+        this.socialSecurityBase = socialSecurityBase;
+        this.providentFundBase = providentFundBase;
+        this.accumulationFundEnterpriseBase = providentFundBase;
+        this.proportionOfProvidentFundEnterprises = (BigDecimal) map.get("enterpriseProportion");
+        this.personalRatioOfProvidentFund = (BigDecimal) map.get("personalProportion");
+        this.individualBaseOfProvidentFund = providentFundBase;
+        this.providentFundEnterprises = (BigDecimal) map.get("enterpriseProvidentFundPayment");
+        this.providentFundIndividual = (BigDecimal) map.get("personalProvidentFundPayment");
         this.totalProvidentFund = this.providentFundEnterprises.add(this.providentFundIndividual);
+        this.pensionEnterpriseBase = socialSecurityBase;
+        this.personalPensionBase = socialSecurityBase;
+        this.unemploymentEnterpriseBase = socialSecurityBase;
+        this.medicalEnterpriseBase = socialSecurityBase;
+        this.medicalPersonalBase = socialSecurityBase;
+        this.baseOfIndustrialInjuryEnterprises = socialSecurityBase;
+        this.fertilityEnterpriseBase = socialSecurityBase;
+        this.baseOfSeriousIllness = socialSecurityBase;
+        this.personalBaseOfSeriousIllness = socialSecurityBase;
+        this.theNumberOfUnemployedIndividuals = socialSecurityBase;
     }
 
-    public void setUserCompanyPersonal(UserCompanyPersonal userCompanyPersonal) {
-        this.idNumber = userCompanyPersonal.getIdNumber();
-        this.theHighestDegreeOfEducation = userCompanyPersonal.getTheHighestDegreeOfEducation();
-        this.openingBank = userCompanyPersonal.getOpeningBank();
-        this.bankCardNumber = userCompanyPersonal.getBankCardNumber();
-        this.socialSecurityComputerNumber = userCompanyPersonal.getSocialSecurityComputerNumber();
-        this.providentFundAccount = userCompanyPersonal.getProvidentFundAccount();
+    public void setUserCompanyPersonal(Map map) {
+        this.workingCity = (String) map.get("workingCity");
+        this.idNumber = (String) map.get("idNumber");
+        this.theHighestDegreeOfEducation = (String) map.get("theHighestDegreeOfEducation");
+        this.openingBank = (String) map.get("openingBank");
+        this.bankCardNumber = (String) map.get("bankCardNumber");
+        this.socialSecurityComputerNumber = (String) map.get("socialSecurityComputerNumber");
+        this.providentFundAccount = (String) map.get("providentFundAccount");
     }
 
     /**
@@ -129,7 +146,7 @@ public class SocialSecrityArchiveDetail implements Serializable {
     /**
      * 户籍类型
      */
-    private String householdRegistrationType;
+    private Integer householdRegistrationType;
     /**
      * 参保城市
      */

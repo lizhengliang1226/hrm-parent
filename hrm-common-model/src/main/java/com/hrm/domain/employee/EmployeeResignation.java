@@ -55,4 +55,7 @@ public class EmployeeResignation implements Serializable {
 
     @ApiModelProperty("创建时间")
     private Date createTime;
+
+    @ApiModelProperty("企业id")
+    private String companyId;
 }

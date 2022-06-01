@@ -35,4 +35,8 @@ public class StrUtils {
             System.out.println(s);
         }
     }
+
+    public static String[] getStrAryBySplit(String data, String split) {
+        return data.split(split);
+    }
 }

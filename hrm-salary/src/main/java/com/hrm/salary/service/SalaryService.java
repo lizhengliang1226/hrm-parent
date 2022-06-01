@@ -33,7 +33,7 @@ public interface SalaryService {
     public PageResult<SalaryItemVo> findAll(Integer page, Integer pageSize, String companyId);
 
     /**
-     * 查询薪资详情
+     * 查询某月用户薪资详情
      *
      * @param userId
      * @param yearMonth

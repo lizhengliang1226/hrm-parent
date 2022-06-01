@@ -90,4 +90,6 @@ public class Company implements Serializable {
 
     @ApiModelProperty("创建时间")
     private Date createTime;
+    @ApiModelProperty("密码")
+    private String password;
 }

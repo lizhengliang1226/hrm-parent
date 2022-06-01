@@ -1,6 +1,7 @@
 package com.hrm.salary.service;
 
 
+import com.hrm.common.entity.PageResult;
 import com.hrm.domain.salary.SalaryArchive;
 import com.hrm.domain.salary.SalaryArchiveDetail;
 
@@ -32,7 +33,7 @@ public interface ArchiveService {
      * @param companyId
      * @return
      */
-    List<SalaryArchiveDetail> getReports(String yearMonth, String companyId) throws Exception;
+    PageResult<SalaryArchiveDetail> getReports(String yearMonth, String companyId, int page, int pagesize) throws Exception;
 
     void saveArchive(String yearMonth, String companyId) throws Exception;
 

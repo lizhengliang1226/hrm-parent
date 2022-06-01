@@ -1,5 +1,6 @@
 package com.hrm.domain.system.response;
 
+import com.hrm.domain.company.Company;
 import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.Permission;
 import com.hrm.domain.system.Role;
@@ -24,6 +25,7 @@ public class ProfileResult implements Serializable, AuthCachePrincipal {
     private String username;
     private String company;
     private String companyId;
+    private String managerId;
     private Map<String, Object> roles = new HashMap<>();
 
     public ProfileResult(User user) {
@@ -52,11 +54,33 @@ public class ProfileResult implements Serializable, AuthCachePrincipal {
         this.roles.put("apis", apis);
     }
 
+    public ProfileResult(Company company, List<Permission> permissionList) {
+        this.managerId = company.getManagerId();
+        this.username = company.getLegalRepresentative();
+        this.company = company.getName();
+        this.companyId = company.getId();
+        Set<String> menus = new HashSet<>();
+        Set<String> points = new HashSet<>();
+        Set<String> apis = new HashSet<>();
+        permissionList.forEach(p -> {
+            if (p.getType() == SystemConstant.PY_MENU) {
+                menus.add(p.getCode());
+            } else if (p.getType() == SystemConstant.PY_POINT) {
+                points.add(p.getCode());
+            } else if (p.getType() == SystemConstant.PY_API) {
+                apis.add(p.getCode());
+            }
+        });
+        this.roles.put("menus", menus);
+        this.roles.put("points", points);
+        this.roles.put("apis", apis);
+    }
+
     public ProfileResult(User user, List<Permission> permissionList) {
         this.mobile = user.getMobile();
         this.username = user.getUsername();
         this.company = user.getCompanyName();
-        this.companyId=user.getCompanyId();
+        this.companyId = user.getCompanyId();
         Set<String> menus = new HashSet<>();
         Set<String> points = new HashSet<>();
         Set<String> apis = new HashSet<>();

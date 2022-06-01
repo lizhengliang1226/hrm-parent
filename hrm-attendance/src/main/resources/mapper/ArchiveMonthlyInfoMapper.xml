@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrm.attendance.mapper.ArchiveMonthlyInfoMapper">
+    <select id="userAtteDays" resultType="com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo"
+            parameterType="java.util.Map">
+        select a.id                                               user_id,
+               a.username                                         name,
+               a.work_number                                      work_number,
+               a.department_name                                  department,
+               a.mobile,
+               a.working_city                                     work_city,
+               b.at1                                              normal_days,
+               b.at2                                              absence_days,
+               b.at3                                              later_times,
+               b.at4                                              early_times,
+               b.at5                                              outgoing_days,
+               b.at6                                              on_business_days,
+               b.at7                                              year_leave_days,
+               b.at8                                              leave_days,
+               b.at9                                              sick_leave_days,
+               b.at10                                             marriage_leave_days,
+               b.at11                                             maternity_leave_days,
+               b.at12                                             funeral_leave_days,
+               b.at13                                             paternity_leave_days,
+               b.at14                                             home_leave_days,
+               b.at15                                             accidential_leave_days,
+               b.at16                                             day_off_leave_days,
+               b.at17                                             doctor_off_leave_days,
+               b.at18                                             abortion_leave_days,
+               b.at19                                             long_sick_leave_days,
+               b.at20                                             retrocative,
+               b.at21                                             rest,
+               b.at22                                             leave_early_and_late,
+               b.at23                                             not_clock,
+               (1 - convert(b.at23 / b.at0, decimal(15, 2)))      clock_rate,
+               case
+                   when b.at1 + b.at21 = b.at0 then 1
+                   when (b.at1 + b.at21) &lt; b.at0 then 0 end as is_full_attendanceint,
+               (b.at1 + b.at21)                                   actual_atte_unofficial_days,
+               b.at1                                              actual_atte_official_days,
+               b.at0 - b.at21                                     working_days,
+               convert(b.workhours / b.at0, decimal(15, 2))       hours_per_days,
+               convert(b.workhours / b.at0, decimal(15, 2))       hours_per_work_day,
+               convert(b.workhours / b.at0, decimal(15, 2))       hours_per_rest_day,
+               b.workhours                                        work_hour,
+               21.75                                              salary_unofficial_days,
+               21.75                                              salary_official_days
+        from bs_user a
+                 left join (select user_id,
+                                   COUNT(*)                                                at0,
+                                   COUNT(case when adt_status = 1 then 1 end)              at1,
+                                   COUNT(case when adt_status = 2 then 1 end)              at2,
+                                   COUNT(case when adt_status = 3 then 1 end)              at3,
+                                   COUNT(case when adt_status = 4 then 1 end)              at4,
+                                   COUNT(case when adt_status = 5 then 1 end)              at5,
+                                   COUNT(case when adt_status = 6 then 1 end)              at6,
+                                   COUNT(case when adt_status = 7 then 1 end)              at7,
+                                   COUNT(case when adt_status = 8 then 1 end)              at8,
+                                   COUNT(case when adt_status = 9 then 1 end)              at9,
+                                   COUNT(case when adt_status = 10 then 1 end)             at10,
+                                   COUNT(case when adt_status = 11 then 1 end)             at11,
+                                   COUNT(case when adt_status = 12 then 1 end)             at12,
+                                   COUNT(case when adt_status = 13 then 1 end)             at13,
+                                   COUNT(case when adt_status = 14 then 1 end)             at14,
+                                   COUNT(case when adt_status = 15 then 1 end)             at15,
+                                   COUNT(case when adt_status = 16 then 1 end)             at16,
+                                   COUNT(case when adt_status = 17 then 1 end)             at17,
+                                   COUNT(case when adt_status = 18 then 1 end)             at18,
+                                   COUNT(case when adt_status = 19 then 1 end)             at19,
+                                   COUNT(case when adt_status = 20 then 1 end)             at20,
+                                   COUNT(case when adt_status = 21 then 1 end)             at21,
+                                   COUNT(case when adt_status = 22 then 1 end)             at22,
+                                   COUNT(case when adt_status = 23 then 1 end)             at23,
+                                   sum(TIMESTAMPDIFF(hour, c.adt_in_time, c.adt_out_time)) workhours
+                            from atte_attendance c
+                            where day like #{month}
+                            group by user_id) as b on a.id = b.user_id
+        limit #{page},#{pagesize}
+
+    </select>
+
+    <select id="countsOfAtteDatabase" resultType="Integer">
+        select count(*)
+        from bs_user a
+                 left join (select user_id,
+                                   COUNT(*)                                                at0,
+                                   COUNT(case when adt_status = 1 then 1 end)              at1,
+                                   COUNT(case when adt_status = 2 then 1 end)              at2,
+                                   COUNT(case when adt_status = 3 then 1 end)              at3,
+                                   COUNT(case when adt_status = 4 then 1 end)              at4,
+                                   COUNT(case when adt_status = 5 then 1 end)              at5,
+                                   COUNT(case when adt_status = 6 then 1 end)              at6,
+                                   COUNT(case when adt_status = 7 then 1 end)              at7,
+                                   COUNT(case when adt_status = 8 then 1 end)              at8,
+                                   COUNT(case when adt_status = 9 then 1 end)              at9,
+                                   COUNT(case when adt_status = 10 then 1 end)             at10,
+                                   COUNT(case when adt_status = 11 then 1 end)             at11,
+                                   COUNT(case when adt_status = 12 then 1 end)             at12,
+                                   COUNT(case when adt_status = 13 then 1 end)             at13,
+                                   COUNT(case when adt_status = 14 then 1 end)             at14,
+                                   COUNT(case when adt_status = 15 then 1 end)             at15,
+                                   COUNT(case when adt_status = 16 then 1 end)             at16,
+                                   COUNT(case when adt_status = 17 then 1 end)             at17,
+                                   COUNT(case when adt_status = 18 then 1 end)             at18,
+                                   COUNT(case when adt_status = 19 then 1 end)             at19,
+                                   COUNT(case when adt_status = 20 then 1 end)             at20,
+                                   COUNT(case when adt_status = 21 then 1 end)             at21,
+                                   COUNT(case when adt_status = 22 then 1 end)             at22,
+                                   COUNT(case when adt_status = 23 then 1 end)             at23,
+                                   sum(TIMESTAMPDIFF(hour, c.adt_in_time, c.adt_out_time)) workhours
+                            from atte_attendance c
+                            where c.day like #{month}
+                            group by c.user_id) b on a.id = b.user_id
+
+    </select>
+</mapper>

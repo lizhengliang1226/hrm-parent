@@ -37,7 +37,7 @@ public class UserCompanyPersonal implements Serializable {
     /**
      * 性别
      */
-    private String sex;
+//    private String sex;
     /**
      * 出生日期
      */
@@ -61,11 +61,11 @@ public class UserCompanyPersonal implements Serializable {
     /**
      * 身份证照片-正面
      */
-    private String idCardPhotoPositive;
+//    private String idCardPhotoPositive;
     /**
      * 身份证照片-背面
      */
-    private String idCardPhotoBack;
+//    private String idCardPhotoBack;
     /**
      * 籍贯
      */

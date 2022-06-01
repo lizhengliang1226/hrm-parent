@@ -12,15 +12,21 @@ public interface LeaveConfigDao extends CrudRepository<LeaveConfig, Long>, JpaRe
 
 
     /**
+     * 根据公司和部门查询请假配置信息
+     *
      * @param companyId
      * @param departmentId
-     * @return 根据公司和部门查询考请假配置信息
+     * @return
      */
     List<LeaveConfig> findByCompanyIdAndDepartmentId(String companyId, String departmentId);
 
 
     /**
-     * @return 根据公司、部门和请假类型查询请假配置信息
+     * 查询请假配置
+     * @param companyId
+     * @param departmentId
+     * @param leaveType
+     * @return
      */
     LeaveConfig findByCompanyIdAndDepartmentIdAndLeaveType(String companyId, String departmentId, String leaveType);
 

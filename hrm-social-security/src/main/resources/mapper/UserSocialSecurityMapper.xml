@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrm.social.mapper.UserSocialSecurityMapper">
+    <select id="findByConditions" resultType="com.hrm.domain.social.vo.UserSocialSecuritySimpleVo"
+            parameterType="java.util.Map">
+        select a.id,b.user_id userId,a.username,a.mobile ,
+        a.work_number workNumber,a.department_name departmentName,
+        a.time_of_entry timeOfEntry,b.participating_in_the_city participatingInTheCity,
+        b.provident_fund_city providentFundCity,b.social_security_base socialSecurityBase,
+        b.provident_fund_base providentFundBase
+        from bs_user a left join ss_user_social_security b on a.id=b.user_id where a.company_id=#{companyId}
+        <if test="providentFundChecks!=null and providentFundChecks.size()>0 ">
+            and b.provident_fund_city_id in
+            <foreach separator="," collection="providentFundChecks " item="id" open="(" close=')'>
+                #{id}
+            </foreach>
+        </if>
+        <if test="socialSecurityChecks!=null and socialSecurityChecks.size()>0 ">
+            and b.participating_in_the_city_id in
+            <foreach separator="," collection="socialSecurityChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="departmentChecks!=null and departmentChecks.size()>0">
+            and a.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and a.username like #{keyword}
+        </if>
+        limit #{page},#{pagesize}
+    </select>
+
+    <select id="count" resultType="Integer" parameterType="java.util.Map">
+        select count(*)
+        from bs_user a left join ss_user_social_security b on a.id=b.user_id where a.company_id=#{companyId}
+        <if test="providentFundChecks!=null and providentFundChecks.size()>0 ">
+            and b.provident_fund_city_id in
+            <foreach separator="," collection="providentFundChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="socialSecurityChecks!=null and socialSecurityChecks.size()>0  ">
+            and b.participating_in_the_city_id in
+            <foreach separator="," collection="socialSecurityChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="departmentChecks!=null  and departmentChecks.size()>0 ">
+            and a.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and a.username like #{keyword}
+        </if>
+    </select>
+</mapper>

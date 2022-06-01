@@ -16,7 +16,17 @@ public interface PaymentItemService {
      */
     public List<CityPaymentItem> findAllByCityId(String id);
 
+    /**
+     * 查询五险的基础缴纳比例
+     *
+     * @return
+     */
     List<PaymentItem> findAllPaymentItems();
 
+    /**
+     * 保存城市社保缴纳比例
+     *
+     * @param cityPaymentItem
+     */
     void saveCityPaymentItem(CityPaymentItem cityPaymentItem);
 }
