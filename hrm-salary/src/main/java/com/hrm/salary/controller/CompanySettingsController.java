@@ -39,7 +39,6 @@ public class CompanySettingsController extends BaseController {
         companySettingsService.save(companySettings);
         return new Result(ResultCode.SUCCESS);
     }
-
     /**
      * 新建报表
      *
@@ -54,4 +53,5 @@ public class CompanySettingsController extends BaseController {
         companySettingsService.save(companySettings);
         return new Result(ResultCode.SUCCESS);
     }
+
 }

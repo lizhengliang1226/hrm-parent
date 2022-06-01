@@ -52,13 +52,10 @@ public class SalaryController extends BaseController {
 
     @PostMapping(value = "/list")
     public Result list(@RequestBody Map map) {
-		//1.获取请求参数,page,size
-		Integer page = (Integer) map.get("page");
-		Integer pageSize = (Integer) map.get("pageSize");
-		//2.调用service查询
-		PageResult<SalaryItemVo> pr = salaryService.findAll(page, pageSize, companyId);
-		return new Result(ResultCode.SUCCESS, pr);
-	}
+        map.put("companyId", companyId);
+        PageResult<SalaryItemVo> pr = salaryService.findAll(map);
+        return new Result(ResultCode.SUCCESS, pr);
+    }
 
 	@GetMapping(value = "tips/{yearMonth}")
 	@ApiOperation(value = "获取企业薪资月度基础信息")

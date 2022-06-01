@@ -6,6 +6,7 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
+import com.alibaba.fastjson.JSON;
 import com.hrm.common.client.CompanyFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
@@ -13,6 +14,7 @@ import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.exception.CommonException;
 import com.hrm.domain.company.Department;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.User;
 import com.hrm.domain.system.response.ProfileResult;
 import com.hrm.system.redis.RedisService;
@@ -29,6 +31,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,6 +55,8 @@ import java.util.Map;
 @Api(tags = "用户管理")
 public class UserController extends BaseController {
     private RedisService redisService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Autowired
     public void setRedisService(RedisService redisService) {
@@ -61,6 +66,7 @@ public class UserController extends BaseController {
     private UserService userService;
     private OssService ossService;
     private CompanyFeignClient companyFeignClient;
+    private List<User> userList = new ArrayList<>();
 
     @PostMapping(value = "user/import", name = "IMPORT_USER_API")
     @ApiOperation(value = "批量保存用户")
@@ -75,7 +81,6 @@ public class UserController extends BaseController {
     @PostMapping(value = "user", name = "SAVE_USER_API")
     @ApiOperation(value = "保存用户")
     public Result save(@RequestBody User user) throws CommonException {
-        //设置保存的企业id，目前使用固定值1，以后会解决
         user.setCompanyId(companyId);
         user.setCompanyName(companyName);
         userService.save(user);
@@ -231,17 +236,21 @@ public class UserController extends BaseController {
         @SneakyThrows
         @Override
         public void invoke(User user, AnalysisContext analysisContext) {
-            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
-            final Department data = result.getData();
+            final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).get(user.getDepartmentId());
+            final Department data = JSON.parseObject(JSON.toJSONString(o), Department.class);
+//            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
+//            final Department data = result.getData();
             user.setDepartmentId(data.getId());
             user.setDepartmentName(data.getName());
             user.setCompanyName(companyName);
             user.setCompanyId(companyId);
+//            userList.add(user)
             userService.save(user);
         }
 
         @Override
         public void doAfterAllAnalysed(AnalysisContext context) {
+
         }
 
     }

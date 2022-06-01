@@ -10,8 +10,8 @@ import com.hrm.domain.salary.SalaryArchive;
 import com.hrm.domain.salary.SalaryArchiveDetail;
 import com.hrm.domain.salary.Settings;
 import com.hrm.domain.social.SocialSecrityArchiveDetail;
-import com.hrm.salary.dao.ArchiveDao;
-import com.hrm.salary.dao.ArchiveDetailDao;
+import com.hrm.salary.dao.SalaryArchiveDao;
+import com.hrm.salary.dao.SalaryArchiveDetailDao;
 import com.hrm.salary.dao.SettingsDao;
 import com.hrm.salary.dao.UserSalaryDao;
 import com.hrm.salary.service.ArchiveService;
@@ -30,9 +30,9 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class ArchiveServiceImpl implements ArchiveService {
     @Autowired
-    private ArchiveDao archiveDao;
+    private SalaryArchiveDao salaryArchiveDao;
     @Autowired
-    private ArchiveDetailDao archiveDetailDao;
+    private SalaryArchiveDetailDao salaryArchiveDetailDao;
     @Autowired
     private SettingsDao set;
     @Autowired
@@ -46,12 +46,23 @@ public class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     public SalaryArchive findSalaryArchive(String companyId, String yearMonth) {
-        return archiveDao.findByCompanyIdAndYearsMonth(companyId, yearMonth);
+        return salaryArchiveDao.findByCompanyIdAndYearsMonth(companyId, yearMonth);
     }
 
     @Override
-    public List<SalaryArchiveDetail> findSalaryArchiveDetail(String id) {
-        return archiveDetailDao.findByArchiveId(id);
+    public PageResult<SalaryArchiveDetail> findSalaryArchiveDetail(String id, Map map) {
+        final int page = (int) map.get("page");
+        final int pagesize = (int) map.get("pagesize");
+        final Page<SalaryArchiveDetail> sadList =
+                salaryArchiveDetailDao.findAll((root, criteriaQuery, criteriaBuilder) ->
+                                                       criteriaBuilder.equal(
+                                                               root.get("archiveId")
+                                                                   .as(String.class), id),
+                                               PageRequest.of(page - 1, pagesize));
+        final long totalElements = sadList.getTotalElements();
+        final List<SalaryArchiveDetail> content = sadList.getContent();
+        return new PageResult<>(totalElements, content);
+
     }
 
     @Override
@@ -72,15 +83,15 @@ public class ArchiveServiceImpl implements ArchiveService {
 
     @Override
     public void saveArchive(String yearMonth, String companyId) throws Exception {
-        SalaryArchive am = archiveDao.findByCompanyIdAndYearsMonth(companyId, yearMonth);
+        SalaryArchive am = salaryArchiveDao.findByCompanyIdAndYearsMonth(companyId, yearMonth);
         if (am == null) {
             // 没有数据，构建
             archiveData(yearMonth, companyId);
         } else {
             // 已有数据，先删除在构建
             final String id = am.getId();
-            archiveDetailDao.deleteByArchiveId(id);
-            archiveDao.deleteById(id);
+            salaryArchiveDetailDao.deleteByArchiveId(id);
+            salaryArchiveDao.deleteById(id);
             archiveData(yearMonth, companyId);
         }
     }
@@ -88,6 +99,14 @@ public class ArchiveServiceImpl implements ArchiveService {
     @Override
     public void newReport(String yearMonth, String companyId) {
 
+    }
+
+    @Override
+    public List<SalaryArchive> findAllSalaryArchive(String companyId, String year) {
+        final List<SalaryArchive> saList = salaryArchiveDao.findByCompanyIdAndYearsMonthLike(companyId,
+                                                                                             year.substring(0, 4) + "%");
+
+        return saList;
     }
 
     private void archiveData(String yearMonth, String companyId) throws Exception {
@@ -108,7 +127,7 @@ public class ArchiveServiceImpl implements ArchiveService {
         salaryArchive.setGrossSalary(paybefortax);
         salaryArchive.setFiveInsurances(fi);
         salaryArchive.setCreationTime(new Date());
-        archiveDao.save(salaryArchive);
+        salaryArchiveDao.save(salaryArchive);
         salaryArchiveDetailServiceImpl.saveBatch(reports.getRows());
     }
 

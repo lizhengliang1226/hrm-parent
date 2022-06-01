@@ -8,6 +8,7 @@ import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
+import com.hrm.company.redis.RedisService;
 import com.hrm.company.service.CompanyService;
 import com.hrm.company.service.DepartmentService;
 import com.hrm.domain.company.Department;
@@ -24,7 +25,6 @@ import java.util.List;
 
 /**
  * @author LZL
- *
  * @date 2022/3/7-19:35
  */
 @RestController
@@ -32,10 +32,12 @@ import java.util.List;
 @RequestMapping("company")
 @Api(tags = "部门管理")
 public class DepartmentController extends BaseController {
-
+    @Autowired
+    private RedisService redisService;
     private DepartmentService departmentService;
     private CompanyService companyService;
     private List<Department> list = new ArrayList<>();
+
     @Autowired
     public void setCompanyService(CompanyService companyService) {
         this.companyService = companyService;
@@ -91,6 +93,13 @@ public class DepartmentController extends BaseController {
         final List<Department> all = departmentService.findAll(companyId);
         DeptListResult deptListResult = new DeptListResult(companyService.findById(companyId), all);
         return new Result<>(ResultCode.SUCCESS, deptListResult);
+    }
+
+    @GetMapping(value = "build")
+    @ApiOperation(value = "构建部门基础信息缓存")
+    public Result buildUserData() {
+        redisService.buildDeptData(companyId);
+        return Result.SUCCESS();
     }
 
     @PostMapping(value = "department/import")

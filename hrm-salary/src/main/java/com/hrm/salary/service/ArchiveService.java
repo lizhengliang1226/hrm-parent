@@ -6,6 +6,7 @@ import com.hrm.domain.salary.SalaryArchive;
 import com.hrm.domain.salary.SalaryArchiveDetail;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ArchiveService {
 
@@ -24,7 +25,7 @@ public interface ArchiveService {
      * @param id
      * @return
      */
-    List<SalaryArchiveDetail> findSalaryArchiveDetail(String id);
+    PageResult<SalaryArchiveDetail> findSalaryArchiveDetail(String id, Map map);
 
     /**
      * 构建当月薪资报表
@@ -38,4 +39,13 @@ public interface ArchiveService {
     void saveArchive(String yearMonth, String companyId) throws Exception;
 
     void newReport(String yearMonth, String companyId);
+
+    /**
+     * 查询企业某一年的全部归档主档数据
+     *
+     * @param companyId
+     * @param year
+     * @return
+     */
+    List<SalaryArchive> findAllSalaryArchive(String companyId, String year);
 }

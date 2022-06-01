@@ -21,6 +21,7 @@ import com.hrm.domain.attendance.entity.AttendanceConfig;
 import com.hrm.domain.attendance.entity.User;
 import com.hrm.domain.attendance.enums.AttendanceStatusEnum;
 import com.hrm.domain.attendance.vo.AtteUploadVo;
+import com.hrm.domain.constant.SystemConstant;
 import com.lzl.IdWorker;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class ExcelImportServiceImpl implements ExcelImportService {
      */
     @Override
     public void importAttendanceExcel(MultipartFile file, String companyId) throws Exception {
-        // 查询每个部门的考勤配置信息
+        // 查询每个部门的出勤配置信息
         atcList = attendanceConfigDao.findAll();
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), AtteUploadVo.class, new AttendanceExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
@@ -91,9 +92,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         @SneakyThrows
         @Override
         public void invoke(AtteUploadVo atteUploadVo, AnalysisContext analysisContext) {
-            final Object o = redisTemplate.boundValueOps(atteUploadVo.getMobile()).get();
-            final User user = JSON.parseObject(o.toString(), User.class);
-//            final User user = userDao.findByMobile(atteUploadVo.getMobile());
+            final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(atteUploadVo.getMobile());
+            final User user = JSON.parseObject(JSON.toJSONString(o), User.class);
             Attendance attendance = new Attendance(atteUploadVo, user);
             attendance.setDay(atteUploadVo.getAtteDate());
             // 设置考勤状态
@@ -103,9 +103,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                                                          DatePattern.PURE_DATE_PATTERN)) && !wordingDays.contains(attendance.getDay())) {
                 attendance.setAdtStatus(AttendanceStatusEnum.REST.getValue());
             } else {
-//                final AttendanceConfig ac = attendanceConfigDao.findByCompanyIdAndDepartmentId(user.getCompanyId(),
-//                                                                                               user.getDepartmentId());
-
                 String morningStartTime = "";
                 String afternoonEndTime = "";
                 for (AttendanceConfig attendanceConfig : atcList) {
@@ -135,12 +132,9 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
                 }
             }
-//            final Attendance ad = attendanceDao.findByUserIdAndDay(user.getId(), attendance.getDay());
-//            if (ad == null) {
             attendance.setId(IdWorker.getIdStr());
             attendance.setCreateDate(new Date());
             atList.add(attendance);
-//            }
         }
 
         @Override

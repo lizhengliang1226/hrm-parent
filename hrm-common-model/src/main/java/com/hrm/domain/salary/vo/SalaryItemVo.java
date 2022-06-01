@@ -59,7 +59,7 @@ public class SalaryItemVo implements Serializable {
      * 津贴方案
      */
 //    private Integer subsidyScheme;
-
+    private Integer inServiceStatus;
     /**
      * 是否定薪
      */

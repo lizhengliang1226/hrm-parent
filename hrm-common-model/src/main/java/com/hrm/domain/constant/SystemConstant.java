@@ -75,4 +75,12 @@ public class SystemConstant {
      * 二维码未扫描
      */
     public static final String NOT_SCAN = "-1";
+    /**
+     * 用户列表在redis中的名字
+     */
+    public static final String REDIS_USER_LIST = "userSimpleList";
+    /**
+     * 部门列表在redis1的名字
+     */
+    public static final String REDIS_DEPT_LIST = "deptList";
 }

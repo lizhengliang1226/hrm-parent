@@ -3,14 +3,14 @@ package com.hrm.salary.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.hrm.common.client.SocialSecurityClient;
 import com.hrm.common.entity.PageResult;
+import com.hrm.common.utils.PageUtils;
 import com.hrm.domain.salary.UserSalary;
 import com.hrm.domain.salary.vo.SalaryItemVo;
 import com.hrm.domain.social.UserSocialSecurity;
 import com.hrm.salary.dao.UserSalaryDao;
+import com.hrm.salary.mapper.SalaryMapper;
 import com.hrm.salary.service.SalaryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +27,8 @@ public class SalaryServiceImpl implements SalaryService {
     private UserSalaryDao userSalaryDao;
     @Autowired
     private SocialSecurityClient socialSecurityClient;
+    @Autowired
+    private SalaryMapper salaryMapper;
 
     //定薪或者调薪
     @Override
@@ -53,10 +55,11 @@ public class SalaryServiceImpl implements SalaryService {
 
 
     @Override
-    public PageResult<SalaryItemVo> findAll(Integer page, Integer pageSize, String companyId) {
-        Page<Map> page1 = userSalaryDao.findPage(companyId, PageRequest.of(page - 1, pageSize));
-        final List content = page1.getContent();
-        return new PageResult(page1.getTotalElements(), content);
+    public PageResult<SalaryItemVo> findAll(Map map) {
+        PageUtils.doPage(map);
+        final List<SalaryItemVo> salaryList = salaryMapper.findSalaryList(map);
+        final Integer integer = salaryMapper.countOfSalaryList(map);
+        return new PageResult(Long.valueOf(integer), salaryList);
     }
 
     @Override

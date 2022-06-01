@@ -30,7 +30,7 @@ public interface SalaryService {
      * @param companyId
      * @return
      */
-    public PageResult<SalaryItemVo> findAll(Integer page, Integer pageSize, String companyId);
+    public PageResult<SalaryItemVo> findAll(Map map);
 
     /**
      * 查询某月用户薪资详情

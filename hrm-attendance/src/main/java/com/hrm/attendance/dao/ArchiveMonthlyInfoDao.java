@@ -46,4 +46,5 @@ public interface ArchiveMonthlyInfoDao
      */
     AttendanceArchiveMonthlyInfo findByUserIdAndArchiveDate(String userId, String yearMonth);
 
+
 }

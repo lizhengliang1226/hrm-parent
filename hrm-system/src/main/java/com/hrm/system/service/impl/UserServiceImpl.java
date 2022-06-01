@@ -82,8 +82,8 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
             addUserToPersonnel(user);
         }
         userDao.save(user);
-        redisTemplate.boundValueOps(id).set(user);
-        redisTemplate.boundValueOps(user.getMobile()).set(user);
+        redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user);
+        redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user.getMobile(), user);
     }
 
 //    public static void main(String[] args) {

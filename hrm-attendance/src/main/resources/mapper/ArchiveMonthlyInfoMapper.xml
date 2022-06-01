@@ -75,6 +75,7 @@
                             from atte_attendance c
                             where day like #{month}
                             group by user_id) as b on a.id = b.user_id
+        where a.company_id = #{companyId}
         limit #{page},#{pagesize}
 
     </select>
@@ -111,6 +112,7 @@
                             from atte_attendance c
                             where c.day like #{month}
                             group by c.user_id) b on a.id = b.user_id
+        where a.company_id = #{companyId}
 
     </select>
 </mapper>

@@ -1,8 +1,10 @@
 package com.hrm.system.redis;
 
 import com.alibaba.fastjson.JSON;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.User;
 import com.hrm.system.dao.UserDao;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,17 +28,18 @@ public class RedisService {
     public void buildUserData(String companyId) {
         final List<User> all = userDao.findByCompanyId(companyId);
         for (User user : all) {
+            final com.hrm.domain.attendance.entity.User user1 = new com.hrm.domain.attendance.entity.User();
+            BeanUtils.copyProperties(user, user1);
             final String id = user.getId();
             final String mobile = user.getMobile();
-            final String s = JSON.toJSONString(user);
-            redisTemplate.boundValueOps(id).set(s);
-            redisTemplate.boundValueOps(mobile).set(s);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user1);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(mobile, user1);
         }
     }
 
     public User getUserInfoByRedisTemplate(String key) {
         Object o = redisTemplate.boundValueOps(key).get();
-        return JSON.parseObject(o.toString(), User.class);
+        return JSON.parseObject(JSON.toJSONString(o), User.class);
     }
 
     public void deleteUser(String id) {

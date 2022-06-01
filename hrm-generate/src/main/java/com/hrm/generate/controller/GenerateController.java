@@ -2,23 +2,28 @@ package com.hrm.generate.controller;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.hrm.common.client.SystemFeignClient;
+import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.utils.DateUtils;
 import com.hrm.domain.attendance.vo.AtteUploadVo;
 import com.hrm.domain.employee.vo.UserVo;
+import com.hrm.domain.generate.User;
 import com.hrm.domain.social.vo.UserSocialSecurityVo;
 import com.hrm.domain.system.City;
-import com.hrm.domain.system.User;
+import com.hrm.generate.dao.UserDao;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,18 +44,36 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("build")
-public class GenerateController {
+public class GenerateController extends BaseController {
     @Autowired
     private SystemFeignClient systemFeignClient;
+    @Autowired
+    private UserDao userDao;
 
     @GetMapping("atteData")
     @ApiOperation(value = "生成数据")
-    public Result buildAtteData() throws IOException, ParseException {
-        String filename = "C:\\Users\\17314\\Desktop\\HRM管理系统\\数据导入\\2022-3-5.xlsx";
-        int startMonth = 3;
-        int endMonth = 5;
-        int startYear = 2022;
-        int endYear = 2022;
+    public Result buildAtteData(@RequestBody Map map) throws IOException, ParseException {
+        String filename = (String) map.get("filename");
+        int startMonth = Integer.parseInt((String) map.get("startMonth"));
+        int endMonth = Integer.parseInt((String) map.get("endMonth")
+        );
+        int startYear = Integer.parseInt((String) map.get("startYear"));
+        int endYear = Integer.parseInt((String) map.get("endYear"));
+        if (StrUtil.isEmpty(filename)) {
+            filename = "C:\\Users\\17314\\Desktop\\HRM管理系统\\数据导入\\" + startYear + "-" + endYear + "年" + startMonth + "-" + endMonth + "月考勤模拟数据.xlsx";
+        }
+        if (ObjectUtil.isEmpty(startMonth)) {
+            startMonth = 1;
+        }
+        if (ObjectUtil.isEmpty(endMonth)) {
+            endMonth = 1;
+        }
+        if (ObjectUtil.isEmpty(startYear)) {
+            startYear = DateUtil.date().getYear();
+        }
+        if (ObjectUtil.isEmpty(endYear)) {
+            endYear = startYear;
+        }
         buildAttendanceData(startYear, endYear, startMonth, endMonth, filename);
         return Result.SUCCESS();
     }
@@ -166,13 +189,11 @@ public class GenerateController {
         List<AtteUploadVo> list = new ArrayList<>();
         String[] timeup = new String[]{"08:00:00", "08:30:00", "09:00:00", "09:30:00", "10:00:00"};
         String[] timedown = new String[]{"17:30:00", "18:00:00", "18:30:00", "19:00:00", "19:30:00"};
-        String a = "18685404707,李正良,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:31,1500843020646461440,2022-05-06,1,4545|18685405040,CWCPSYB员工1,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:31,1500843020646461440,2022-05-06,1,47001|18685405314,CWCPSYB员工2,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:32,1500843020646461440,2022-05-06,1,54003|18685405092,CWCPSYB员工3,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:32,1500843020646461440,2022-05-06,1,15876|18685401489,CWCPSYB员工4,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:32,1500843020646461440,2022-05-06,1,99291|18685401765,CWCPSYB员工5,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:32,1500843020646461440,2022-05-06,1,17874|18685402076,CWCPSYB员工6,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:33,1500843020646461440,2022-05-06,1,11334|18685403001,CWCPSYB员工7,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:33,1500843020646461440,2022-05-06,1,70771|18685405423,CWCPSYB员工8,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:33,1500843020646461440,2022-05-06,1,96595|18685408673,CWCPSYB员工9,71f939b8a9538aec1ee680b62bf5e2f2c0fcab3bbbc538098b4db918bea7535ff273920a07fef83d,1,2022-05-20 01:30:33,1500843020646461440,2022-05-06,1,24593|18685407642,CWCPSYB员工10,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:33,1500843020646461440,2022-05-06,1,40956|18685403817,CWCPSYB员工11,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:34,1500843020646461440,2022-05-06,1,82266|18685403110,CWCPSYB员工12,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:34,1500843020646461440,2022-05-06,1,38452|18685401015,CWCPSYB员工13,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:34,1500843020646461440,2022-05-06,1,83004|18685409840,CWCPSYB员工14,71f939b8a9538aec1ee680b62bf5e2f2c0fcab3bbbc538098b4db918bea7535ff273920a07fef83d,1,2022-05-20 01:30:34,1500843020646461440,2022-05-06,1,20463|18685402470,CWCPSYB员工15,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:35,1500843020646461440,2022-05-06,1,64139|18685401355,CWCPSYB员工16,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:35,1500843020646461440,2022-05-06,1,67189|18685406982,CWCPSYB员工17,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:35,1500843020646461440,2022-05-06,1,88618|18685407882,CWCPSYB员工18,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:35,1500843020646461440,2022-05-06,1,78589|18685406560,CWCPSYB员工19,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:35,1500843020646461440,2022-05-06,1,63258|18685405806,CWCPSYB员工20,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:36,1500843020646461440,2022-05-06,1,18428|18685403263,CWCPSYB员工21,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:36,1500843020646461440,2022-05-06,1,28304|18685408523,CWCPSYB员工22,71f939b8a9538aec1ee680b62bf5e2f2c0fcab3bbbc538098b4db918bea7535ff273920a07fef83d,1,2022-05-20 01:30:36,1500843020646461440,2022-05-06,1,73934|18685403099,CWCPSYB员工23,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:36,1500843020646461440,2022-05-06,1,93001|18685405648,CWCPSYB员工24,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:37,1500843020646461440,2022-05-06,1,32476|18685405201,CWCPSYB员工25,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:37,1500843020646461440,2022-05-06,1,42179|18685402647,CWCP2员工1,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:37,558842974671323138,2022-05-06,1,55513|18685406938,CWCP2员工2,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:37,558842974671323138,2022-05-06,1,35114|18685405798,CWCP2员工3,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:37,558842974671323138,2022-05-06,1,36453|18685406639,CWCP2员工4,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:38,558842974671323138,2022-05-06,1,17653|18685405281,CWCP2员工5,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:38,558842974671323138,2022-05-06,1,22681|18685403690,CWCP2员工6,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:38,558842974671323138,2022-05-06,1,31984|18685402705,CWCP2员工7,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:38,558842974671323138,2022-05-06,1,62351|18685402471,CWCP2员工8,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:38,558842974671323138,2022-05-06,1,51584|18685401167,CWCP2员工9,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:39,558842974671323138,2022-05-06,1,72078|18685401283,CWCP2员工10,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:39,558842974671323138,2022-05-06,1,67320|18685405892,CWCP2员工11,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:39,558842974671323138,2022-05-06,1,70434|18685408763,CWCP2员工12,71f939b8a9538aec1ee680b62bf5e2f2c0fcab3bbbc538098b4db918bea7535ff273920a07fef83d,1,2022-05-20 01:30:39,558842974671323138,2022-05-06,1,33465|18685401191,CWCP2员工13,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:40,558842974671323138,2022-05-06,1,43626|18685403699,CWCP2员工14,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:40,558842974671323138,2022-05-06,1,69498|18685401511,CWCP2员工15,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:40,558842974671323138,2022-05-06,1,47245|18685402811,CWCP2员工16,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:40,558842974671323138,2022-05-06,1,40727|18685408578,CWCP2员工17,71f939b8a9538aec1ee680b62bf5e2f2c0fcab3bbbc538098b4db918bea7535ff273920a07fef83d,1,2022-05-20 01:30:40,558842974671323138,2022-05-06,1,51029|18685407016,CWCP2员工18,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:41,558842974671323138,2022-05-06,1,52096|18685404338,CWCP2员工19,ea5531e01f7d9ce90c7497dc562cd5720d2a3095b480f9844bfe9f333678e93991b9f379e09a0bb7,1,2022-05-20 01:30:41,558842974671323138,2022-05-06,1,69075|18685403306,CWCP2员工20,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:41,558842974671323138,2022-05-06,1,36686|18685401138,CWCP2员工21,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:41,558842974671323138,2022-05-06,1,34239|18685401135,CWCP2员工22,1c8db647f551fe1d1d9f4aa45811bed477362e903d76bab412122132a046805a8a6ac468506acbcb,1,2022-05-20 01:30:41,558842974671323138,2022-05-06,1,30200|18685403198,CWCP2员工23,7909affbe20a60d67f51df8854401c2dcd4d32b7a33caf58d046d182c3dd36f5e7f2351c2800b295,1,2022-05-20 01:30:42,558842974671323138,2022-05-06,1,58979|18685406272,CWCP2员工24,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:42,558842974671323138,2022-05-06,1,28349|18685407037,CWCP2员工25,eb70140e615b76edb08f5226585b6de4b1d06916e9052c4e71e9a6f076c3efc7f2e69c825f8a69ec,1,2022-05-20 01:30:42,558842974671323138,2022-05-06,1,81974";
-        final String[] split = a.split("\\|");
-        for (String aaa : split) {
-            final String[] split1 = aaa.split(",");
-            final String mobile = split1[0];
-            final String name = split1[1];
-            final String work = split1[8];
+        final List<User> users = userDao.findByCompanyId(companyId);
+        for (User user : users) {
+            final String mobile = user.getMobile();
+            final String workNumber = user.getWorkNumber();
+            final String username = user.getUsername();
             for (int i = startYear; i <= endYear; i++) {
                 for (int j = startMonth; j <= endMonth; j++) {
                     String m = i + "";
@@ -192,14 +213,14 @@ public class GenerateController {
                         atteUploadVo.setInTime(parse);
                         atteUploadVo.setOutTime(parse1);
                         atteUploadVo.setMobile(mobile);
-                        atteUploadVo.setUsername(name);
-                        atteUploadVo.setWorkNumber(work);
+                        atteUploadVo.setUsername(username);
+                        atteUploadVo.setWorkNumber(workNumber);
                         list.add(atteUploadVo);
                     }
                 }
             }
-
         }
+
         Resource template = new ClassPathResource("考勤数据构建模板.xlsx");
         final WriteSheet sheet = EasyExcel.writerSheet().build();
         FileOutputStream f = new FileOutputStream(filename);

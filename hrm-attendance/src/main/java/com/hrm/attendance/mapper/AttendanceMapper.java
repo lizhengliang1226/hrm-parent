@@ -19,7 +19,19 @@ import java.util.Map;
 @Repository
 @Mapper
 public interface AttendanceMapper extends BaseMapper<Attendance> {
+    /**
+     * 查询某月的员工考勤记录
+     *
+     * @param map
+     * @return
+     */
     List<AtteItemBO> findMonthAtteData(Map map);
 
+    /**
+     * 查询某月的员工考勤记录记录数
+     *
+     * @param map
+     * @return
+     */
     Integer countsOfUserAtte(Map map);
 }

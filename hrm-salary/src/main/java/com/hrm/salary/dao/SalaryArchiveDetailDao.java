@@ -14,7 +14,7 @@ import java.util.List;
  * JpaRepository<实体类，主键>
  * JpaSpecificationExecutor<实体类>
  */
-public interface ArchiveDetailDao extends JpaRepository<SalaryArchiveDetail, String>, JpaSpecificationExecutor<SalaryArchiveDetail> {
+public interface SalaryArchiveDetailDao extends JpaRepository<SalaryArchiveDetail, String>, JpaSpecificationExecutor<SalaryArchiveDetail> {
     /**
      * 根据主档id查询所有的子档数据
      *

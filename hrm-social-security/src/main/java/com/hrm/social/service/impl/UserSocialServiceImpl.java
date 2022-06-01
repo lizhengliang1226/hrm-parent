@@ -7,6 +7,7 @@ import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.entity.PageResult;
+import com.hrm.common.utils.PageUtils;
 import com.hrm.domain.employee.UserCompanyPersonal;
 import com.hrm.domain.social.CityPaymentItem;
 import com.hrm.domain.social.UserSocialSecurity;
@@ -62,13 +63,7 @@ public class UserSocialServiceImpl implements UserSocialService {
 
     @Override
     public PageResult<UserSocialSecuritySimpleVo> findAll(Map map) {
-        final Integer page = (Integer) map.get("page");
-        final Integer pageSize = (Integer) map.get("pagesize");
-        map.put("page", (page - 1) * pageSize);
-        final String keyword = (String) map.get("keyword");
-        if (keyword != null && keyword.length() > 0) {
-            map.put("keyword", "%" + keyword + "%");
-        }
+        PageUtils.doPage(map);
         final List<UserSocialSecuritySimpleVo> byConditions = userSocialSecurityMapper.findByConditions(map);
         final Integer count = userSocialSecurityMapper.count(map);
         final PageResult<UserSocialSecuritySimpleVo> pr = new PageResult<>();

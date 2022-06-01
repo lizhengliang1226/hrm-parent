@@ -30,7 +30,7 @@ public interface ArchiveMonthlyInfoMapper
      * @param date 月份
      * @return
      */
-    Integer countsOfAtteDatabase(@Param("month") String date);
+    Integer countsOfAtteDatabase(@Param("month") String date, @Param("companyId") String companyId);
 
     /**
      * 删除考勤明细

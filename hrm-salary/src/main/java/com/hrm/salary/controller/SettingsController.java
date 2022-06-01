@@ -19,7 +19,7 @@ public class SettingsController extends BaseController {
 	/**
 	 * 获取企业计薪及津贴设置
 	 */
-	@RequestMapping(value = "/settings", method = RequestMethod.GET)
+	@GetMapping(value = "/settings")
 	public Result getSettings() throws Exception {
 		Settings settings = settingsService.findById(companyId);
 		return new Result(ResultCode.SUCCESS, settings);
@@ -28,7 +28,7 @@ public class SettingsController extends BaseController {
 	/**
 	 * 保存企业计薪及津贴设置
 	 */
-	@RequestMapping(value = "/settings", method = RequestMethod.POST)
+	@PostMapping(value = "/settings")
 	public Result saveSettings(@RequestBody Settings settings) throws Exception {
 		settings.setCompanyId(companyId);
 		settingsService.save(settings);

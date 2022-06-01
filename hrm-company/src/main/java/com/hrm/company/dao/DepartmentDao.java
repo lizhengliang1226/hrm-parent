@@ -4,6 +4,8 @@ import com.hrm.domain.company.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.util.List;
+
 /**
  * 部门dao接口
  *
@@ -19,4 +21,12 @@ public interface DepartmentDao extends JpaRepository<Department, String>, JpaSpe
      * @return 部门实体
      */
     Department findByCodeAndCompanyId(String code, String companyId);
+
+    /**
+     * 根据企业id查询企业所有部门
+     *
+     * @param companyId
+     * @return
+     */
+    List<Department> findByCompanyId(String companyId);
 }

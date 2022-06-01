@@ -14,14 +14,12 @@ public interface AttendanceService {
 
 
 	/**
-	 * 获取考勤数据
-	 *
-	 * @param companyId
-	 * @param page
-	 * @param pageSize
-	 * @return
-	 * @throws ParseException
-	 */
+     * 获取考勤列表数据
+     *
+     * @param map
+     * @return
+     * @throws ParseException
+     */
 	public Map getAtteData(Map map) throws ParseException;
 
 	/**

@@ -98,16 +98,16 @@ public class AttendanceController extends BaseController {
     }
 
     @GetMapping("reports/year")
-    @ApiOperation(value = "查询考勤历史归档数据")
-    public Result atteHistoryArchiveData(String departmentId, String year) throws Exception {
-        List<ArchiveMonthlyVO> list = atteArchiveService.findAtteHistoryData(departmentId, year, companyId);
+    @ApiOperation(value = "查询考勤历史归档主数据")
+    public Result atteHistoryArchiveData(@RequestParam String year) throws Exception {
+        List<ArchiveMonthlyVO> list = atteArchiveService.findAtteHistoryData(year, companyId);
         return new Result(ResultCode.SUCCESS, list);
     }
 
     @PostMapping("reports/{id}")
     @ApiOperation(value = "查询考勤历史归档详情数据")
-    public Result atteHistoryArchiveDetailData(@PathVariable String id) throws Exception {
-        List<AttendanceArchiveMonthlyInfo> list = atteArchiveService.findAtteHistoryDetailData(id);
+    public Result atteHistoryArchiveDetailData(@PathVariable String id, @RequestBody Map map) throws Exception {
+        PageResult<AttendanceArchiveMonthlyInfo> list = atteArchiveService.findAtteHistoryDetailData(id, map);
         return new Result(ResultCode.SUCCESS, list);
     }
 

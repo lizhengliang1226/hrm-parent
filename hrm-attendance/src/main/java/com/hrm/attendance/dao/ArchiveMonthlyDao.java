@@ -20,7 +20,7 @@ public interface ArchiveMonthlyDao
 
 
     /**
-     * 查询某一年的归档列表
+     * 查询某企业某一年的归档主列表
      *
      * @param companyId
      * @param archiveYear
@@ -29,7 +29,7 @@ public interface ArchiveMonthlyDao
     List<ArchiveMonthly> findByCompanyIdAndArchiveYear(String companyId, String archiveYear);
 
     /**
-     * 查询归档
+     * 查询主归档
      *
      * @param companyId
      * @param archiveYear
@@ -39,7 +39,7 @@ public interface ArchiveMonthlyDao
     List<ArchiveMonthly> findByCompanyIdAndArchiveYearAndArchiveMonth(String companyId, String archiveYear, String archiveMonth);
 
     /**
-     * 查询归档
+     * 查询归档主档
      *
      * @param companyId
      * @param year

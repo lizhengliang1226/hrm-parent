@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 17314
@@ -43,11 +44,11 @@ public class ArchiveController extends BaseController {
             objectPageResult = archiveService.getReports(yearMonth, companyId, page, pagesize);
 
         } else {
-            // 已归档,查询归档信息
-            final SalaryArchive archive = archiveService.findSalaryArchive(companyId, yearMonth);
-            if (archive != null) {
-                list = archiveService.findSalaryArchiveDetail(archive.getId());
-            }
+//            // 已归档,查询归档信息
+//            final SalaryArchive archive = archiveService.findSalaryArchive(companyId, yearMonth);
+//            if (archive != null) {
+//                list = archiveService.findSalaryArchiveDetail(archive.getId());
+//            }
         }
         return new Result(ResultCode.SUCCESS, objectPageResult);
 
@@ -60,11 +61,18 @@ public class ArchiveController extends BaseController {
         return new Result(ResultCode.SUCCESS);
     }
 
-//
-//    @GetMapping("reports/newReport")
-//    @ApiOperation(value = "新建薪资报表数据")
-//    public Result newSalaryReportData(String yearMonth) throws Exception {
-//        archiveService.newReport(yearMonth, companyId);
-//        return new Result(ResultCode.SUCCESS);
-//    }
+    @GetMapping("reports/year")
+    @ApiOperation(value = "查询薪资历史归档主数据")
+    public Result salaryHistoryArchiveData(@RequestParam String year) throws Exception {
+        List<SalaryArchive> list = archiveService.findAllSalaryArchive(companyId, year);
+        return new Result(ResultCode.SUCCESS, list);
+    }
+
+    @PostMapping("reports/{id}")
+    @ApiOperation(value = "查询薪资历史归档详情数据")
+    public Result salaryHistoryArchiveDetailData(@PathVariable String id, @RequestBody Map map) throws Exception {
+        PageResult<SalaryArchiveDetail> list = archiveService.findSalaryArchiveDetail(id, map);
+        return new Result(ResultCode.SUCCESS, list);
+    }
+
 }

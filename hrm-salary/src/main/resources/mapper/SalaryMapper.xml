@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrm.salary.mapper.SalaryMapper">
+    <select id="findSalaryList" resultType="com.hrm.domain.salary.vo.SalaryItemVo"
+            parameterType="java.util.Map">
+        select
+        bu.id,
+        bu.username,
+        bu.mobile,
+        bu.work_number workNumber,
+        bu.in_service_status inServiceStatus,
+        bu.department_name department,
+        bu.time_of_entry timeOfEntry ,
+        bu.form_of_employment formOfEmployment ,
+        sauss.current_basic_salary wageBase,
+        sauss.current_basic_salary currentBasicSalary,
+        sauss.current_post_wage currentPostWage,
+        case
+        when sauss.current_basic_salary=0
+        or sauss.current_basic_salary is null then 0
+        when sauss.current_basic_salary>0 then 1
+        end isFixed
+        from
+        bs_user bu
+        LEFT JOIN
+        sa_user_salary sauss
+        ON bu.id=sauss.user_id
+        WHERE
+        bu.company_id = #{companyId}
+        <if test="departmentChecks!=null  and departmentChecks.size()>0 ">
+            and bu.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="approvalsStateChecks!=null  and approvalsStateChecks.size()>0 ">
+            and bu.in_service_status in
+            <foreach separator="," collection="approvalsStateChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and bu.username like #{keyword}
+        </if>
+        limit #{page},#{pagesize}
+    </select>
+
+    <select id="countOfSalaryList" resultType="Integer" parameterType="java.util.Map">
+        select
+        count(distinct bu.id)
+        from
+        bs_user bu
+        LEFT JOIN
+        sa_user_salary sauss
+        ON bu.id=sauss.user_id
+        WHERE
+        bu.company_id = #{companyId}
+        <if test="departmentChecks!=null  and departmentChecks.size()>0 ">
+            and bu.department_id in
+            <foreach separator="," collection="departmentChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="approvalsStateChecks!=null  and approvalsStateChecks.size()>0 ">
+            and bu.in_service_status in
+            <foreach separator="," collection="approvalsStateChecks" item="id" open="(" close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="keyword!=null and keyword!=''">
+            and bu.username like #{keyword}
+        </if>
+    </select>
+</mapper>

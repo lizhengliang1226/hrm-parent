@@ -33,22 +33,20 @@ public class Attendance extends BaseEntity implements Serializable {
     private String id;
     private String companyId;
     private String departmentId;
-
     private String userId;
     private Integer adtStatus;
     private long jobStatus;
-
     private Date adtInTime;
-//    private String adtInPlace;
-//    private String adtInHourse;
-
-    //    private String adtInCoordinate;
     private Date adtOutTime;
-    //    private String adtOutPlace;
-//    private String adtOutHourse;
     private String day;
+    private String username;
+    private String mobile;
+    private String departmentName;
 
     public Attendance(AtteUploadVo vo, User user) {
+        this.username = user.getUsername();
+        this.mobile = user.getMobile();
+        this.departmentName = user.getDepartmentName();
         this.adtInTime = vo.getInTime();
         this.adtOutTime = vo.getOutTime();
         this.userId = user.getId();
@@ -56,5 +54,4 @@ public class Attendance extends BaseEntity implements Serializable {
         this.departmentId = user.getDepartmentId();
         this.jobStatus = user.getInServiceStatus();
     }
-
 }

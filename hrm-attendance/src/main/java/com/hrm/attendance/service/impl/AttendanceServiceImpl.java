@@ -8,6 +8,7 @@ import com.hrm.attendance.mapper.AttendanceMapper;
 import com.hrm.attendance.service.AttendanceService;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.DateUtils;
+import com.hrm.common.utils.PageUtils;
 import com.hrm.domain.attendance.bo.AtteItemBO;
 import com.hrm.domain.attendance.entity.Attendance;
 import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
@@ -53,13 +54,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public Map getAtteData(Map map1) throws ParseException {
         final String companyId = (String) map1.get("companyId");
-        final Integer page = (Integer) map1.get("page");
-        final Integer pagesize = (Integer) map1.get("pagesize");
-        final String keyword = (String) map1.get("keyword");
-        if (keyword != null && keyword.length() > 0) {
-            map1.put("keyword", "%" + keyword + "%");
-        }
-        map1.put("page", (page - 1) * pagesize);
+        PageUtils.doPage(map1);
         // 查询企业考勤月份设置
         final AttendanceCompanySettings data = attendanceCompanySettingsDao.findById(companyId).get();
         // 获取月份
@@ -69,15 +64,15 @@ public class AttendanceServiceImpl implements AttendanceService {
         String startTime = dataMonth + "01";
         map1.put("start", startTime);
         map1.put("end", endTime);
+        // 查询考勤数据
         final List<AtteItemBO> monthAtteData = attendanceMapper.findMonthAtteData(map1);
+        // 查询考勤记录数
         final Integer integer = attendanceMapper.countsOfUserAtte(map1);
-        for (AtteItemBO monthAtteDatum : monthAtteData) {
-            log.info("{}", monthAtteDatum);
-        }
-        log.info("{}", monthAtteData.size());
+        // 构建分页结果
         final PageResult<AtteItemBO> listPageResult = new PageResult<>();
         listPageResult.setTotal(Long.valueOf(integer));
         listPageResult.setRows(monthAtteData);
+        // 构建返回结果
         Map<String, Object> map = new HashMap(16);
         // 每个员工考勤记录
         map.put("data", listPageResult);
@@ -113,9 +108,10 @@ public class AttendanceServiceImpl implements AttendanceService {
             put("month", atteDate + "%");
             put("page", (page - 1) * pagesize);
             put("pagesize", pagesize);
+            put("companyId", companyId);
         }};
         final List<AttendanceArchiveMonthlyInfo> attendanceArchiveMonthlyInfos1 = archiveMonthlyInfos.userAtteDays(map);
-        final long integer = archiveMonthlyInfos.countsOfAtteDatabase(atteDate + "%");
+        final long integer = archiveMonthlyInfos.countsOfAtteDatabase(atteDate + "%", companyId);
         return new PageResult<>(
                 integer, attendanceArchiveMonthlyInfos1);
     }
