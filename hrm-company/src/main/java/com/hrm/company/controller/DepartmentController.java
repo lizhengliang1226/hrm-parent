@@ -1,5 +1,6 @@
 package com.hrm.company.controller;
 
+import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
@@ -11,17 +12,20 @@ import com.hrm.common.entity.ResultCode;
 import com.hrm.company.redis.RedisService;
 import com.hrm.company.service.CompanyService;
 import com.hrm.company.service.DepartmentService;
+import com.hrm.company.service.mapperimpl.DepartmentMapperServiceImpl;
 import com.hrm.domain.company.Department;
 import com.hrm.domain.company.response.DeptListResult;
+import com.hrm.domain.constant.SystemConstant;
+import com.lzl.IdWorker;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author LZL
@@ -37,6 +41,11 @@ public class DepartmentController extends BaseController {
     private DepartmentService departmentService;
     private CompanyService companyService;
     private List<Department> list = new ArrayList<>();
+    private Map<String, String> map = new HashMap();
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private DepartmentMapperServiceImpl departmentMap;
 
     @Autowired
     public void setCompanyService(CompanyService companyService) {
@@ -102,12 +111,29 @@ public class DepartmentController extends BaseController {
         return Result.SUCCESS();
     }
 
+    @GetMapping(value = "getDeptByRedis")
+    @ApiOperation(value = "获取部门基础信息缓存")
+    public Result getDeptByRedis(@RequestParam String code) {
+        final Department deptByCode = redisService.getDeptByCode(code);
+        return new Result(ResultCode.SUCCESS, deptByCode);
+    }
+
     @PostMapping(value = "department/import")
     @ApiOperation(value = "批量保存部门")
     public Result importDepartments(@RequestParam MultipartFile file) throws Exception {
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), Department.class, new DepartmentExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
+        // 批量保存
+        departmentMap.saveBatch(list);
+        // 存入redis
+        for (Department department : list) {
+            final String id = department.getId();
+            final String code = department.getCode();
+            redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(id, department);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(code, department);
+        }
+        list.clear();
         return Result.SUCCESS();
     }
 
@@ -119,19 +145,26 @@ public class DepartmentController extends BaseController {
         @SneakyThrows
         @Override
         public void invoke(Department department, AnalysisContext analysisContext) {
-//            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
-//            final Department data = result.getData();
-//            user.setDepartmentId(data.getId());
-//            user.setDepartmentName(data.getName());
-//            user.setCompanyName(companyName);
-//            user.setCompanyId(companyId);
-//            userService.save(user);
-
+            final String s = RandomUtil.randomString(RandomUtil.BASE_CHAR.toUpperCase(), 5);
+            if (!department.getPid().equals("0")) {
+                final String id = map.get(department.getPid());
+                department.setPid(id);
+                department.setId(IdWorker.getIdStr());
+            } else {
+                department.setId(IdWorker.getIdStr());
+                map.put(department.getName(), department.getId());
+            }
+            department.setCode(s);
+            department.setCompanyId(companyId);
+            department.setCreateTime(new Date());
+            list.add(department);
         }
 
         @Override
         public void doAfterAllAnalysed(AnalysisContext context) {
+
         }
+
 
     }
 }

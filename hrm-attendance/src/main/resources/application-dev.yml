@@ -7,6 +7,10 @@ server:
 logging:
   level:
     root: info
+    com:
+      hrm:
+        attendance:
+          mapper: debug
   file:
     name: "./logs/attendance-dev.log"
   pattern:

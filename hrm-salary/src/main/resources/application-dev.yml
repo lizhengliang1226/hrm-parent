@@ -7,6 +7,10 @@ server:
 logging:
   level:
     root: info
+    com:
+      hrm:
+        salary:
+          mapper: debug
   file:
     name: "./logs/salary-dev.log"
   pattern:

@@ -96,6 +96,11 @@ public class AttendanceSettingsServiceImpl implements AttendanceSettingsService 
     }
 
     @Override
+    public List<DeductionDict> getCompanyDeductionConfig(String companyId) {
+        return deductionDictDao.findByCompanyId(companyId);
+    }
+
+    @Override
     public void saveDeductionConfig(List<DeductionDict> deductionsList) {
         deductionsList.forEach(d -> {
             final DeductionDict leave = deductionDictDao.findByCompanyIdAndDepartmentIdAndDedTypeCode(d.getCompanyId(), d.getDepartmentId(),

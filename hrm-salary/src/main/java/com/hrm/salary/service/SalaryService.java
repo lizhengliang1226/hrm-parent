@@ -11,7 +11,11 @@ import java.util.Map;
 public interface SalaryService {
 
 
-    //定薪或者调薪
+    /**
+     * 定薪或调薪
+     *
+     * @param userSalary
+     */
     public void saveUserSalary(UserSalary userSalary);
 
     /**
@@ -23,11 +27,8 @@ public interface SalaryService {
     public UserSalary findUserSalary(String userId);
 
     /**
-     * 分页查询当月薪资列表
-     *
-     * @param page
-     * @param pageSize
-     * @param companyId
+     * 分页查询薪资列表
+     * @param map
      * @return
      */
     public PageResult<SalaryItemVo> findAll(Map map);

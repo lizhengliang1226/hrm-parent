@@ -12,9 +12,9 @@
         bu.department_name department,
         bu.time_of_entry timeOfEntry ,
         bu.form_of_employment formOfEmployment ,
-        sauss.current_basic_salary wageBase,
-        sauss.current_basic_salary currentBasicSalary,
-        sauss.current_post_wage currentPostWage,
+        ifnull(sauss.current_basic_salary,0) wageBase,
+        ifnull(sauss.current_basic_salary,0) currentBasicSalary,
+        IFNULL(sauss.current_post_wage,0) currentPostWage,
         case
         when sauss.current_basic_salary=0
         or sauss.current_basic_salary is null then 0
@@ -42,6 +42,7 @@
         <if test="keyword!=null and keyword!=''">
             and bu.username like #{keyword}
         </if>
+        order by bu.id
         limit #{page},#{pagesize}
     </select>
 

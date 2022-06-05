@@ -3,10 +3,15 @@ server:
   servlet:
     encoding:
       force-response: true
+
 # 日志配置
 logging:
   level:
     root: info
+    com:
+      hrm:
+        company:
+          mapper: debug
   file:
     name: "./logs/company-dev.log"
   pattern:

@@ -39,7 +39,7 @@ public class AtteSalaryStatisticsBO implements Serializable {
     /**
      * 实际出勤天数（非正式）
      */
-    private String actualAtteUnofficialDays;
+//    private String actual_atte_unofficial_days;
 
 
     /**

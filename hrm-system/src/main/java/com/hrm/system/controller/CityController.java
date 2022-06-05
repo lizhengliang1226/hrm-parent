@@ -50,7 +50,7 @@ public class CityController {
     }
 
     @GetMapping
-    public Result<List<City>> findAll() {
+    public Result<List<City>> findCityList() {
         List<City> list = cityService.findAll();
         Result<List<City>> result = new Result(ResultCode.SUCCESS);
         result.setData(list);

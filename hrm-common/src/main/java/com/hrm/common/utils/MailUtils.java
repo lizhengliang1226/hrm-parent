@@ -1,5 +1,7 @@
 package com.hrm.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -10,6 +12,7 @@ import java.util.Properties;
  *
  * @author 17314
  */
+@Slf4j
 public final class MailUtils {
     private static final String USER = "1731415266@qq.com"; // 发件人称号，同邮箱地址
     private static final String PASSWORD = "ptiwwgalntkrceab"; // 如果是qq邮箱可以使户端授权码，或者登录密码
@@ -22,6 +25,7 @@ public final class MailUtils {
     /* 发送验证信息的邮件 */
     public static boolean sendMail(String to, String text, String title) {
         try {
+            log.info("开始发送邮件......");
             final Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.host", "smtp.qq.com");
@@ -61,9 +65,11 @@ public final class MailUtils {
             message.setContent(text, "text/html;charset=UTF-8");
             // 发送邮件
             Transport.send(message);
+            log.info("发送邮件成功.....");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            log.info("发送邮件出现了错误.......");
         }
         return false;
     }

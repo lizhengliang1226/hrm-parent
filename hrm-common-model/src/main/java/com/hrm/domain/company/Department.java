@@ -1,6 +1,7 @@
 package com.hrm.domain.company;
 
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -40,12 +41,14 @@ public class Department implements Serializable {
     private String id;
 
     @ApiModelProperty("父级ID")
+    @ExcelProperty(value = "父级部门")
     private String pid;
 
     @ApiModelProperty("企业ID")
     private String companyId;
 
     @ApiModelProperty("部门名称")
+    @ExcelProperty(value = "部门名称")
     private String name;
 
     /**

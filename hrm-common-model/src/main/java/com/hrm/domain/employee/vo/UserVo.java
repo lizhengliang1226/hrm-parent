@@ -46,5 +46,8 @@ public class UserVo {
     @ApiModelProperty("工作城市")
     @ExcelProperty(value = "工作城市")
     private String workingCity;
+    @ApiModelProperty("性别")
+    @ExcelProperty(value = "性别")
+    private String gender;
 
 }

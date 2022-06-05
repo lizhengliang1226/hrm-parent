@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.criteria.Predicate;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 用户服务
@@ -45,6 +46,7 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
     private RoleDao roleDao;
     @Value("${tencent-face.groupId}")
     private String groupId;
+    private final ReentrantLock lock = new ReentrantLock();
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -65,25 +67,30 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
 
     @Override
     public void save(User user) throws CommonException {
-        String id = IdWorker.getIdStr();
-        user.setId(id);
-        user.setCreateTime(new Date());
-        // 设置可用状态为可用
-        user.setEnableState(1);
-        //默认在职
-        user.setInServiceStatus(1);
-        //默认级别为普通用户
-        user.setLevel(SystemConstant.NORMAL_USER);
-        DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
-        final String password = des.encryptHex(initialPassword);
-        user.setPassword(password);
-        if (user.getStaffPhoto() != null && user.getStaffPhoto().length() > 0) {
-            // 添加用户到人员库
-            addUserToPersonnel(user);
+        lock.lock();
+        try {
+            String id = IdWorker.getIdStr();
+            user.setId(id);
+            user.setCreateTime(new Date());
+            // 设置可用状态为可用
+            user.setEnableState(1);
+            //默认在职
+            user.setInServiceStatus(1);
+            //默认级别为普通用户
+            user.setLevel(SystemConstant.NORMAL_USER);
+            DES des = SecureUtil.des(user.getMobile().getBytes(StandardCharsets.UTF_8));
+            final String password = des.encryptHex(initialPassword);
+            user.setPassword(password);
+            if (user.getStaffPhoto() != null && user.getStaffPhoto().length() > 0) {
+                // 添加用户到人员库
+                addUserToPersonnel(user);
+            }
+            userDao.save(user);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user.getMobile(), user);
+        } finally {
+            lock.unlock();
         }
-        userDao.save(user);
-        redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user);
-        redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user.getMobile(), user);
     }
 
 //    public static void main(String[] args) {
@@ -213,5 +220,17 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         final DES des = SecureUtil.des(user1.getMobile().getBytes(StandardCharsets.UTF_8));
         final String s = des.encryptHex(password);
         userDao.updatePassword(id, s);
+    }
+
+    @Override
+    public List<User> findByTimeOfEntry(String yearMonth, String companyId) {
+        List<User> list = userDao.findByCompanyIdAndTimeOfEntryLike(companyId, yearMonth);
+        return list;
+    }
+
+    @Override
+    public int findInJobUsers(String companyId) {
+        int injobs = userDao.findInJobs(companyId);
+        return injobs;
     }
 }

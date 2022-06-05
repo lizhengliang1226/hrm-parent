@@ -24,10 +24,7 @@ public enum AttendanceStatusEnum {
      * 早退
      */
     LEAVE_EARLY(4, "早退"),
-    /**
-     * 迟到和早退
-     */
-    LEAVE_EARLY_AND_LATE(22, "迟到早退"),
+
     /**
      * 外出
      */
@@ -99,7 +96,12 @@ public enum AttendanceStatusEnum {
     /**
      * 休息
      */
-    REST(21, "休息");
+    REST(21, "休息"),
+    /**
+     * 迟到和早退
+     */
+    LEAVE_EARLY_AND_LATE(22, "迟到早退"),
+    ;
 
     public Integer getValue() {
         return value;

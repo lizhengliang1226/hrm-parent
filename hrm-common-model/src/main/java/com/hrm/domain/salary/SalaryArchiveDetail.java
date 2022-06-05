@@ -3,6 +3,9 @@ package com.hrm.domain.salary;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.hrm.domain.attendance.entity.DeductionDict;
+import com.hrm.domain.attendance.enums.DeductionEnum;
+import com.hrm.domain.salary.constant.SalaryConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -176,7 +180,7 @@ public class SalaryArchiveDetail implements Serializable {
     @ExcelProperty(order = 41)
     private BigDecimal socialSecurityProvidentFundEnterprises;
     /**
-     * 公积金需纳税额 ？
+     * 公积金需纳税额
      */
     @ExcelProperty(order = 16)
     private BigDecimal taxToProvidentFund;
@@ -191,7 +195,7 @@ public class SalaryArchiveDetail implements Serializable {
      * 考勤扣款
      */
     @ExcelProperty(order = 15)
-    private String attendanceDeductionMonthly;
+    private BigDecimal attendanceDeductionMonthly;
     /**
      * 计薪标准
      */
@@ -218,7 +222,7 @@ public class SalaryArchiveDetail implements Serializable {
      * 计税方式
      */
     @ExcelProperty(order = 13)
-    private String taxCountingMethod;
+    private Integer taxCountingMethod;
     /**
      * 当月纳税基本工资 = 当月基本工资基数
      */
@@ -306,6 +310,36 @@ public class SalaryArchiveDetail implements Serializable {
     @ExcelProperty(order = 51)
     private Integer paymentMonths;
 
+    public BigDecimal getLaterMoney() {
+        return laterMoney == null ? BigDecimal.ZERO : laterMoney;
+    }
+
+    public BigDecimal getEarlyMoney() {
+        return earlyMoney == null ? BigDecimal.ZERO : earlyMoney;
+    }
+
+    public void setLaterMoney(BigDecimal laterMoney) {
+        this.laterMoney = laterMoney;
+    }
+
+    public void setEarlyMoney(BigDecimal earlyMoney) {
+        this.earlyMoney = earlyMoney;
+    }
+
+    private BigDecimal laterMoney;
+    private BigDecimal earlyMoney;
+    /**
+     * 津贴
+     */
+    private BigDecimal allowance;
+
+    public BigDecimal getAllowance() {
+        return allowance == null ? BigDecimal.ZERO : allowance;
+    }
+
+    public void setAllowance(BigDecimal allowance) {
+        this.allowance = allowance;
+    }
 
     public BigDecimal getProvidentFundEnterprises() {
         return this.providentFundEnterprises == null ? new BigDecimal(0) : this.providentFundEnterprises;
@@ -447,8 +481,8 @@ public class SalaryArchiveDetail implements Serializable {
         return officialSalaryDays;
     }
 
-    public String getAttendanceDeductionMonthly() {
-        return attendanceDeductionMonthly;
+    public BigDecimal getAttendanceDeductionMonthly() {
+        return attendanceDeductionMonthly == null ? BigDecimal.ZERO : attendanceDeductionMonthly;
     }
 
     public String getSalaryStandard() {
@@ -467,7 +501,7 @@ public class SalaryArchiveDetail implements Serializable {
         return baseSalaryByMonth;
     }
 
-    public String getTaxCountingMethod() {
+    public Integer getTaxCountingMethod() {
         return taxCountingMethod;
     }
 
@@ -537,24 +571,9 @@ public class SalaryArchiveDetail implements Serializable {
 
     //设置用户属性
     public void setUser(Map map) {
+        /*用户信息部分*/
         this.bankCardNumber = (String) map.get("bankCardNumber");
         this.openingBank = (String) map.get("openingBank");
-        this.pensionEnterprise = (BigDecimal) map.get("pensionEnterprise");
-        this.medicalEnterprise = (BigDecimal) map.get("medicalEnterprise");
-        this.unemployedEnterprise = (BigDecimal) map.get("unemployedEnterprise");
-        this.industrialInjuryEnterprise = (BigDecimal) map.get("industrialInjuryEnterprise");
-        this.childbearingEnterprise = (BigDecimal) map.get("childbearingEnterprise");
-        this.bigDiseaseEnterprise = (BigDecimal) map.get("bigDiseaseEnterprise");
-        this.socialSecurity = (BigDecimal) map.get("socialSecurity");
-        this.totalProvidentFundIndividual = (BigDecimal) map.get("totalProvidentFund");
-        this.oldAgeIndividual = (BigDecimal) map.get("oldAgeIndividual");
-        this.medicalIndividual = (BigDecimal) map.get("medicalIndividual");
-        this.unemployedIndividual = (BigDecimal) map.get("unemployedIndividual");
-        this.aPersonOfGreatDisease = (BigDecimal) map.get("aPersonOfGreatDisease");
-        this.taxToProvidentFund = (BigDecimal) map.get("taxToProvidentFund");
-        this.taxCountingMethod = (String) map.get("taxCountingMethod");
-        this.baseSalaryToTaxByMonth = (BigDecimal) map.get("baseSalaryToTaxByMonth");
-        this.salaryStandard = (String) map.get("salaryStandard");
         this.idNumber = (String) map.get("idNumber");
         this.formOfEmployment = (Integer) map.get("formOfEmployment");
         this.username = map.get("username").toString();
@@ -563,104 +582,170 @@ public class SalaryArchiveDetail implements Serializable {
         this.userId = map.get("id").toString();
         this.workNumber = (String) map.get("workNumber").toString();
         this.inServiceStatus = map.get("inServiceStatus").toString();
-        final BigDecimal currentBasicSalary = (BigDecimal) map.get("currentBaseSalary");
-        final BigDecimal currentPostWage = (BigDecimal) map.get("baseSalaryByMonth");
-        this.currentBaseSalary = currentBasicSalary;
-        this.baseSalaryByMonth = currentPostWage;
+        /*五险一金部分*/
+        // 养老企业缴费
+        this.pensionEnterprise = (BigDecimal) map.get("pensionEnterprise");
+        // 医疗企业缴费
+        this.medicalEnterprise = (BigDecimal) map.get("medicalEnterprise");
+        this.unemployedEnterprise = (BigDecimal) map.get("unemployedEnterprise");
+        this.industrialInjuryEnterprise = (BigDecimal) map.get("industrialInjuryEnterprise");
+        this.childbearingEnterprise = (BigDecimal) map.get("childbearingEnterprise");
+        this.bigDiseaseEnterprise = (BigDecimal) map.get("bigDiseaseEnterprise");
+        // 个人社保扣款
+        this.socialSecurity = (BigDecimal) map.get("socialSecurity");
+        // 个人公积金扣款
+        this.totalProvidentFundIndividual = (BigDecimal) map.get("totalProvidentFund");
+        this.oldAgeIndividual = (BigDecimal) map.get("oldAgeIndividual");
+        this.medicalIndividual = (BigDecimal) map.get("medicalIndividual");
+        this.unemployedIndividual = (BigDecimal) map.get("unemployedIndividual");
+        this.aPersonOfGreatDisease = (BigDecimal) map.get("aPersonOfGreatDisease");
+        // 公积金缴纳税额
+        this.taxToProvidentFund = (BigDecimal) map.get("taxToProvidentFund");
+        // 计税方式，针对津贴的，有税前和税后
+        Object taxCountingMethod = map.get("taxCountingMethod");
+        if (taxCountingMethod == null) {
+            taxCountingMethod = 1;
+        }
+        this.taxCountingMethod = (Integer) taxCountingMethod;
+        // 当月纳税基本薪资
+        this.baseSalaryToTaxByMonth = (BigDecimal) map.get("baseSalaryToTaxByMonth");
+        this.salaryStandard = (String) map.get("salaryStandard");
+        this.currentBaseSalary = (BigDecimal) map.get("currentBaseSalary");
+        this.baseSalaryByMonth = (BigDecimal) map.get("baseSalaryByMonth");
+        // 计薪天数21.75
         this.officialSalaryDays = (BigDecimal) map.get("officialSalaryDays");
         this.providentFundIndividual = (BigDecimal) map.get("providentFundIndividual");
         this.providentFundEnterprises = (BigDecimal) map.get("providentFundEnterprises");
         this.socialSecurityEnterprise = (BigDecimal) map.get("socialSecurityEnterprise");
         this.socialSecurityIndividual = (BigDecimal) map.get("socialSecurityIndividual");
+        // 公积金社保企业合计缴费
         this.socialSecurityProvidentFundEnterprises = (BigDecimal) map.get("socialSecurityProvidentFundEnterprises");
+        // 最新基本工资合计
         this.currentSalaryTotalBase = (BigDecimal) map.get("currentSalaryTotalBase");
     }
 
-    //设置社保属性
-//    public void setSocialInfo(SocialSecrityArchiveDetail socialInfo) {
-//        this.providentFundIndividual = socialInfo.getProvidentFundIndividual();
-//        this.providentFundEnterprises = socialInfo.getProvidentFundEnterprises();
-//        this.socialSecurityEnterprise = socialInfo.getSocialSecurityEnterprise();
-//        this.socialSecurityIndividual = socialInfo.getSocialSecurityIndividual();
-//        //社保合计
-//        this.socialSecurityProvidentFundEnterprises = this.providentFundEnterprises.add(this.socialSecurityEnterprise);
-//    }
-
-    //设置考勤属性
-//    public void setAtteInfo(AttendanceArchiveMonthlyInfo atteInfo) {
-//        //员工考勤天数
-//        this.officialSalaryDays = new BigDecimal(atteInfo.getSalaryOfficialDays());
-//    }
-
-    //设置员工工资属性
-//    public void setUserSalary(UserSalary userSalary) {
-//        if (userSalary != null) {
-//            this.currentSalaryTotalBase = userSalary.getCurrentBasicSalary().add(userSalary.getCurrentPostWage());
-//            this.currentBaseSalary = userSalary.getCurrentBasicSalary();
-//            this.baseSalaryByMonth = userSalary.getCurrentBasicSalary();
-//        } else {
-//            this.currentSalaryTotalBase = BigDecimal.ZERO;
-//            this.currentBaseSalary = BigDecimal.ZERO;
-//            this.baseSalaryByMonth = BigDecimal.ZERO;
-//        }
-//    }
-
     // 计算工资
-    public void calSalary(Settings settings) {
+    public void calSalary(Settings settings, Map map, List<DeductionDict> deductionDicts) {
+
+        final String departmentId = (String) map.get("departmentId");
+        final int later = (int) map.get("laterTimes");
+        final int early = (int) map.get("earlyTimes");
+        BigDecimal lateMoney = BigDecimal.ZERO;
+        BigDecimal earlyMoney = BigDecimal.ZERO;
+        if (deductionDicts != null && deductionDicts.size() > 0) {
+            // 计算迟到和早退扣款
+            for (DeductionDict dict : deductionDicts) {
+                if (dict.getIsEnable() == 1) {
+                    // 扣款可用
+                    final String departmentId1 = dict.getDepartmentId();
+                    final BigDecimal lowerLimit = dict.getDedAmonutLowerLimit();
+                    if (departmentId.equals(departmentId1)) {
+                        // 部门相同
+                        if (dict.getDedTypeCode().equals(DeductionEnum.LATE_DEDUCTION.getCode())) {
+                            // 迟到扣款
+                            if (later >= Integer.parseInt(dict.getTimesUpperLimit())) {
+                                lateMoney = dict.getDedAmonutUpperLimit();
+                            } else {
+                                lateMoney = lateMoney.add(lowerLimit.multiply(new BigDecimal(later)));
+                            }
+                        }
+                        if (dict.getDedTypeCode().equals(DeductionEnum.EARLY_DEDUCTION.getCode())) {
+                            // 早退扣款
+                            if (early >= Integer.parseInt(dict.getTimesUpperLimit())) {
+                                earlyMoney = dict.getDedAmonutUpperLimit();
+                            } else {
+                                earlyMoney = earlyMoney.add(lowerLimit.multiply(new BigDecimal(early)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 设置早退和迟到扣款
+        this.laterMoney = lateMoney.setScale(2, BigDecimal.ROUND_HALF_UP);
+        this.earlyMoney = earlyMoney.setScale(2, BigDecimal.ROUND_HALF_UP);
         //计算福利津贴
         BigDecimal money = BigDecimal.ZERO;
-        if (settings.getCommunicationSubsidyScheme() == 3) {
-            money = money.add(settings.getCommunicationSubsidyAmount());
-        } else {
-            money = money.add(settings.getCommunicationSubsidyAmount().multiply(this.officialSalaryDays));
-        }
-        if (settings.getHousingSubsidyScheme() == 3) {
-            money = money.add(settings.getHousingSubsidyAmount());
-        } else {
-            money = money.add(settings.getHousingSubsidyAmount().multiply(this.officialSalaryDays));
-        }
-        if (settings.getLunchAllowanceScheme() == 3) {
-            money = money.add(settings.getLunchAllowanceAmount());
-        } else {
-            money = money.add(settings.getLunchAllowanceAmount().multiply(this.officialSalaryDays));
-        }
-        if (settings.getTransportationSubsidyScheme() == 3) {
-            money = money.add(settings.getTransportationSubsidyAmount());
-        } else {
-            money = money.add(settings.getTransportationSubsidyAmount().multiply(this.officialSalaryDays));
+        // 默认当月
+        Integer socialSecurityType = 1;
+        // 默认税前
+        Integer taxCalculationType = 1;
+        if (settings != null) {
+            taxCalculationType = settings.getTaxCalculationType();
+            socialSecurityType = settings.getSocialSecurityType();
+            if (settings.getCommunicationSubsidyScheme().equals(SalaryConstant.MONTH_FIXED)) {
+                money = money.add(settings.getCommunicationSubsidyAmount());
+            } else if (settings.getCommunicationSubsidyScheme().equals(SalaryConstant.ATTE_DAY)) {
+                money = money.add(settings.getCommunicationSubsidyAmount().multiply(this.officialSalaryDays));
+            } else if (settings.getCommunicationSubsidyScheme().equals(SalaryConstant.PAID_DAY)) {
+                money = money.add(settings.getCommunicationSubsidyAmount().multiply(this.officialSalaryDays));
+
+            }
+            if (settings.getHousingSubsidyScheme() == 3) {
+                money = money.add(settings.getHousingSubsidyAmount());
+            } else {
+                money = money.add(settings.getHousingSubsidyAmount().multiply(this.officialSalaryDays));
+            }
+            if (settings.getLunchAllowanceScheme() == 3) {
+                money = money.add(settings.getLunchAllowanceAmount());
+            } else {
+                money = money.add(settings.getLunchAllowanceAmount().multiply(this.officialSalaryDays));
+            }
+            if (settings.getTransportationSubsidyScheme() == 3) {
+                money = money.add(settings.getTransportationSubsidyAmount());
+            } else {
+                money = money.add(settings.getTransportationSubsidyAmount().multiply(this.officialSalaryDays));
+            }
+
         }
 
         //津贴
-        this.salaryChangeAmount = money;
+        this.allowance = money.setScale(2, BigDecimal.ROUND_HALF_UP);
 
         //计算考勤扣款
         BigDecimal attendanceMoney = this.currentSalaryTotalBase;
-
+        this.salaryBeforeTax = this.currentSalaryTotalBase;
         // 20 , 10000, 500  19
-        if (officialSalaryDays.compareTo(new BigDecimal(21.75)) <= 0) {
-            attendanceMoney = this.currentSalaryTotalBase.
-                                                                 divide(new BigDecimal(21.75), 2, BigDecimal.ROUND_HALF_UP).
-                                                                 multiply(this.officialSalaryDays);
-            this.attendanceDeductionMonthly = this.currentSalaryTotalBase.subtract(attendanceMoney).toString();
+        if (officialSalaryDays.compareTo(new BigDecimal("21.75")) <= 0) {
+            attendanceMoney = this.currentSalaryTotalBase.divide(new BigDecimal("21.75"), 2, BigDecimal.ROUND_HALF_UP).
+                    multiply(this.officialSalaryDays).setScale(2, BigDecimal.ROUND_HALF_UP);
+            this.attendanceDeductionMonthly = this.currentSalaryTotalBase.subtract(attendanceMoney)
+                                                                         .add(lateMoney)
+                                                                         .add(earlyMoney)
+                                                                         .setScale(2, BigDecimal.ROUND_HALF_UP);
         } else {
-            this.attendanceDeductionMonthly = "0";
+            this.attendanceDeductionMonthly = BigDecimal.ZERO.add(lateMoney).add(earlyMoney).setScale(2, BigDecimal.ROUND_HALF_UP);
         }
         // 去掉考勤扣款后的薪资，再加上补助
-        this.currentSalaryTotalBase = attendanceMoney.add(money);
+        this.currentSalaryTotalBase = this.currentSalaryTotalBase.subtract(this.attendanceDeductionMonthly)
+                                                                 .add(money)
+                                                                 .setScale(2, BigDecimal.ROUND_HALF_UP);
         //薪资合计
         this.salary = this.currentSalaryTotalBase;
 
         //计算应纳税工资 (岗位工资 + 基本工资 + 补助 - 缴纳公积金和社保)
+        if (socialSecurityType == 1) {
+            // 当月
+            this.salaryByTax = this.currentSalaryTotalBase.subtract(this.providentFundIndividual)
+                                                          .subtract(this.socialSecurityIndividual)
+                                                          .setScale(2, BigDecimal.ROUND_HALF_UP);
 
-        this.salaryByTax = this.currentSalaryTotalBase.subtract(this.providentFundIndividual).subtract(this.socialSecurityIndividual);
+        } else if (socialSecurityType == 2) {
+            // 次月
+            this.salaryByTax = this.currentSalaryTotalBase.subtract(this.providentFundIndividual)
+                                                          .subtract(this.socialSecurityIndividual)
+                                                          .setScale(2, BigDecimal.ROUND_HALF_UP);
+        }
+
         this.salaryByTax = this.salaryByTax.compareTo(BigDecimal.ZERO) >= 0 ? this.salaryByTax : BigDecimal.ZERO;
 
         //计算税(扣除员工社保和员工公积金部门)
-        this.tax = getTax(salaryByTax);
+        this.tax = getTax(taxCalculationType == 1 ? salaryByTax : salaryByTax.subtract(money)).setScale(2, BigDecimal.ROUND_HALF_UP);
         this.paymentBeforeTax = this.salaryByTax;
 
         //计算实发工资
-        this.payment = attendanceMoney.subtract(tax);
+        this.payment = this.salaryByTax.subtract(tax).setScale(2, BigDecimal.ROUND_HALF_UP);
         this.salaryAfterTax = payment;
         this.payment = this.payment.compareTo(BigDecimal.ZERO) >= 0 ? this.payment : BigDecimal.ZERO;
 

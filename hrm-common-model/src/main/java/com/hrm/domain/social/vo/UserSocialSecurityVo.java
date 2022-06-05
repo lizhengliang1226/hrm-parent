@@ -61,7 +61,7 @@ public class UserSocialSecurityVo {
     /**
      * 户籍所在地
      */
-    private String householdRegistration;
+//    private String householdRegistration;
     /**
      * 社保城市
      */
@@ -72,4 +72,15 @@ public class UserSocialSecurityVo {
      */
     @ExcelProperty(value = "公积金城市")
     private String providentFundCity;
+    /**
+     * 参保类型  1为首次开户 2为非首次开户
+     */
+    @ExcelProperty(value = "参保类型")
+    private String socialSecurityType;
+
+    /**
+     * 户籍类型 1为本市城镇 2为本市农村 3为外埠城镇 4为外埠农村
+     */
+    @ExcelProperty(value = "户籍类型")
+    private String householdRegistrationType;
 }

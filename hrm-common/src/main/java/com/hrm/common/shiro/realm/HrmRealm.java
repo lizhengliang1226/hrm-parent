@@ -39,6 +39,7 @@ public class HrmRealm extends AuthorizingRealm {
         // 构造权限数据
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         info.addStringPermissions(apis);
+        log.info("构造权限数据");
         return info;
     }
 

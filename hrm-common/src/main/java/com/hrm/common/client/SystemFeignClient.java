@@ -31,7 +31,7 @@ public interface SystemFeignClient {
      * @return
      */
     @GetMapping("sys/city")
-    public Result<List<City>> findAll();
+    public Result<List<City>> findCityList();
 
     @GetMapping(value = "sys/user", name = "FIND_USER_LIST_API")
     @ApiOperation(value = "获取某个企业的用户列表")

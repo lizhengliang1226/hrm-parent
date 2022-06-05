@@ -18,6 +18,8 @@ import java.io.Serializable;
  */
 @Slf4j
 public class CustomSessionManager extends DefaultWebSessionManager {
+
+
     @Override
     protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
         // 获取请求头中的数据
@@ -35,4 +37,5 @@ public class CustomSessionManager extends DefaultWebSessionManager {
             return sid;
         }
     }
+
 }

@@ -1,14 +1,14 @@
 package com.hrm.common.client;
 
 import com.hrm.common.entity.Result;
+import com.hrm.domain.social.CityPaymentItem;
+import com.hrm.domain.social.PaymentItem;
 import com.hrm.domain.social.UserSocialSecurity;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,4 +33,11 @@ public interface SocialSecurityClient {
     @ApiOperation(value = "根据用户id和年月查询归档明细")
     public Result userHistoryArchiveData(@RequestBody Map<String, String> map) throws Exception;
 
+    @GetMapping(value = "social/paymentItem")
+    @ApiOperation(value = "查询社保缴费字典项")
+    public Result<List<PaymentItem>> findSocialPaymentItems() throws Exception;
+
+    @PostMapping(value = "social/savePaymentItem")
+    @ApiOperation(value = "保存城市社保缴费字典项")
+    public Result saveCitySocialPaymentItems(@RequestBody CityPaymentItem cityPay) throws Exception;
 }

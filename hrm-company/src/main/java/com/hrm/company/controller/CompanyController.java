@@ -8,8 +8,9 @@ import com.hrm.domain.company.Company;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 企业管理控制器
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class CompanyController {
 
     private CompanyService companyService;
+
     @Autowired
     public void setCompanyService(CompanyService companyService) {
         this.companyService = companyService;
@@ -32,6 +34,10 @@ public class CompanyController {
     @PostMapping(name = "SAVE_COMPANY_API")
     @ApiOperation(value = "保存企业")
     public Result save(@RequestBody Company company) {
+        List<Company> company1 = companyService.findByName(company.getName());
+        if (company1 != null && company1.size() > 0) {
+            return new Result(ResultCode.DUPLICATE_COMPANY_NAME);
+        }
         companyService.add(company);
         return Result.SUCCESS();
     }
@@ -39,9 +45,17 @@ public class CompanyController {
     @PutMapping(value = "{id}", name = "UPDATE_COMPANY_API")
     @ApiOperation(value = "更新企业")
     public Result update(@PathVariable(value = "id") String id, @RequestBody Company company) {
+        final Company byId = companyService.findById(company.getId());
+        if (!byId.getName().equals(company.getName())) {
+            final List<Company> byName = companyService.findByName(company.getName());
+            if (byName != null && byName.size() > 0) {
+                return new Result(ResultCode.DUPLICATE_COMPANY_NAME);
+            }
+        }
         company.setId(id);
         companyService.update(company);
         return Result.SUCCESS();
+
     }
 
     @DeleteMapping(value = "{id}", name = "DELETE_COMPANY_API")
@@ -72,11 +86,8 @@ public class CompanyController {
     @GetMapping(name = "FIND_COMPANY_LIST_API")
     @ApiOperation(value = "获取企业列表")
     public Result findAll(int page, int size) {
-        final Page<Company> all = companyService.findAll(page, size);
-        final PageResult<Company> companyPageResult = new PageResult<>(all.getTotalElements(), all.getContent());
-//        Result<List<Company>> result = Result.SUCCESS();
-//        result.setData(all);
-        return new Result(ResultCode.SUCCESS, companyPageResult);
+        final PageResult<Company> all = companyService.findAll(page, size);
+        return new Result(ResultCode.SUCCESS, all);
     }
 
 }

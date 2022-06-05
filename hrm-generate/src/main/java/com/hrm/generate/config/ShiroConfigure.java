@@ -126,6 +126,12 @@ public class ShiroConfigure {
     public DefaultWebSessionManager sessionManager() {
         CustomSessionManager sessionManager = new CustomSessionManager();
         sessionManager.setSessionDAO(redisSessionDAO());
+        // 会话超时时间，单位：毫秒
+        sessionManager.setGlobalSessionTimeout(60 * 60 * 1000);
+        // 定时清理失效会话, 清理用户直接关闭浏览器造成的孤立会话
+        sessionManager.setSessionValidationInterval(60 * 60 * 1000);
+        // 是否开启定时清理失效会话
+        sessionManager.setSessionValidationSchedulerEnabled(true);
         return sessionManager;
     }
 

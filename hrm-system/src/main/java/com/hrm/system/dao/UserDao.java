@@ -41,4 +41,23 @@ public interface UserDao extends BaseDao<User, String> {
      * @return
      */
     List<User> findByCompanyId(String companyId);
+
+    /**
+     * 根据入职时间和企业查询某月企业的入职人数
+     *
+     * @param companyId
+     * @param yearMonth
+     * @return
+     */
+    @Query(value = "select * from bs_user where time_of_entry like ?2 and company_id=?1", nativeQuery = true)
+    List<User> findByCompanyIdAndTimeOfEntryLike(String companyId, String yearMonth);
+
+    /**
+     * 查询企业在职人数
+     *
+     * @param companyId
+     * @return
+     */
+    @Query(value = "select count(*) from bs_user where company_id=?1 and in_service_status=1", nativeQuery = true)
+    int findInJobs(String companyId);
 }

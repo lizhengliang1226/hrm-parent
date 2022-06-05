@@ -43,6 +43,6 @@ public class RedisService {
     }
 
     public void deleteUser(String id) {
-        redisTemplate.delete(id);
+        redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).delete(id);
     }
 }

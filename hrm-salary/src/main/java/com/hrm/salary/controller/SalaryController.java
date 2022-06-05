@@ -1,6 +1,7 @@
 package com.hrm.salary.controller;
 
 
+import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
@@ -23,13 +24,14 @@ import java.util.Map;
 @Api(tags = "薪资设置")
 @Slf4j
 public class SalaryController extends BaseController {
-
+    @Autowired
+    private SystemFeignClient systemFeignClient;
     @Autowired
     private SalaryService salaryService;
 
     @ApiOperation(value = "查询某个用户薪资")
     @GetMapping(value = "/modify/{userId}")
-    public Result modifyGet(@PathVariable(value = "userId") String userId) throws Exception {
+    public Result findUserSalary(@PathVariable(value = "userId") String userId) throws Exception {
         UserSalary userSalary = salaryService.findUserSalary(userId);
         return new Result(ResultCode.SUCCESS, userSalary);
     }

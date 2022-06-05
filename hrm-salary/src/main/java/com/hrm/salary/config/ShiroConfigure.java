@@ -1,5 +1,6 @@
 package com.hrm.salary.config;
 
+import com.hrm.common.shiro.filter.AccessControllerFilter;
 import com.hrm.common.shiro.realm.HrmRealm;
 import com.hrm.common.shiro.session.CustomSessionManager;
 import lombok.Setter;
@@ -15,6 +16,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.Filter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -125,6 +128,12 @@ public class ShiroConfigure {
     public DefaultWebSessionManager sessionManager() {
         CustomSessionManager sessionManager = new CustomSessionManager();
         sessionManager.setSessionDAO(redisSessionDAO());
+        // 会话超时时间，单位：毫秒
+        sessionManager.setGlobalSessionTimeout(60 * 60 * 1000);
+        // 定时清理失效会话, 清理用户直接关闭浏览器造成的孤立会话
+        sessionManager.setSessionValidationInterval(60 * 60 * 1000);
+        // 是否开启定时清理失效会话
+        sessionManager.setSessionValidationSchedulerEnabled(true);
         return sessionManager;
     }
 
@@ -160,5 +169,11 @@ public class ShiroConfigure {
         RedisCacheManager redisCacheManager = new RedisCacheManager();
         redisCacheManager.setRedisManager(redisManager());
         return redisCacheManager;
+    }
+
+    private Map<String, Filter> filters() {
+        Map<String, Filter> f = new HashMap<>();
+        f.put("accessFilter", new AccessControllerFilter());
+        return f;
     }
 }

@@ -72,7 +72,7 @@ public class DeductionDict extends BaseEntity implements Serializable {
     //罚款工资倍数
     private String fineSalaryMultiples;
 
-    //是否可用 0开启 1 关闭
+    //是否可用 1开启 0关闭
     @NotNull(message = "是否启用参数不能为空")
     private Integer isEnable;
 

@@ -112,7 +112,7 @@ public class UserSocialSecurity implements Serializable {
     /**
      * 户籍所在地
      */
-    private String householdRegistration;
+//    private String householdRegistration;
     /**
      * 参保城市
      */

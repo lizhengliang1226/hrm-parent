@@ -26,7 +26,6 @@ public interface UserSocialSecurityDao extends JpaRepository<UserSocialSecurity,
                     "       ssuss.social_security_base socialSecurityBase, " +
                     "       ssuss.provident_fund_base providentFundBase," +
                     "ssuss.industrial_injury_ratio industrialInjuryRatio," +
-                    "ssuss.household_registration householdRegistration," +
                     "ssuss.social_security_notes socialSecurityNotes," +
                     "ssuss.provident_fund_notes providentFundNotes," +
                     "ssuss.enterprise_proportion enterpriseProportion," +

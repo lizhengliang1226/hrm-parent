@@ -1,12 +1,10 @@
 package com.hrm.salary.service.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.hrm.common.client.SocialSecurityClient;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.PageUtils;
 import com.hrm.domain.salary.UserSalary;
 import com.hrm.domain.salary.vo.SalaryItemVo;
-import com.hrm.domain.social.UserSocialSecurity;
 import com.hrm.salary.dao.UserSalaryDao;
 import com.hrm.salary.mapper.SalaryMapper;
 import com.hrm.salary.service.SalaryService;
@@ -14,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,15 +31,15 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public void saveUserSalary(UserSalary userSalary) {
         final String userId = userSalary.getUserId();
-        final Map<String, Object> data = socialSecurityClient.findUserSocialInfo(userId).getData();
-        final Object userSocialSecurity = data.get("userSocialSecurity");
-        final UserSocialSecurity u = JSON.parseObject(
-                JSON.toJSONString(userSocialSecurity),
-                UserSocialSecurity.class);
-        final BigDecimal base = userSalary.getCurrentBasicSalary().add(userSalary.getCurrentPostWage());
-        u.setProvidentFundBase(base);
-        u.setSocialSecurityBase(base);
-        socialSecurityClient.saveUserSocialInfo(u);
+//        final Map<String, Object> data = socialSecurityClient.findUserSocialInfo(userId).getData();
+//        final Object userSocialSecurity = data.get("userSocialSecurity");
+//        final UserSocialSecurity u = JSON.parseObject(
+//                JSON.toJSONString(userSocialSecurity),
+//                UserSocialSecurity.class);
+//        final BigDecimal base = userSalary.getCurrentBasicSalary().add(userSalary.getCurrentPostWage());
+//        u.setProvidentFundBase(base);
+//        u.setSocialSecurityBase(base);
+//        socialSecurityClient.saveUserSocialInfo(u);
         userSalaryDao.save(userSalary);
     }
 
@@ -50,7 +47,7 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public UserSalary findUserSalary(String userId) {
         Optional<UserSalary> optional = userSalaryDao.findById(userId);
-        return optional.orElse(null);
+        return optional.orElse(new UserSalary());
     }
 
 

@@ -2,14 +2,20 @@ package com.hrm.employee.controller;
 
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.alibaba.excel.write.metadata.WriteSheet;
-import com.alibaba.fastjson.JSON;
+import com.hrm.common.cache.SystemCache;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.utils.BeanMapUtils;
+import com.hrm.domain.attendance.entity.User;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.employee.*;
 import com.hrm.domain.employee.response.EmployeeReportResult;
 import com.hrm.employee.service.UserCompanyPersonalService;
@@ -40,6 +46,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author 17314
@@ -62,6 +71,7 @@ public class EmployeeController extends BaseController {
     private PositiveServiceImpl positiveServiceImpl;
 
     private ArchiveServiceImpl archiveServiceImpl;
+    private ThreadPoolExecutor pool = new ThreadPoolExecutor(16, 16, 2, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), (r) -> new Thread(r, "t1"));
 
     @Value("${employee-month-template-path}")
     private String templateName;
@@ -69,6 +79,7 @@ public class EmployeeController extends BaseController {
     private String pdfTemplateName;
     @Autowired
     private RedisTemplate redisTemplate;
+
 
     /**
      * 员工信息pdf报表导出
@@ -106,7 +117,6 @@ public class EmployeeController extends BaseController {
     public Result savePersonalInfo(@PathVariable(name = "id") String uid, @RequestBody Map map) throws Exception {
         UserCompanyPersonal sourceInfo = BeanMapUtils.mapToBean(map, UserCompanyPersonal.class);
         log.info("{}", sourceInfo);
-        System.out.println(JSON.toJSONString(sourceInfo));
         if (sourceInfo == null) {
             sourceInfo = new UserCompanyPersonal();
         }
@@ -114,7 +124,7 @@ public class EmployeeController extends BaseController {
         sourceInfo.setUserId(uid);
         sourceInfo.setCompanyId(companyId);
         userCompanyPersonalService.save(sourceInfo);
-        redisTemplate.boundHashOps("userDetailList").put(uid, sourceInfo);
+//        redisTemplate.boundHashOps("userDetailList").put(uid, sourceInfo);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -188,9 +198,38 @@ public class EmployeeController extends BaseController {
      * 导入员工
      */
     @PostMapping(value = "/import")
-    public Result importDatas(@RequestParam(name = "file") MultipartFile attachment) throws Exception {
-        //todo
+    public Result importDatas(@RequestParam(name = "file") MultipartFile file) throws Exception {
+        final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), UserCompanyPersonal.class, new UserDetailExcelListener());
+        final ExcelReaderSheetBuilder sheet = read.sheet();
+        sheet.doRead();
         return new Result(ResultCode.SUCCESS);
+    }
+
+    /**
+     * Excel操作的内部类
+     */
+    class UserDetailExcelListener extends AnalysisEventListener<UserCompanyPersonal> {
+
+
+        @Override
+        public void invoke(UserCompanyPersonal user, AnalysisContext analysisContext) {
+            User user1 = SystemCache.USER_INFO_CACHE.get(user.getMobile());
+            if (user1 == null) {
+                user1 = (User) redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(user.getMobile());
+                SystemCache.USER_INFO_CACHE.put(user.getMobile(), user1);
+            }
+            user.setUserId(user1.getId());
+            user.setCompanyId(companyId);
+            pool.execute(() -> {
+                userCompanyPersonalService.save(user);
+            });
+        }
+
+        @Override
+        public void doAfterAllAnalysed(AnalysisContext context) {
+
+        }
+
     }
 
     /**

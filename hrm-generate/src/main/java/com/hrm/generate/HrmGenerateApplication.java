@@ -1,6 +1,9 @@
 package com.hrm.generate;
 
 
+import com.hrm.common.client.CompanyFeignClient;
+import com.hrm.common.client.SalaryFeignClient;
+import com.hrm.common.client.SocialSecurityClient;
 import com.hrm.common.client.SystemFeignClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +16,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication(scanBasePackages = "com.hrm")
 @EntityScan("com.hrm.domain.generate")
-@EnableFeignClients(clients = {SystemFeignClient.class})
+@EnableFeignClients(clients = {SalaryFeignClient.class, SystemFeignClient.class, CompanyFeignClient.class, SocialSecurityClient.class})
 @EnableDiscoveryClient
 public class HrmGenerateApplication {
     public static void main(String[] args) {

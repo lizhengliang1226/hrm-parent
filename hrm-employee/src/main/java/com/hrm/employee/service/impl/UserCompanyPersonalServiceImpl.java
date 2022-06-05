@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author 17314
@@ -20,7 +21,7 @@ import java.util.Map;
 public class UserCompanyPersonalServiceImpl implements UserCompanyPersonalService {
 
     private UserCompanyPersonalDao userCompanyPersonalDao;
-
+    private ReentrantLock lock = new ReentrantLock();
     @Autowired
     public void setUserCompanyPersonalDao(UserCompanyPersonalDao userCompanyPersonalDao) {
         this.userCompanyPersonalDao = userCompanyPersonalDao;
@@ -28,7 +29,13 @@ public class UserCompanyPersonalServiceImpl implements UserCompanyPersonalServic
 
     @Override
     public void save(UserCompanyPersonal personalInfo) {
-        userCompanyPersonalDao.save(personalInfo);
+        lock.lock();
+        try {
+            userCompanyPersonalDao.save(personalInfo);
+        } finally {
+            lock.unlock();
+        }
+
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.hrm.social.service.impl;
 
 import com.hrm.common.client.EmployeeFeignClient;
 import com.hrm.common.entity.PageResult;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.social.Archive;
 import com.hrm.domain.social.CityPaymentItem;
 import com.hrm.domain.social.SocialSecrityArchiveDetail;
@@ -20,14 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 社保归档服务实现类
@@ -40,6 +39,9 @@ import java.util.Map;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ArchiveServiceImpl implements ArchiveService {
+    private Map<String, List<CityPaymentItem>> cityPayListMap = new HashMap<>(64);
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Override
     public Archive findArchive(String companyId, String yearMonth) {
@@ -64,7 +66,10 @@ public class ArchiveServiceImpl implements ArchiveService {
             userSocialSecurityItemPage = userSocialSecurityDao.findPage(companyId, PageRequest.of(page - 1, pageSize));
         }
         //构建用户的社保列表
+        final long start = System.currentTimeMillis();
         List<SocialSecrityArchiveDetail> list = buildSocialSecurityDetailInfo(yearMonth, userSocialSecurityItemPage);
+        final long end = System.currentTimeMillis();
+        log.info("社保信息归档，报表构建使用时间：{}ms", end - start);
         return new PageResult<>(userSocialSecurityItemPage.getTotalElements(), list);
 
     }
@@ -73,7 +78,6 @@ public class ArchiveServiceImpl implements ArchiveService {
         List<SocialSecrityArchiveDetail> list = new ArrayList<>();
         for (Map map : userSocialSecurityItemPage.getContent()) {
             String userId = (String) map.get("id");
-            log.info(userId);
             String mobile = (String) map.get("mobile");
             String username = (String) map.get("username");
             String departmentName = (String) map.get("departmentName");
@@ -82,26 +86,11 @@ public class ArchiveServiceImpl implements ArchiveService {
             vo.setUserCompanyPersonal(map);
             //社保相关信息
             getSocialSecurityData(vo, yearMonth, map);
-            getOtherData(vo, yearMonth);
             list.add(vo);
         }
         return list;
     }
 
-    private void getOtherData(SocialSecrityArchiveDetail vo, String yearMonth) {
-        //养老保险、医疗保险、失业保险、工伤保险和生育保险
-        /**
-         * 1、在职期间交纳了社保养老保险金的职工，在退休之后是可按月领取企业退休职工养老金的。
-         *
-         * 2、养老金的计算标准为：养老金=基本养老金+个人账户养老金+过渡性养老金。
-         *
-         * 3、基础养老金=【( c1+A)/2】*n%，其中c1为当地上年度在岗职工月平均工资，A为本人指数化月平均缴费工资，n为退休时的缴费年限。
-         *
-         * 4、个人账户养老金=个人账户储存额/计发月数，按照这个公式计算出的金额，就是退休后能拿到的个人账户养老金部分。
-         *
-         * 5、过渡性养老金，依据全省上年度在职职工月平均收入、本人平均缴费指数、创建基本养老保险个人账户前的视作缴费年限来计算。
-         */
-    }
 
     /**
      * 获取归档信息的社保信息部分
@@ -113,8 +102,16 @@ public class ArchiveServiceImpl implements ArchiveService {
         // 综合
         BigDecimal socialSecurityCompanyPay = BigDecimal.ZERO;
         BigDecimal socialSecurityPersonalPay = BigDecimal.ZERO;
+        List<CityPaymentItem> cityPaymentItemList = null;
+        cityPaymentItemList = cityPayListMap.get((String) map.get("participatingInTheCityId"));
+        if (cityPaymentItemList == null) {
+            cityPaymentItemList = (List<CityPaymentItem>) redisTemplate.boundHashOps(SystemConstant.REDIS_CITY_PAYMENT_LIST)
+                                                                       .get((String) map.get("participatingInTheCityId"));
+            cityPayListMap.put((String) map.get("participatingInTheCityId"), cityPaymentItemList);
+        }
         // 查找城市社保项
-        List<CityPaymentItem> cityPaymentItemList = paymentItemService.findAllByCityId((String) map.get("participatingInTheCityId"));
+//        List<CityPaymentItem> cityPaymentItemList = paymentItemService.findAllByCityId((String) map.get("participatingInTheCityId"));
+
         // 计算各项保险员工和企业需要支付的单项费
         // 养老
         BigDecimal endowmentInsurancePersonal = BigDecimal.ZERO;
@@ -187,7 +184,7 @@ public class ArchiveServiceImpl implements ArchiveService {
                         birthInsuranceCompany = augend = cityPaymentItem.getScaleCompany()
                                                                         .multiply(socialSecurityBase)
                                                                         .divide(new BigDecimal(100), 2, BigDecimal.ROUND_HALF_UP);
-                        unemploymentInsuranceCompanyRatio = cityPaymentItem.getScaleCompany();
+                        birthInsuranceCompanyRatio = cityPaymentItem.getScaleCompany();
                     }
                     if (cityPaymentItem.getPaymentItemId()
                                        .equals(CityPaymentItemEnum.SERIOUS_ILLNESS_INSURANCE.getValue()) && cityPaymentItem.getScaleCompany() != null) {
@@ -270,7 +267,10 @@ public class ArchiveServiceImpl implements ArchiveService {
     @Override
     public void archive(String yearMonth, String companyId) throws Exception {
         //1.构建归档明细数据
+        final long start = System.currentTimeMillis();
         final PageResult<SocialSecrityArchiveDetail> ssad = getReports(yearMonth, companyId, null, null);
+        final long end = System.currentTimeMillis();
+        log.info("构建报表数据花费时间：{}ms", end - start);
         //1.1 计算当月,企业与员工支出的所有社保金额总和
         BigDecimal enterMoney = BigDecimal.ZERO;
         BigDecimal personMoney = BigDecimal.ZERO;
@@ -306,9 +306,14 @@ public class ArchiveServiceImpl implements ArchiveService {
         // 缴纳总金额
         archive.setTotal(enterMoney.add(personMoney));
         // 保存主档信息
+        long st = System.currentTimeMillis();
         archiveDao.save(archive);
+        long st1 = System.currentTimeMillis();
+        log.info("保存主档时间：{}ms", st1 - st);
         // 保存子档信息
         socialSecurityArchiveDetailService.saveBatch(ssad.getRows());
+        long ed = System.currentTimeMillis();
+        log.info("保存社保主档和子档花费时间：{}ms", ed - st);
     }
 
     @Override

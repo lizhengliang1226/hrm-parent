@@ -8,9 +8,9 @@ import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.PageUtils;
-import com.hrm.domain.employee.UserCompanyPersonal;
 import com.hrm.domain.social.CityPaymentItem;
 import com.hrm.domain.social.UserSocialSecurity;
+import com.hrm.domain.social.enums.UserSocialEnum;
 import com.hrm.domain.social.vo.UserSocialSecuritySimpleVo;
 import com.hrm.domain.social.vo.UserSocialSecurityVo;
 import com.hrm.domain.system.City;
@@ -57,7 +57,7 @@ public class UserSocialServiceImpl implements UserSocialService {
     @Autowired
     private SystemFeignClient systemFeignClient;
     private List<City> cityList = new ArrayList<>();
-    private ThreadPoolExecutor pool = new ThreadPoolExecutor(10, 10, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+    private ThreadPoolExecutor pool = new ThreadPoolExecutor(16, 16, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
                                                              r -> new Thread(r, "t1"));
     static ReentrantLock lock = new ReentrantLock();
 
@@ -133,7 +133,7 @@ public class UserSocialServiceImpl implements UserSocialService {
     @Override
     public void importSocialExcel(MultipartFile file, String companyId) throws IOException {
         log.info("社保数据开始导入");
-        cityList = systemFeignClient.findAll().getData();
+        cityList = systemFeignClient.findCityList().getData();
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), UserSocialSecurityVo.class, new SocialExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
@@ -141,16 +141,12 @@ public class UserSocialServiceImpl implements UserSocialService {
     }
 
     /**
-     * Excel操作的内部类
+     * 社保信息导入Excel操作的内部类
      */
     class SocialExcelListener extends AnalysisEventListener<UserSocialSecurityVo> {
 
         @Override
         public void invoke(UserSocialSecurityVo vo, AnalysisContext analysisContext) {
-            UserCompanyPersonal userDetailList = (UserCompanyPersonal) redisTemplate.boundHashOps("userDetailList").get(vo.getUserId());
-            if (userDetailList == null) {
-                userDetailList = new UserCompanyPersonal();
-            }
             final UserSocialSecurity us = new UserSocialSecurity();
             for (City city : cityList) {
                 if (city.getName().equals(vo.getParticipatingInTheCity())) {
@@ -160,8 +156,13 @@ public class UserSocialServiceImpl implements UserSocialService {
                     vo.setProvidentFundCityId(city.getId());
                 }
             }
-            vo.setHouseholdRegistration(userDetailList.getDomicile());
             BeanUtils.copyProperties(vo, us);
+            final String socialSecurityType = vo.getSocialSecurityType();
+            final String householdRegistrationType = vo.getHouseholdRegistrationType();
+            final String st = UserSocialEnum.lookup(socialSecurityType).getValue();
+            final String ht = UserSocialEnum.lookup(householdRegistrationType).getValue();
+            us.setSocialSecurityType(Integer.valueOf(st));
+            us.setHouseholdRegistrationType(Integer.valueOf(ht));
             // 默认缴纳公积金和社保
             us.setEnterprisesPaySocialSecurityThisMonth(1);
             us.setEnterprisesPayTheProvidentFundThisMonth(1);

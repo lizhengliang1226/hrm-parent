@@ -3,6 +3,14 @@ spring:
     database: MySQL
     show-sql: true
     open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 1000
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
   banner:
     location: banner.txt
 initial-password: e10adc3949ba59abbe56e057f20f883e

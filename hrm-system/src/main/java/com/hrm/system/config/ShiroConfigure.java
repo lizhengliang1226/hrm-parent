@@ -1,5 +1,6 @@
 package com.hrm.system.config;
 
+import com.hrm.common.shiro.filter.AccessControllerFilter;
 import com.hrm.common.shiro.realm.HrmRealm;
 import com.hrm.common.shiro.session.CustomSessionManager;
 import com.hrm.system.shiro.realm.UserRealm;
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.servlet.Filter;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -104,6 +107,7 @@ public class ShiroConfigure {
          *          anno    ：匿名访问（表明此链接所有人可以访问）
          *          authc   ：认证后访问（表明此链接需登录认证成功之后可以访问）
          */
+        filterFactory.setFilters(filters());
         Map<String, String> filterMap = new LinkedHashMap<>();
         // 匿名访问
         filterMap.put("/sys/login", ANON_ACCESS);
@@ -111,7 +115,7 @@ public class ShiroConfigure {
         // 人脸登录api直接放行
         filterMap.put("/sys/faceLogin/**", ANON_ACCESS);
         //认证之后访问（登录之后可以访问）
-        filterMap.put("/**", AUTH_ACCESS);
+        filterMap.put("/**", "accessFilter");
         //5.设置过滤器
         filterFactory.setFilterChainDefinitionMap(filterMap);
         return filterFactory;
@@ -123,6 +127,12 @@ public class ShiroConfigure {
     public DefaultWebSessionManager sessionManager() {
         CustomSessionManager sessionManager = new CustomSessionManager();
         sessionManager.setSessionDAO(redisSessionDAO());
+        // 会话超时时间，单位：毫秒
+        sessionManager.setGlobalSessionTimeout(60 * 60 * 1000);
+        // 定时清理失效会话, 清理用户直接关闭浏览器造成的孤立会话
+        sessionManager.setSessionValidationInterval(60 * 60 * 1000);
+        // 是否开启定时清理失效会话
+        sessionManager.setSessionValidationSchedulerEnabled(true);
         return sessionManager;
     }
 
@@ -160,5 +170,10 @@ public class ShiroConfigure {
         return redisCacheManager;
     }
 
+    private Map<String, Filter> filters() {
+        Map<String, Filter> f = new HashMap<>();
+        f.put("accessFilter", new AccessControllerFilter());
+        return f;
+    }
 
 }

@@ -28,9 +28,14 @@ public class RedisService {
         for (Department department : all) {
             final String id = department.getId();
             final String code = department.getCode();
-            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, department);
-            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(code, department);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(id, department);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(code, department);
         }
+    }
+
+    public Department getDeptByCode(String code) {
+        final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).get(code);
+        return (Department) o;
     }
 
 }

@@ -1,7 +1,9 @@
 package com.hrm.company.service;
 
+import com.hrm.common.entity.PageResult;
 import com.hrm.domain.company.Company;
-import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 /**
  * 企业服务
@@ -40,7 +42,7 @@ public interface CompanyService {
      *
      * @return 全部企业列表
      */
-    public Page<Company> findAll(int page, int size);
+    public PageResult<Company> findAll(int page, int size);
 
     /**
      * 根据管理者id查询企业信息
@@ -49,4 +51,12 @@ public interface CompanyService {
      * @return
      */
     Company findByManagerId(String id);
+
+    /**
+     * 根据公司名称查找公司
+     *
+     * @param name
+     * @return
+     */
+    List<Company> findByName(String name);
 }

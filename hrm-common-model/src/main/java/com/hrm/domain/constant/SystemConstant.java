@@ -83,4 +83,8 @@ public class SystemConstant {
      * 部门列表在redis1的名字
      */
     public static final String REDIS_DEPT_LIST = "deptList";
+    /**
+     * 城市社保项在缓存的名字
+     */
+    public static final String REDIS_CITY_PAYMENT_LIST = "cityPayList";
 }

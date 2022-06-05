@@ -15,6 +15,7 @@ import com.hrm.attendance.dao.UserDao;
 import com.hrm.attendance.mapper.AttendanceMapper;
 import com.hrm.attendance.service.AttendanceMapperService;
 import com.hrm.attendance.service.ExcelImportService;
+import com.hrm.common.cache.SystemCache;
 import com.hrm.common.utils.DateUtils;
 import com.hrm.domain.attendance.entity.Attendance;
 import com.hrm.domain.attendance.entity.AttendanceConfig;
@@ -24,6 +25,7 @@ import com.hrm.domain.attendance.vo.AtteUploadVo;
 import com.hrm.domain.constant.SystemConstant;
 import com.lzl.IdWorker;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,6 +40,7 @@ import java.util.List;
 /**
  * @author 17314
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ExcelImportServiceImpl implements ExcelImportService {
@@ -67,7 +70,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     private List<Attendance> atList = new ArrayList<>();
     private List<AttendanceConfig> atcList = new ArrayList<>();
 
-
     /**
      * 处理考勤数据的文件上传
      * 参数 :excel文件
@@ -76,24 +78,36 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     @Override
     public void importAttendanceExcel(MultipartFile file, String companyId) throws Exception {
         // 查询每个部门的出勤配置信息
+        final long st = System.currentTimeMillis();
         atcList = attendanceConfigDao.findAll();
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), AtteUploadVo.class, new AttendanceExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
+        final long ed = System.currentTimeMillis();
+        log.info("考勤数据导入读取Excel用时：{}ms", ed - st);
+        final long st1 = System.currentTimeMillis();
         // 批量保存
         ams.saveBatch(atList);
+        final long ed1 = System.currentTimeMillis();
+        log.info("考勤数据批量插入用时：{}ms", ed1 - st1);
+        atList.clear();
     }
 
     /**
-     * Excel操作的内部类
+     * 考勤导入Excel操作的内部类
      */
     class AttendanceExcelListener extends AnalysisEventListener<AtteUploadVo> {
 
         @SneakyThrows
         @Override
         public void invoke(AtteUploadVo atteUploadVo, AnalysisContext analysisContext) {
-            final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(atteUploadVo.getMobile());
-            final User user = JSON.parseObject(JSON.toJSONString(o), User.class);
+            User user = null;
+            user = SystemCache.USER_INFO_CACHE.get(atteUploadVo.getMobile());
+            if (user == null) {
+                final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(atteUploadVo.getMobile());
+                user = JSON.parseObject(JSON.toJSONString(o), User.class);
+                SystemCache.USER_INFO_CACHE.put(atteUploadVo.getMobile(), user);
+            }
             Attendance attendance = new Attendance(atteUploadVo, user);
             attendance.setDay(atteUploadVo.getAtteDate());
             // 设置考勤状态
@@ -127,10 +141,10 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // 早退
                     attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY.getValue());
                 }
-                if (isLate && isEarly) {
-                    // 迟到早退
-                    attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
-                }
+//                if (isLate && isEarly) {
+//                    // 迟到早退
+//                    attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
+//                }
             }
             attendance.setId(IdWorker.getIdStr());
             attendance.setCreateDate(new Date());

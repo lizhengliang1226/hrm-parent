@@ -95,6 +95,13 @@ public class AttendanceSettingsController extends BaseController {
         return new Result(ResultCode.SUCCESS, dedList);
     }
 
+    @GetMapping(value = "deductions/setList")
+    @ApiOperation(value = "查询企业扣款设置")
+    public Result<List<DeductionDict>> findCompanyDeductionsList() {
+        final List<DeductionDict> dedList = attendanceSettingsService.getCompanyDeductionConfig(companyId);
+        return new Result(ResultCode.SUCCESS, dedList);
+    }
+
     @PutMapping(value = "deductions")
     @ApiOperation(value = "保存扣款设置")
     public Result saveDeductionsSet(@RequestBody List<DeductionDict> deductions) {

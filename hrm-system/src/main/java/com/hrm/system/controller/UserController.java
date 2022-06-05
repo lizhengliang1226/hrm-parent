@@ -22,7 +22,6 @@ import com.hrm.system.service.OssService;
 import com.hrm.system.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -41,6 +40,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户管理
@@ -66,8 +68,8 @@ public class UserController extends BaseController {
     private UserService userService;
     private OssService ossService;
     private CompanyFeignClient companyFeignClient;
-    private List<User> userList = new ArrayList<>();
-
+    private final ThreadPoolExecutor pool = new ThreadPoolExecutor(16, 16, 2, TimeUnit.MINUTES, new LinkedBlockingQueue<>(),
+                                                                   (r) -> new Thread(r, "t1"));
     @PostMapping(value = "user/import", name = "IMPORT_USER_API")
     @ApiOperation(value = "批量保存用户")
     public Result importUsers(@RequestParam MultipartFile file) throws Exception {
@@ -197,8 +199,10 @@ public class UserController extends BaseController {
             final Subject subject = SecurityUtils.getSubject();
             subject.login(usernamePasswordToken);
             String sid = (String) subject.getSession().getId();
+//            subject.getSession().setTimeout(5000);
             return new Result(ResultCode.SUCCESS, sid);
         } catch (Exception e) {
+            e.printStackTrace();
             return new Result(ResultCode.LOGIN_FAIL);
         }
     }
@@ -233,7 +237,7 @@ public class UserController extends BaseController {
      */
     class UserExcelListener extends AnalysisEventListener<User> {
 
-        @SneakyThrows
+
         @Override
         public void invoke(User user, AnalysisContext analysisContext) {
             final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).get(user.getDepartmentId());
@@ -245,7 +249,13 @@ public class UserController extends BaseController {
             user.setCompanyName(companyName);
             user.setCompanyId(companyId);
 //            userList.add(user)
-            userService.save(user);
+            pool.execute(() -> {
+                try {
+                    userService.save(user);
+                } catch (CommonException e) {
+                    e.printStackTrace();
+                }
+            });
         }
 
         @Override

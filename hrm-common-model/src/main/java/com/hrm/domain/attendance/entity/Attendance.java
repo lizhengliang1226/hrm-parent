@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -23,6 +25,8 @@ import java.util.Date;
 @Entity
 @Table(name = "atte_attendance")
 @Data
+@DynamicUpdate
+@DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
 public class Attendance extends BaseEntity implements Serializable {

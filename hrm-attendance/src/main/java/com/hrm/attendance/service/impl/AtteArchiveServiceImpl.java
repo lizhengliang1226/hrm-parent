@@ -110,7 +110,6 @@ public class AtteArchiveServiceImpl implements AtteArchiveService {
     private void deleteArchiveAtteData(String archiveDate, String companyId, List<ArchiveMonthly> am) {
         am.forEach(am1 -> {
             final String id = am1.getId();
-            log.info("{}", id);
             amisImpl.removeByAtteArchiveMonthlyId(id);
             amsImpl.removeById(am1.getId());
         });

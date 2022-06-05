@@ -103,7 +103,7 @@ public class AtteReportMonthlyBO implements Serializable {
     /**
      * 实际出勤天数（非正式）
      */
-    private String actualAtteUnofficialDays;
+//    private String actualAtteUnofficialDays;
 
     /**
      * 实际出勤天数（正式）

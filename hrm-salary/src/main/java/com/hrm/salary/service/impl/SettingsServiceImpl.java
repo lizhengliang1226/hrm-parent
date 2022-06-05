@@ -23,7 +23,7 @@ public class SettingsServiceImpl implements SettingsService {
     @Override
     public Settings findById(String companyId) {
         Optional<Settings> optionalSettings = settingsDao.findById(companyId);
-        return optionalSettings.isPresent() ? optionalSettings.get() : null;
+        return optionalSettings.orElse(new Settings());
     }
 
     /**
@@ -31,6 +31,7 @@ public class SettingsServiceImpl implements SettingsService {
      */
     @Override
     public void save(Settings settings) {
+        settings.setTaxCalculationType(settings.getTaxCalculationType() == null ? 1 : settings.getTaxCalculationType());
         settingsDao.save(settings);
     }
 }

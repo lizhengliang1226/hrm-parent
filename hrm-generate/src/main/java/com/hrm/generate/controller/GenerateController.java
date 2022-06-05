@@ -1,31 +1,46 @@
 package com.hrm.generate.controller;
 
+import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.metadata.WriteSheet;
+import com.hrm.common.client.CompanyFeignClient;
+import com.hrm.common.client.SalaryFeignClient;
+import com.hrm.common.client.SocialSecurityClient;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
+import com.hrm.common.entity.ResultCode;
+import com.hrm.common.utils.BankNumberUtil;
 import com.hrm.common.utils.DateUtils;
+import com.hrm.common.utils.RandomUserInfoUtil;
+import com.hrm.common.utils.StringUtils;
 import com.hrm.domain.attendance.vo.AtteUploadVo;
+import com.hrm.domain.company.Department;
+import com.hrm.domain.constant.Schools;
+import com.hrm.domain.employee.UserCompanyPersonal;
 import com.hrm.domain.employee.vo.UserVo;
-import com.hrm.domain.generate.User;
+import com.hrm.domain.salary.UserSalary;
+import com.hrm.domain.social.CityPaymentItem;
+import com.hrm.domain.social.PaymentItem;
 import com.hrm.domain.social.vo.UserSocialSecurityVo;
 import com.hrm.domain.system.City;
+import com.hrm.domain.system.User;
 import com.hrm.generate.dao.UserDao;
+import com.lzl.IdWorker;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,16 +57,54 @@ import java.util.*;
  * @version v1.0
  * @date 2022/5/31-2:13
  */
+@Slf4j
 @RestController
 @RequestMapping("build")
 public class GenerateController extends BaseController {
     @Autowired
+    private SalaryFeignClient salaryFeignClient;
+    @Autowired
+    private CompanyFeignClient companyFeignClient;
+    @Autowired
     private SystemFeignClient systemFeignClient;
     @Autowired
     private UserDao userDao;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private SocialSecurityClient socialSecurityClient;
+
+    @GetMapping("baseSalary")
+    @ApiOperation(value = "批量定薪")
+    public Result buildSalary() {
+        Map m = new HashMap();
+        m.put("companyId", companyId);
+        m.put("page", 1);
+        m.put("size", 10000);
+        PageResult<User> data = (PageResult<User>) systemFeignClient.findAll(m).getData();
+        final List<User> users = data.getRows();
+        for (int i = 0; i < users.size() * 0.7; i++) {
+            final User user = RandomUtil.randomEle(users);
+            UserSalary userSalary = new UserSalary();
+            final BigDecimal zz = RandomUtil.randomBigDecimal(new BigDecimal(4000), new BigDecimal(9000))
+                                            .setScale(2, BigDecimal.ROUND_HALF_DOWN);
+
+            userSalary.setUserId(user.getId());
+            userSalary.setCorrectionOfBasicWages(zz);
+            userSalary.setTurnToPostWages(zz);
+            final BigDecimal dx = zz.multiply(new BigDecimal("0.8")).setScale(2, BigDecimal.ROUND_HALF_DOWN);
+            userSalary.setFixedPostWage(dx);
+            userSalary.setFixedBasicSalary(dx);
+            userSalary.setCurrentBasicSalary(dx);
+            userSalary.setCurrentPostWage(dx);
+            salaryFeignClient.init(userSalary);
+            users.remove(user);
+        }
+        return new Result(ResultCode.SUCCESS);
+    }
 
     @GetMapping("atteData")
-    @ApiOperation(value = "生成数据")
+    @ApiOperation(value = "生成考勤数据")
     public Result buildAtteData(@RequestBody Map map) throws IOException, ParseException {
         String filename = (String) map.get("filename");
         int startMonth = Integer.parseInt((String) map.get("startMonth"));
@@ -78,15 +131,17 @@ public class GenerateController extends BaseController {
         return Result.SUCCESS();
     }
 
-    @GetMapping("socialData")
+    @PostMapping("socialData")
     @ApiOperation(value = "生成社保数据")
-    public Result buildSocialData() throws IOException, ParseException {
+    public Result buildSocialData(@RequestBody Map map1) throws IOException, ParseException {
+        String filename = (String) map1.get("filename");
+        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
         Map m = new HashMap();
-        m.put("companyId", "1");
+        m.put("companyId", companyId);
         m.put("page", 1);
         m.put("size", 10000);
         PageResult<User> data = (PageResult<User>) systemFeignClient.findAll(m).getData();
-        final List<City> data1 = systemFeignClient.findAll().getData();
+//        final List<City> data1 = systemFeignClient.findCityList().getData();
         final List<User> rows = data.getRows();
         // 获取用户信息
         BigDecimal socialSecurityBase = BigDecimal.ZERO;
@@ -94,16 +149,19 @@ public class GenerateController extends BaseController {
         List<UserSocialSecurityVo> list = new ArrayList<>();
         for (User row : rows) {
             final UserSocialSecurityVo vo = new UserSocialSecurityVo();
-            final City city = RandomUtil.randomEle(data1);
+            final String workingCity = row.getWorkingCity();
+//            final City city = RandomUtil.randomEle(data1);
             // 生成随机社保基数和公积金基数
+            vo.setSocialSecurityType(RandomUtil.randomEle(new String[]{"首次开户", "非首次开户"}));
+            vo.setHouseholdRegistrationType(RandomUtil.randomEle(new String[]{"本市城镇", "本市农村", "外阜城镇", "外阜农村"}));
             socialSecurityBase = RandomUtil.randomBigDecimal(new BigDecimal(10000), new BigDecimal(20000)).setScale(2, BigDecimal.ROUND_HALF_DOWN);
             providentFundBase = socialSecurityBase;
             vo.setSocialSecurityBase(socialSecurityBase);
             vo.setProvidentFundBase(providentFundBase);
             vo.setUserId(row.getId());
             vo.setUsername(row.getUsername());
-            vo.setProvidentFundCity(city.getName());
-            vo.setParticipatingInTheCity(city.getName());
+            vo.setProvidentFundCity(workingCity);
+            vo.setParticipatingInTheCity(workingCity);
             vo.setIndustrialInjuryRatio(
                     RandomUtil.randomBigDecimal(new BigDecimal("0.5"), new BigDecimal(2)).setScale(2, BigDecimal.ROUND_HALF_DOWN));
             vo.setEnterpriseProportion(RandomUtil.randomBigDecimal(new BigDecimal("5"), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_DOWN));
@@ -113,7 +171,7 @@ public class GenerateController extends BaseController {
         Resource template = new ClassPathResource("社保数据.xlsx");
         final WriteSheet sheet = EasyExcel.writerSheet().build();
         FileOutputStream f = new FileOutputStream(
-                "C:\\Users\\17314\\Desktop\\HRM管理系统\\数据导入\\社保模拟数据.xlsx");
+                filename);
         EasyExcel.write(f, UserSocialSecurityVo.class)
                  .withTemplate(template.getInputStream()).build()
                  .fill(list, sheet)
@@ -123,74 +181,108 @@ public class GenerateController extends BaseController {
 
     @GetMapping(value = "citySocial")
     @ApiOperation(value = "随机设置城市社保的缴纳比例")
-    public Result user() throws Exception {
-//        final List<PaymentItem> all = paymentItemService.findAllPaymentItems();
-//        final List<City> all1 = systemFeignClient.findAll().getData();
-//        all1.forEach(city -> {
-//            final String id = city.getId();
-//            all.forEach(baoxian -> {
-//                final String name = baoxian.getName();
-//                final BigDecimal scaleCompany = baoxian.getScaleCompany();
-//                final BigDecimal scalePersonal = baoxian.getScalePersonal();
-//                final Boolean switchCompany = baoxian.getSwitchCompany();
-//                final Boolean switchPersonal = baoxian.getSwitchPersonal();
-//                final CityPaymentItem cityPaymentItem = new CityPaymentItem();
-//                cityPaymentItem.setId(IdWorker.getIdStr());
-//                cityPaymentItem.setCityId(id);
-//                cityPaymentItem.setPaymentItemId(baoxian.getId());
-//                cityPaymentItem.setSwitchCompany(switchCompany);
-//                cityPaymentItem.setSwitchPersonal(switchPersonal);
-//                cityPaymentItem.setScaleCompany(scaleCompany);
-//                cityPaymentItem.setScalePersonal(scalePersonal);
-//                cityPaymentItem.setName(name);
-//                paymentItemService.saveCityPaymentItem(cityPaymentItem);
-//            });
-//        });
-//        return new Result(ResultCode.SUCCESS);
-        return null;
+    public Result buildCitySocial() throws Exception {
+        final List<PaymentItem> all = socialSecurityClient.findSocialPaymentItems().getData();
+        final List<City> all1 = systemFeignClient.findCityList().getData();
+        all1.forEach(city -> {
+            final String id = city.getId();
+            all.forEach(cityPay -> {
+                final String cityPayName = cityPay.getName();
+                final Boolean switchCompany = cityPay.getSwitchCompany();
+                final Boolean switchPersonal = cityPay.getSwitchPersonal();
+                final CityPaymentItem cityPaymentItem = new CityPaymentItem();
+                cityPaymentItem.setId(IdWorker.getIdStr());
+                cityPaymentItem.setCityId(id);
+                cityPaymentItem.setPaymentItemId(cityPay.getId());
+                cityPaymentItem.setSwitchCompany(switchCompany);
+                cityPaymentItem.setSwitchPersonal(switchPersonal);
+
+                if (cityPayName.equals("养老")) {
+                    cityPaymentItem.setScaleCompany(new BigDecimal(16));
+                    cityPaymentItem.setScalePersonal(new BigDecimal(8));
+                }
+                if (cityPayName.equals("医疗")) {
+                    cityPaymentItem.setScaleCompany(
+                            RandomUtil.randomBigDecimal(new BigDecimal(7), new BigDecimal("11.7")).setScale(1, BigDecimal.ROUND_HALF_DOWN));
+                    cityPaymentItem.setScalePersonal(new BigDecimal(2));
+                }
+                if (cityPayName.equals("失业")) {
+                    cityPaymentItem.setScaleCompany(new BigDecimal("0.5"));
+                    cityPaymentItem.setScalePersonal(new BigDecimal("0.5"));
+                }
+                if (cityPayName.equals("工伤")) {
+                    cityPaymentItem.setScaleCompany(
+                            RandomUtil.randomBigDecimal(new BigDecimal("0.2"), new BigDecimal("0.7")).setScale(2, BigDecimal.ROUND_HALF_DOWN));
+                    cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
+                }
+                if (cityPayName.equals("生育")) {
+                    cityPaymentItem.setScaleCompany(
+                            RandomUtil.randomBigDecimal(new BigDecimal(0), new BigDecimal("0.7")).setScale(1, BigDecimal.ROUND_HALF_DOWN));
+                    cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
+                }
+                if (cityPayName.equals("大病")) {
+                    cityPaymentItem.setScaleCompany(BigDecimal.ZERO);
+                    cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
+                }
+                cityPaymentItem.setName(cityPayName);
+                try {
+                    socialSecurityClient.saveCitySocialPaymentItems(cityPaymentItem);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        return new Result(ResultCode.SUCCESS);
     }
 
-    private void buildUserDataExcel() throws IOException {
-        List<UserVo> list = new ArrayList<>(50);
-        for (int i = 0; i < 25; i++) {
+    @PostMapping("userBaseData")
+    @ApiOperation(value = "生成基础用户数据")
+    public Result buildUserBaseData(@RequestBody Map map) throws IOException {
+        final int num = Integer.parseInt((String) map.get("num"));
+        String filename = (String) map.get("filename");
+        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
+        final List<Department> depts = companyFeignClient.findAll().getData().getDepts();
+        final List<City> data = systemFeignClient.findCityList().getData();
+        List<UserVo> list = new ArrayList<>(num);
+        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = 0; i < num; i++) {
             final UserVo userVo = new UserVo();
-            userVo.setUsername("CWCPSYB员工" + (i + 1));
-            userVo.setMobile("1868540" + RandomUtil.randomInt(1000, 9999));
-            userVo.setDepartmentCode("CWCPSYB");
+            final Department department = RandomUtil.randomEle(depts);
+            final City city = RandomUtil.randomEle(data);
+            userVo.setUsername(RandomUserInfoUtil.getChineseName());
+            userVo.setMobile(RandomUserInfoUtil.getTelephone());
+            userVo.setDepartmentCode(department.getCode());
             userVo.setFormOfEmployment(1);
+            userVo.setGender(RandomUtil.randomEle(new String[]{"1", "2"}));
             userVo.setFormOfManagement(String.valueOf(1));
-            userVo.setTimeOfEntry(DateUtil.parseDate("2022-04-04"));
-            userVo.setWorkingCity("北京");
+            final DateTime dateTime = RandomUtil.randomDate(new Date(), DateField.MONTH, -3, 2);
+            userVo.setTimeOfEntry(dateTime);
+            userVo.setWorkingCity(city.getName());
             userVo.setWorkNumber(String.valueOf(RandomUtil.randomInt(10000, 99999)));
             list.add(userVo);
         }
-        for (int i = 0; i < 25; i++) {
-            final UserVo userVo = new UserVo();
-            userVo.setUsername("CWCP2员工" + (i + 1));
-            userVo.setMobile("1868540" + RandomUtil.randomInt(1000, 9999));
-            userVo.setDepartmentCode("CWCP2");
-            userVo.setFormOfEmployment(1);
-            userVo.setFormOfManagement(String.valueOf(1));
-            userVo.setTimeOfEntry(DateUtil.parseDate("2022-04-04"));
-            userVo.setWorkingCity("北京");
-            userVo.setWorkNumber(String.valueOf(RandomUtil.randomInt(10000, 99999)));
-            list.add(userVo);
-        }
+
         Resource template = new ClassPathResource("用户批量添加构造模板.xlsx");
         final WriteSheet sheet = EasyExcel.writerSheet().build();
-        FileOutputStream f = new FileOutputStream(new File("D:\\HRM-Managent\\hrm-parent\\hrm-attendance\\src\\main\\resources\\users.xlsx"));
+        FileOutputStream f = new FileOutputStream(new File(filename));
         EasyExcel.write(f, AtteUploadVo.class)
                  .withTemplate(template.getInputStream()).build()
                  .fill(list, sheet)
                  .finish();
+        return Result.SUCCESS();
     }
 
     private void buildAttendanceData(int startYear, int endYear, int startMonth, int endMonth, String filename) throws ParseException, IOException {
         List<AtteUploadVo> list = new ArrayList<>();
-        String[] timeup = new String[]{"08:00:00", "08:30:00", "09:00:00", "09:30:00", "10:00:00"};
-        String[] timedown = new String[]{"17:30:00", "18:00:00", "18:30:00", "19:00:00", "19:30:00"};
-        final List<User> users = userDao.findByCompanyId(companyId);
-        for (User user : users) {
+        String[] startHours = new String[]{"07", "08", "09", "10"};
+        String[] endHours = new String[]{"17", "18", "19"};
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+        final Map map1 = new HashMap<>();
+        map1.put("page", 1);
+        map1.put("size", 10000);
+        final Result all = systemFeignClient.findAll(map1);
+        final PageResult<User> users = (PageResult<User>) all.getData();
+        for (User user : users.getRows()) {
             final String mobile = user.getMobile();
             final String workNumber = user.getWorkNumber();
             final String username = user.getUsername();
@@ -202,16 +294,26 @@ public class GenerateController extends BaseController {
                     } else {
                         m = m + j;
                     }
-                    System.out.println(m);
                     final String[] monthEveryDay = DateUtils.getMonthEveryDay(m, DatePattern.SIMPLE_MONTH_PATTERN);
                     for (String s : monthEveryDay) {
                         AtteUploadVo atteUploadVo = new AtteUploadVo();
                         atteUploadVo.setAtteDate(s);
-                        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-                        final Date parse = simpleDateFormat.parse(s + " " + RandomUtil.randomEle(timeup));
-                        final Date parse1 = simpleDateFormat.parse(s + " " + RandomUtil.randomEle(timedown));
-                        atteUploadVo.setInTime(parse);
-                        atteUploadVo.setOutTime(parse1);
+                        final int t1 = RandomUtil.randomInt(0, 60);
+                        final int t2 = RandomUtil.randomInt(0, 60);
+                        final int t3 = RandomUtil.randomInt(0, 60);
+                        final int t4 = RandomUtil.randomInt(0, 60);
+                        String t11 = "";
+                        String t22 = "";
+                        String t33 = "";
+                        String t44 = "";
+                        t11 = t1 < 10 ? "0" + t1 : t1 + "";
+                        t22 = t2 < 10 ? "0" + t2 : t2 + "";
+                        t33 = t3 < 10 ? "0" + t3 : t3 + "";
+                        t44 = t4 < 10 ? "0" + t4 : t4 + "";
+                        final Date intime = simpleDateFormat.parse(s + " " + RandomUtil.randomEle(startHours) + ":" + t11 + ":" + t22);
+                        final Date outtime = simpleDateFormat.parse(s + " " + RandomUtil.randomEle(endHours) + ":" + t33 + ":" + t44);
+                        atteUploadVo.setInTime(intime);
+                        atteUploadVo.setOutTime(outtime);
                         atteUploadVo.setMobile(mobile);
                         atteUploadVo.setUsername(username);
                         atteUploadVo.setWorkNumber(workNumber);
@@ -220,7 +322,6 @@ public class GenerateController extends BaseController {
                 }
             }
         }
-
         Resource template = new ClassPathResource("考勤数据构建模板.xlsx");
         final WriteSheet sheet = EasyExcel.writerSheet().build();
         FileOutputStream f = new FileOutputStream(filename);
@@ -230,51 +331,82 @@ public class GenerateController extends BaseController {
                  .finish();
     }
 
-    private void generateUserDetailInfo() {
+
+    @PostMapping("userDetailData")
+    @ApiOperation(value = "生成用户详细信息数据")
+    public void generateUserDetailInfo(@RequestBody Map map) throws IOException {
+        String filename = (String) map.get("filename");
+        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
         // 生成用户详细信息
-//        final Map map1 = new HashMap<>();
-//        map1.put("page", 1);
-//        map1.put("size", 10000);
-//        final Result all = stemFeignClient.findAll(map1);
-//        final PageResult<User> data = (PageResult<User>) all.getData();
-//        SimpleDateFormat s=new SimpleDateFormat("yyyy-MM-dd");
-//        for (User row : data.getRows()) {
-//            final DateTime birth = RandomUtil.randomDate(new DateTime("1994-01-01"), DateField.YEAR, 0, 8);
-//            sourceInfo.setBirthday(DateUtil.format(birth, DatePattern.PURE_DATE_PATTERN));
-//            sourceInfo.setUserId(row.getId());
-//            sourceInfo.setCompanyId(companyId);
-//            sourceInfo.setUsername(row.getUsername());
-//            sourceInfo.setDepartmentName(row.getDepartmentName());
-//            sourceInfo.setMobile(row.getMobile());
-//            final long age = DateUtil.betweenYear(birth, DateUtil.date(), true);
-//            sourceInfo.setAge((int) age);
-//            sourceInfo.setBankCardNumber(String.valueOf(RandomUtil.randomLong(1000000000000000L, 9999999999999999L)));
-//            final Date timeOfEntry = row.getTimeOfEntry();
-//            sourceInfo.setTimeOfEntry(s.format(timeOfEntry));
-//            sourceInfo.setSex(row.getGender());
-//            sourceInfo.setTheHighestDegreeOfEducation(RandomUtil.randomEle(new String[]{"本科", "硕士"}));
-//            sourceInfo.setNationalArea("中国大陆");
-//            final String idNo = StringUtils.getIdNo(DateUtil.format(birth, DatePattern.PURE_DATE_PATTERN), "1".equals(row.getGender()));
-//            sourceInfo.setIdNumber(idNo);
-//            sourceInfo.setNativePlace("430000/430100");
-//            sourceInfo.setNation(RandomUtil.randomEle(new String[]{"汉族", "布依族", "壮族", "回族", "苗族", "满族"}));
-//            sourceInfo.setMaritalStatus(RandomUtil.randomEle(new String[]{"未婚", "已婚"}));
-//            sourceInfo.setBloodType(RandomUtil.randomEle(new String[]{"A型", "B型", "AB型", "O型"}));
-//            sourceInfo.setDomicile("430000/430100/430103");
-//            sourceInfo.setQq(String.valueOf(RandomUtil.randomInt(10000000, 999999999)));
-//            sourceInfo.setWechat(sourceInfo.getQq());
-//            sourceInfo.setPlaceOfResidence("430000/430100/430103");
-//            sourceInfo.setContactTheMobilePhone(row.getMobile());
-//            sourceInfo.setPersonalMailbox(sourceInfo.getQq() + "@qq.com");
-//            sourceInfo.setSocialSecurityComputerNumber(sourceInfo.getIdNumber());
-//            sourceInfo.setProvidentFundAccount(String.valueOf(RandomUtil.randomLong(100000000L, 999999999L)));
-//            sourceInfo.setBankCardNumber(BankNumberUtil.getBankNumber(RandomUtil.randomEle(new String[]{"6", "8", "9"})));
-//            sourceInfo.setOpeningBank("中国建设银行");
-//            sourceInfo.setEducationalType("统招");
-//            sourceInfo.setMajor("030000/031600/031601");
-//            log.info("{}",sourceInfo);
-//            userCompanyPersonalService.save(sourceInfo);
-//            redisTemplate.boundHashOps("userDetailList").put(uid, sourceInfo);
-//        }
+        final Map map1 = new HashMap<>();
+        map1.put("page", 1);
+        map1.put("size", 10000);
+        final Result all = systemFeignClient.findAll(map1);
+        final PageResult<User> data = (PageResult<User>) all.getData();
+        SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat s1 = new SimpleDateFormat("yyyyMMdd");
+        List<UserCompanyPersonal> list = new ArrayList<>();
+        for (User row : data.getRows()) {
+            final UserCompanyPersonal sourceInfo = new UserCompanyPersonal();
+            final DateTime birth = RandomUtil.randomDate(new DateTime("1994-01-01"), DateField.YEAR, -6, 7);
+            sourceInfo.setPoliticalOutlook("共青团员");
+            sourceInfo.setBirthday(DateUtil.format(birth, DatePattern.PURE_DATE_PATTERN));
+            sourceInfo.setUserId(row.getId());
+            sourceInfo.setCompanyId(companyId);
+            sourceInfo.setUsername(row.getUsername());
+            sourceInfo.setDepartmentName(row.getDepartmentName());
+            sourceInfo.setMobile(row.getMobile());
+            final long age = DateUtil.betweenYear(birth, DateUtil.date(), true);
+            sourceInfo.setAge((int) age);
+            final DateTime dateTime = RandomUtil.randomDate(birth, DateField.YEAR, 20, (int) age);
+            sourceInfo.setTimeToJoinTheParty(s1.format(dateTime));
+            sourceInfo.setBankCardNumber(String.valueOf(RandomUtil.randomLong(1000000000000000L, 9999999999999999L)));
+            final Date timeOfEntry = row.getTimeOfEntry();
+            sourceInfo.setTimeOfEntry(s.format(timeOfEntry));
+            sourceInfo.setAreThereAnyMajorMedicalHistories("无");
+            sourceInfo.setDetailAddress("湖南省长沙市天心区");
+            sourceInfo.setEmergencyContact(RandomUserInfoUtil.getChineseName());
+            sourceInfo.setEmergencyContactNumber(RandomUserInfoUtil.getTelephone());
+            sourceInfo.setGraduateSchool(RandomUtil.randomEle(Schools.SCHOOLS));
+            final DateTime entryTime = DateUtil.offset(birth, DateField.YEAR, 18);
+            final DateTime endTime = DateUtil.offset(birth, DateField.YEAR, 22);
+            sourceInfo.setEnrolmentTime(s.format(entryTime));
+            sourceInfo.setGraduationTime(s.format(endTime));
+            sourceInfo.setHomeCompany("A公司");
+            sourceInfo.setTitle("职员");
+            sourceInfo.setIsThereAnyCompetitionRestriction("2");
+            sourceInfo.setRemarks("无");
+            sourceInfo.setTheHighestDegreeOfEducation(RandomUtil.randomEle(new String[]{"本科", "硕士"}));
+            sourceInfo.setNationalArea("中国大陆");
+            final String idNo = StringUtils.getIdNo(DateUtil.format(birth, DatePattern.PURE_DATE_PATTERN), "1".equals(row.getGender()));
+            sourceInfo.setIdNumber(idNo);
+            sourceInfo.setNativePlace("430000/430100");
+            sourceInfo.setNation(RandomUtil.randomEle(new String[]{"汉族", "布依族", "壮族", "回族", "苗族", "满族"}));
+            sourceInfo.setMaritalStatus(RandomUtil.randomEle(new String[]{"未婚", "已婚"}));
+            sourceInfo.setBloodType(RandomUtil.randomEle(new String[]{"A型", "B型", "AB型", "O型"}));
+            sourceInfo.setDomicile("430000/430100/430103");
+            sourceInfo.setQq(String.valueOf(RandomUtil.randomInt(10000000, 999999999)));
+            sourceInfo.setWechat(sourceInfo.getQq());
+            sourceInfo.setPlaceOfResidence("430000/430100/430103");
+            sourceInfo.setContactTheMobilePhone(row.getMobile());
+            sourceInfo.setPersonalMailbox(RandomUserInfoUtil.getEmail(8, 10));
+            sourceInfo.setSocialSecurityComputerNumber(sourceInfo.getIdNumber());
+            sourceInfo.setProvidentFundAccount(String.valueOf(RandomUtil.randomLong(100000000L, 999999999L)));
+            sourceInfo.setBankCardNumber(BankNumberUtil.getBankNumber(RandomUtil.randomEle(new String[]{"6", "8", "9"})));
+            sourceInfo.setOpeningBank("中国建设银行");
+            sourceInfo.setEducationalType("统招");
+            sourceInfo.setMajor("030000/031600/031601");
+            log.info("{}", sourceInfo);
+            System.out.println(sourceInfo);
+            list.add(sourceInfo);
+        }
+        Resource template = new ClassPathResource("/template/员工月度报表导出模板.xlsx");
+        final WriteSheet sheet = EasyExcel.writerSheet().build();
+        FileOutputStream f = new FileOutputStream(filename);
+        EasyExcel.write(f, UserCompanyPersonal.class)
+                 .withTemplate(template.getInputStream()).build()
+                 .fill(list, sheet)
+                 .finish();
     }
+
 }

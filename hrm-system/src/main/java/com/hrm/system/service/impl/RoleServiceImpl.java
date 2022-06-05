@@ -48,12 +48,13 @@ public class RoleServiceImpl extends BaseServiceImpl<RoleDao, Role, String> impl
     @Override
     public void save(Role role) throws CommonException {
         final Role byName = roleDao.findByName(role.getName());
-        if (byName == null) {
+        if (byName != null && byName.getCompanyId().equals(role.getCompanyId())) {
+
+            throw new CommonException(ResultCode.DUPLICATE_ROLE_NAME);
+        } else {
             String id = IdWorker.getIdStr();
             role.setId(id);
             roleDao.save(role);
-        } else {
-            throw new CommonException(ResultCode.DUPLICATE_ROLE_NAME);
         }
 
     }

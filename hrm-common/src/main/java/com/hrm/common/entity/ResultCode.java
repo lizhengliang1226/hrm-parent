@@ -28,6 +28,10 @@ public enum ResultCode {
      */
     SERVER_ERROR(false, 99999, "抱歉，系统繁忙，请稍后重试！"),
     /**
+     * 企业名称重复返回码
+     */
+    DUPLICATE_COMPANY_NAME(false, 10005, "企业名称已存在，请使用其他名称"),
+    /**
      * 登录过期返回码
      */
     LOGIN_STATUS_EXPIRED(false, 10004, "登录状态过期，请重新登录！"),

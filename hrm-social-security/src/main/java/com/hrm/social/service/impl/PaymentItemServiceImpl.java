@@ -30,8 +30,7 @@ public class PaymentItemServiceImpl implements PaymentItemService {
 
     @Override
     public List<CityPaymentItem> findAllByCityId(String id) {
-        final List<CityPaymentItem> byCityId = cityPaymentItemDao.findByCityId(id);
-        return byCityId;
+        return cityPaymentItemDao.findByCityId(id);
     }
 
     @Override

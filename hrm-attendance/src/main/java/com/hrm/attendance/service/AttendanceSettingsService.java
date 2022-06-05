@@ -59,6 +59,15 @@ public interface AttendanceSettingsService {
     public List<DeductionDict> getDeductionConfig(String companyId, String departmentId);
 
     /**
+     * 查询企业全部扣款设置
+     *
+     * @param companyId
+     * @param departmentId
+     * @return
+     */
+    public List<DeductionDict> getCompanyDeductionConfig(String companyId);
+
+    /**
      * 保存或更新扣款设置
      *
      * @param leaveConfig

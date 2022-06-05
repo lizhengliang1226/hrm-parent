@@ -68,4 +68,20 @@ public interface UserService extends BaseService<User, String> {
      */
     void updatePassword(String id, String password);
 
+    /**
+     * 根据入职时间查询某月入职人数
+     *
+     * @param yearMonth
+     * @param companyId
+     * @return
+     */
+    List<User> findByTimeOfEntry(String yearMonth, String companyId);
+
+    /**
+     * 查询企业在职人数
+     *
+     * @param companyId
+     * @return
+     */
+    int findInJobUsers(String companyId);
 }

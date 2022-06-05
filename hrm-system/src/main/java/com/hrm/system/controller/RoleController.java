@@ -37,7 +37,6 @@ public class RoleController extends BaseController {
     @PostMapping(value = "role", name = "SAVE_ROLE_API")
     @ApiOperation(value = "保存角色")
     public Result save(@RequestBody Role role) throws CommonException {
-        //设置保存的企业id，目前使用固定值1，以后会解决
         role.setCompanyId(companyId);
         roleService.save(role);
         return Result.SUCCESS();

@@ -52,6 +52,7 @@ public class UserRealm extends HrmRealm {
      * @return 认证信息
      * @throws AuthenticationException 授权失败异常
      */
+
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken)
             throws AuthenticationException {
@@ -88,6 +89,7 @@ public class UserRealm extends HrmRealm {
             // 安全数据，密码，realm
             return new SimpleAuthenticationInfo(profileResult, password, getName());
         }
+        log.info("账户不可用或密码不正确");
         return null;
     }
 }

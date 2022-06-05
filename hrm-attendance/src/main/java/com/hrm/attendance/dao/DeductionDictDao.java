@@ -30,5 +30,11 @@ public interface DeductionDictDao extends JpaRepository<DeductionDict, String>, 
      */
     DeductionDict findByCompanyIdAndDepartmentIdAndDedTypeCode(String companyId, String departmentId, String dedTypeCode);
 
-
+    /**
+     * 根据企业id查询全部扣款设置
+     *
+     * @param companyId
+     * @return
+     */
+    List<DeductionDict> findByCompanyId(String companyId);
 }

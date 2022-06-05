@@ -3,6 +3,7 @@ package com.hrm.company.service.impl;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.DES;
+import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.MailUtils;
 import com.hrm.company.dao.CompanyDao;
 import com.hrm.company.service.CompanyService;
@@ -10,17 +11,21 @@ import com.hrm.domain.company.Company;
 import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author LZL
  * @date 2022/1/12-10:17
  */
+@Transactional(rollbackFor = Exception.class)
 @Service
 public class CompanyServiceImpl implements CompanyService {
 
@@ -34,6 +39,11 @@ public class CompanyServiceImpl implements CompanyService {
         this.companyDao = companyDao;
     }
 
+    private ThreadPoolExecutor pool =
+            new ThreadPoolExecutor(1,
+                                   1, 2,
+                                   TimeUnit.MINUTES, new LinkedBlockingQueue<>(),
+                                   (r) -> new Thread(r, "t1"));
 
     @Override
     public void add(Company company) {
@@ -53,10 +63,12 @@ public class CompanyServiceImpl implements CompanyService {
                 break;
             }
         } while (true);
-        MailUtils.sendMail(company.getMailbox(), "HRM系统账号已成功注册；用户名：" + l + "；初始密码：123456", "HRM系统邮件");
+        long finalL = l;
+        pool.execute(() -> {
+            MailUtils.sendMail(company.getMailbox(), "HRM系统账号已成功注册；用户名：" + finalL + "；初始密码：123456", "HRM系统邮件");
+        });
         DES des = SecureUtil.des(String.valueOf(l).getBytes(StandardCharsets.UTF_8));
         final String s = des.encryptHex(initialPassword);
-
         company.setPassword(s);
         company.setManagerId(String.valueOf(l));
         company.setCreateTime(new Date());
@@ -81,14 +93,21 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public Page<Company> findAll(int page, int size) {
-        final Page<Company> all = companyDao.findAll(PageRequest.of(page - 1, size));
-        return all;
+    public PageResult<Company> findAll(int page, int size) {
+        final List<Company> page1 = companyDao.findPage((page - 1) * size, size);
+        final int i = companyDao.countOfFindPage();
+        return new PageResult<Company>((long) i, page1);
     }
 
     @Override
     public Company findByManagerId(String id) {
         Company c = companyDao.findByManagerId(id);
+        return c;
+    }
+
+    @Override
+    public List<Company> findByName(String name) {
+        List<Company> c = companyDao.findByName(name);
         return c;
     }
 

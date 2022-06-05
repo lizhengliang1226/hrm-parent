@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -28,7 +29,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
 
     @Id
     private String id;
-
+    private BigDecimal absenteeismDays;
     private String userId;
     private String atteArchiveMonthlyId;
     private String name;
@@ -96,13 +97,22 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
     private String absenceDays;
 
     private Integer isFullAttendanceint;
-    private String actualAtteUnofficialDays;
+    /**
+     * 实际出勤天数非正式
+     */
+//    private String actualAtteUnofficialDays;
+    /**
+     * 实际出勤天数，正式
+     */
     private String actualAtteOfficialDays;
 
     /**
      * 应出勤工作日
      */
     private String workingDays;
+    /**
+     * 计薪标准
+     */
     private String salaryStandards;
     /**
      * 计薪天数调整
@@ -145,6 +155,7 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
 
 
     public void setStatisData(Map<String, Object> map) {
+        final int days = (int) map.get("at0");
         // 正常旷工迟到早退事假调休
         this.normalDays = (String) map.get("at1").toString();
         this.absenceDays = (String) map.get("at2").toString();
@@ -152,6 +163,9 @@ public class AttendanceArchiveMonthlyInfo extends BaseEntity implements Serializ
         this.earlyTimes = (String) map.get("at4").toString();
         this.leaveDays = (String) map.get("at8").toString();
         this.dayOffLeaveDays = (String) map.get("at16").toString();
+        // 应出勤天数 at0-at21  缺勤at8+at9+at10+at11+at12+at14+at7+at15+at2
+        //实际
+
         this.actualAtteOfficialDays = this.normalDays;
         this.salaryOfficialDays = this.normalDays;
     }

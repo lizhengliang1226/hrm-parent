@@ -3,6 +3,7 @@ package com.hrm.salary;
 
 import com.hrm.common.client.AttendanceClient;
 import com.hrm.common.client.SocialSecurityClient;
+import com.hrm.common.client.SystemFeignClient;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,7 +23,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 @SpringBootApplication(scanBasePackages = "com.hrm")
 @EntityScan(value = "com.hrm.domain.salary")
 @EnableDiscoveryClient
-@EnableFeignClients(clients = {SocialSecurityClient.class, AttendanceClient.class})
+@EnableFeignClients(clients = {SystemFeignClient.class, SocialSecurityClient.class, AttendanceClient.class})
 @Import({OpenEntityManagerInViewFilter.class})
 @MapperScan("com.hrm.salary.mapper")
 public class HrmSalaryApplication {

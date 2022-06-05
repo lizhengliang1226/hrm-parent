@@ -3,13 +3,16 @@ package com.hrm.social.controller;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.hrm.common.client.EmployeeFeignClient;
+import com.hrm.common.client.SalaryFeignClient;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.entity.Result;
 import com.hrm.common.entity.ResultCode;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.social.*;
 import com.hrm.domain.social.vo.UserSocialSecuritySimpleVo;
+import com.hrm.domain.system.City;
 import com.hrm.social.service.ArchiveService;
 import com.hrm.social.service.CompanySettingsService;
 import com.hrm.social.service.PaymentItemService;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,8 +55,17 @@ public class SocialSecurityController extends BaseController {
     private EmployeeFeignClient emFeignClient;
     private PaymentItemService paymentItemService;
     private ArchiveService archiveService;
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private SalaryFeignClient salaryFeignClient;
+
     @Value("${social-month-template-path}")
     private String templateName;
+
+    @Autowired
+    public void setRedisTemplate(RedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     @Autowired
     public void setArchiveService(ArchiveService archiveService) {
@@ -92,20 +105,21 @@ public class SocialSecurityController extends BaseController {
         return new Result<>(ResultCode.SUCCESS, byId);
     }
 
-    @PostMapping(value = "list")
-    @ApiOperation(value = "查询企业员工的社保信息列表")
-    public Result findSocialList(@RequestBody Map map) {
-        map.put("companyId", companyId);
-        final PageResult<UserSocialSecuritySimpleVo> all = userSocialService.findAll(map);
-        return new Result(ResultCode.SUCCESS, all);
-    }
-
     @PostMapping(value = "settings")
     @ApiOperation(value = "保存企业社保设置")
     public Result saveSettings(@RequestBody CompanySettings companySettings) {
         companySettings.setCompanyId(companyId);
         companySettingsService.save(companySettings);
         return new Result(ResultCode.SUCCESS);
+    }
+
+
+    @PostMapping(value = "list")
+    @ApiOperation(value = "查询企业员工的社保信息列表")
+    public Result findSocialList(@RequestBody Map map) {
+        map.put("companyId", companyId);
+        final PageResult<UserSocialSecuritySimpleVo> all = userSocialService.findAll(map);
+        return new Result(ResultCode.SUCCESS, all);
     }
 
     @GetMapping(value = "tips/{yearMonth}")
@@ -128,14 +142,17 @@ public class SocialSecurityController extends BaseController {
     @RequiresPermissions("API_SOCIAL_DETAIL_FIND")
     @GetMapping(value = "/{id}")
     @ApiOperation(value = "查询用户社保数据")
-    public Result<Map<String, Object>> findUserSocialInfo(@PathVariable(value = "id") String userId) {
+    public Result<Map<String, Object>> findUserSocialInfo(@PathVariable(value = "id") String userId) throws Exception {
         Map map = new HashMap(2);
         // 用户信息
         final Object user = systemFeignClient.findById(userId).getData();
+        // 薪资数据
+        final Object salary = salaryFeignClient.findUserSalary(userId).getData();
         // 用户社保信息
         UserSocialSecurity byId = userSocialService.findById(userId);
         byId.setUserId(userId);
         map.put("user", user);
+        map.put("salary", salary);
         map.put("userSocialSecurity", byId);
         return new Result(ResultCode.SUCCESS, map);
     }
@@ -195,9 +212,12 @@ public class SocialSecurityController extends BaseController {
     }
 
     @PostMapping(value = "historys/{yearMonth}/archive")
-    @ApiOperation(value = "员工月度社保信息归档")
+    @ApiOperation(value = "社保归档")
     public Result monthArchive(@PathVariable String yearMonth) throws Exception {
+        final long start = System.currentTimeMillis();
         archiveService.archive(yearMonth, companyId);
+        final long end = System.currentTimeMillis();
+        log.info("社保归档总用时：{}ms", end - start);
         return new Result(ResultCode.SUCCESS);
     }
 
@@ -234,5 +254,31 @@ public class SocialSecurityController extends BaseController {
     public Result importSocial(@RequestParam MultipartFile file) throws Exception {
         userSocialService.importSocialExcel(file, companyId);
         return Result.SUCCESS();
+    }
+
+    @GetMapping(value = "paymentItem")
+    @ApiOperation(value = "查询社保缴费字典项")
+    public Result<List<PaymentItem>> findSocialPaymentItems() throws Exception {
+        final List<PaymentItem> allPaymentItems = paymentItemService.findAllPaymentItems();
+        return new Result(ResultCode.SUCCESS, allPaymentItems);
+    }
+
+    @GetMapping(value = "buildCityPayRedis")
+    @ApiOperation(value = "构建城市社保项缓存")
+    public Result buildCityPayRedis() throws Exception {
+        final List<City> data = systemFeignClient.findCityList().getData();
+        for (City city : data) {
+            final String id = city.getId();
+            final List<CityPaymentItem> allByCityId = paymentItemService.findAllByCityId(id);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_CITY_PAYMENT_LIST).put(id, allByCityId);
+        }
+        return new Result(ResultCode.SUCCESS);
+    }
+
+    @PostMapping(value = "savePaymentItem")
+    @ApiOperation(value = "保存城市社保缴费字典项")
+    public Result saveCitySocialPaymentItems(@RequestBody CityPaymentItem cityPay) throws Exception {
+        paymentItemService.saveCityPaymentItem(cityPay);
+        return new Result(ResultCode.SUCCESS);
     }
 }
