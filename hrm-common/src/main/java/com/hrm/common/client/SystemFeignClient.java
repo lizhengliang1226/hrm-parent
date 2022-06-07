@@ -36,4 +36,8 @@ public interface SystemFeignClient {
     @GetMapping(value = "sys/user", name = "FIND_USER_LIST_API")
     @ApiOperation(value = "获取某个企业的用户列表")
     public Result<PageResult<User>> findAll(@RequestParam Map<String, Object> map);
+
+    @GetMapping(value = "sys/findUsers")
+    @ApiOperation(value = "获取某个企业的用户列表,不获取角色")
+    public Result<Long> findAllUsers(@RequestParam Map<String, Object> map);
 }

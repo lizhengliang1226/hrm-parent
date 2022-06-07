@@ -33,11 +33,7 @@
                b.at22                                                                       leave_early_and_late,
                b.at23                                                                       not_clock,
                (1 - convert(b.at23 / b.at0, decimal(15, 2))) * 100                          clock_rate,
-               if(b.at0 - b.at21 -
-                  (b.at0 - b.at21 -
-                   (b.at8 + b.at9 + b.at10 + b.at11 + b.at12 + b.at14 + b.at7 + b.at15 + b.at2)) =
-                  0, 1, 0)
-                                                                                            is_full_attendanceint,
+               if(b.at0 - b.at21 - b.at1 = 0, 1, 0)                                         is_full_attendanceint,
                b.at0 - b.at21 -
                (b.at8 + b.at9 + b.at10 + b.at11 + b.at12 + b.at14 + b.at7 + b.at15 + b.at2) actual_atte_official_days,
                b.at0 - b.at21                                                               working_days,

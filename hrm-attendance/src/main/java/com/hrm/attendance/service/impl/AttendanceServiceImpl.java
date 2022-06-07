@@ -7,13 +7,14 @@ import com.hrm.attendance.mapper.ArchiveMonthlyInfoMapper;
 import com.hrm.attendance.mapper.AttendanceMapper;
 import com.hrm.attendance.service.AttendanceService;
 import com.hrm.common.entity.PageResult;
+import com.hrm.common.entity.ResultCode;
+import com.hrm.common.exception.CommonException;
 import com.hrm.common.utils.DateUtils;
 import com.hrm.common.utils.PageUtils;
 import com.hrm.domain.attendance.bo.AtteItemBO;
 import com.hrm.domain.attendance.entity.Attendance;
 import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.AttendanceCompanySettings;
-import com.lzl.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -89,16 +90,17 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 
     @Override
-    public void saveOrUpdateAtte(Attendance attendance) {
+    public void saveOrUpdateAtte(Attendance attendance) throws CommonException {
         //1.查询考勤是否存在,更新
         Attendance vo = attendanceDao.findByUserIdAndDay(attendance.getUserId(), attendance.getDay());
+
         //2.如果不存在,设置对象id,保存
         if (vo == null) {
-            attendance.setId(IdWorker.getIdStr());
+            throw new CommonException(ResultCode.ATTE_STATUS_ERROR);
         } else {
-            attendance.setId(vo.getId());
+            vo.setAdtStatus(attendance.getAdtStatus());
         }
-        attendanceDao.save(attendance);
+        attendanceDao.save(vo);
     }
 
 

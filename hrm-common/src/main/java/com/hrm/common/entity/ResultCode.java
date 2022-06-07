@@ -41,6 +41,10 @@ public enum ResultCode {
      */
     LOGIN_FAIL(false, 20001, "用户名或密码错误！"),
     /**
+     * 考勤状态异常返回码
+     */
+    ATTE_STATUS_ERROR(false, 20005, "考勤状态异常！"),
+    /**
      * 角色名重复返回码
      */
     DUPLICATE_ROLE_NAME(false, 20002, "角色名重复！"),

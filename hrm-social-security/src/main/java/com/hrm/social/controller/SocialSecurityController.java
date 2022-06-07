@@ -56,46 +56,11 @@ public class SocialSecurityController extends BaseController {
     private PaymentItemService paymentItemService;
     private ArchiveService archiveService;
     private RedisTemplate redisTemplate;
-    @Autowired
     private SalaryFeignClient salaryFeignClient;
 
     @Value("${social-month-template-path}")
     private String templateName;
 
-    @Autowired
-    public void setRedisTemplate(RedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-    @Autowired
-    public void setArchiveService(ArchiveService archiveService) {
-        this.archiveService = archiveService;
-    }
-
-    @Autowired
-    public void setPaymentItemService(PaymentItemService paymentItemService) {
-        this.paymentItemService = paymentItemService;
-    }
-
-    @Autowired
-    public void setSystemFeignClient(SystemFeignClient systemFeignClient) {
-        this.systemFeignClient = systemFeignClient;
-    }
-
-    @Autowired
-    public void setEmFeignClient(EmployeeFeignClient emFeignClient) {
-        this.emFeignClient = emFeignClient;
-    }
-
-    @Autowired
-    public void setUserSocialService(UserSocialService userSocialService) {
-        this.userSocialService = userSocialService;
-    }
-
-    @Autowired
-    public void setCompanySettingsService(CompanySettingsService companySettingsService) {
-        this.companySettingsService = companySettingsService;
-    }
 
     @RequiresPermissions("API_SOCIAL_MONTH_FIND")
     @GetMapping(value = "settings")
@@ -250,7 +215,7 @@ public class SocialSecurityController extends BaseController {
 
 
     @PostMapping(value = "import")
-    @ApiOperation(value = "批量保存社保数据")
+    @ApiOperation(value = "社保导入")
     public Result importSocial(@RequestParam MultipartFile file) throws Exception {
         userSocialService.importSocialExcel(file, companyId);
         return Result.SUCCESS();
@@ -280,5 +245,45 @@ public class SocialSecurityController extends BaseController {
     public Result saveCitySocialPaymentItems(@RequestBody CityPaymentItem cityPay) throws Exception {
         paymentItemService.saveCityPaymentItem(cityPay);
         return new Result(ResultCode.SUCCESS);
+    }
+
+    @Autowired
+    public void setRedisTemplate(RedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+
+    @Autowired
+    public void setArchiveService(ArchiveService archiveService) {
+        this.archiveService = archiveService;
+    }
+
+    @Autowired
+    public void setPaymentItemService(PaymentItemService paymentItemService) {
+        this.paymentItemService = paymentItemService;
+    }
+
+    @Autowired
+    public void setSystemFeignClient(SystemFeignClient systemFeignClient) {
+        this.systemFeignClient = systemFeignClient;
+    }
+
+    @Autowired
+    public void setEmFeignClient(EmployeeFeignClient emFeignClient) {
+        this.emFeignClient = emFeignClient;
+    }
+
+    @Autowired
+    public void setUserSocialService(UserSocialService userSocialService) {
+        this.userSocialService = userSocialService;
+    }
+
+    @Autowired
+    public void setCompanySettingsService(CompanySettingsService companySettingsService) {
+        this.companySettingsService = companySettingsService;
+    }
+
+    @Autowired
+    public void setSalaryFeignClient(SalaryFeignClient salaryFeignClient) {
+        this.salaryFeignClient = salaryFeignClient;
     }
 }

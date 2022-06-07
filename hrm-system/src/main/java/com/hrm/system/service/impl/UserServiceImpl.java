@@ -2,6 +2,7 @@ package com.hrm.system.service.impl;
 
 import cn.hutool.crypto.SecureUtil;
 import cn.hutool.crypto.symmetric.DES;
+import com.hrm.common.cache.SystemCache;
 import com.hrm.common.entity.ResultCode;
 import com.hrm.common.exception.CommonException;
 import com.hrm.common.service.BaseServiceImpl;
@@ -13,6 +14,7 @@ import com.hrm.system.dao.UserDao;
 import com.hrm.system.service.UserService;
 import com.hrm.system.utils.TencentAiFaceUtil;
 import com.lzl.IdWorker;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -86,18 +88,16 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
                 addUserToPersonnel(user);
             }
             userDao.save(user);
-            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user);
-            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user.getMobile(), user);
+            final com.hrm.domain.attendance.entity.User user1 = new com.hrm.domain.attendance.entity.User();
+            BeanUtils.copyProperties(user, user1);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user1);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user.getMobile(), user1);
         } finally {
             lock.unlock();
         }
     }
 
-//    public static void main(String[] args) {
-//        DES des = SecureUtil.des("13123124".getBytes(StandardCharsets.UTF_8));
-//        final String password = des.encryptHex("e10adc3949ba59abbe56e057f20f883e");
-//        System.out.println(password);
-//    }
+
 
     /**
      * 添加用户到人员库
@@ -125,12 +125,14 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         User user1 = userDao.findById(user.getId()).get();
         final String oldMobile = user1.getMobile();
         final String newMobile = user.getMobile();
+        int flag = 0;
         // 如果手机号发生了改变需要重新加密密码
         if (!oldMobile.trim().equals(newMobile.trim())) {
             final String pass = user1.getPassword();
             final String oldPass = SecureUtil.des(oldMobile.getBytes(StandardCharsets.UTF_8)).decryptStr(pass);
             final String newPass = SecureUtil.des(newMobile.getBytes(StandardCharsets.UTF_8)).encryptHex(oldPass);
             user1.setPassword(newPass);
+            flag = 1;
         }
         // 有照片
         if (user.getStaffPhoto() != null && user.getStaffPhoto().length() > 0) {
@@ -158,6 +160,13 @@ public class UserServiceImpl extends BaseServiceImpl<UserDao, User, String> impl
         user1.setTimeOfEntry(user.getTimeOfEntry());
         user1.setWorkingCity(user.getWorkingCity());
         userDao.save(user1);
+        if (flag == 1) {
+            final com.hrm.domain.attendance.entity.User user2 = new com.hrm.domain.attendance.entity.User();
+            BeanUtils.copyProperties(user1, user2);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user1.getId(), user2);
+            redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(user1.getMobile(), user2);
+            SystemCache.USER_INFO_CACHE.put(user1.getMobile(), user2);
+        }
     }
 
     @Override

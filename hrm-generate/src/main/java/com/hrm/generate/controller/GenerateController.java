@@ -32,14 +32,15 @@ import com.hrm.domain.social.PaymentItem;
 import com.hrm.domain.social.vo.UserSocialSecurityVo;
 import com.hrm.domain.system.City;
 import com.hrm.domain.system.User;
-import com.hrm.generate.dao.UserDao;
+import com.hrm.generate.mapper.HrmDataMapper;
 import com.lzl.IdWorker;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -60,18 +61,13 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("build")
+@ApiModel("数据生成器")
 public class GenerateController extends BaseController {
-    @Autowired
+
+
     private SalaryFeignClient salaryFeignClient;
-    @Autowired
     private CompanyFeignClient companyFeignClient;
-    @Autowired
     private SystemFeignClient systemFeignClient;
-    @Autowired
-    private UserDao userDao;
-    @Autowired
-    private RedisTemplate redisTemplate;
-    @Autowired
     private SocialSecurityClient socialSecurityClient;
 
     @GetMapping("baseSalary")
@@ -83,8 +79,8 @@ public class GenerateController extends BaseController {
         m.put("size", 10000);
         PageResult<User> data = (PageResult<User>) systemFeignClient.findAll(m).getData();
         final List<User> users = data.getRows();
-        for (int i = 0; i < users.size() * 0.7; i++) {
-            final User user = RandomUtil.randomEle(users);
+        for (int i = 0; i < users.size() - 20; i++) {
+            final User user = users.get(i);
             UserSalary userSalary = new UserSalary();
             final BigDecimal zz = RandomUtil.randomBigDecimal(new BigDecimal(4000), new BigDecimal(9000))
                                             .setScale(2, BigDecimal.ROUND_HALF_DOWN);
@@ -98,7 +94,6 @@ public class GenerateController extends BaseController {
             userSalary.setCurrentBasicSalary(dx);
             userSalary.setCurrentPostWage(dx);
             salaryFeignClient.init(userSalary);
-            users.remove(user);
         }
         return new Result(ResultCode.SUCCESS);
     }
@@ -113,7 +108,10 @@ public class GenerateController extends BaseController {
         int startYear = Integer.parseInt((String) map.get("startYear"));
         int endYear = Integer.parseInt((String) map.get("endYear"));
         if (StrUtil.isEmpty(filename)) {
-            filename = "C:\\Users\\17314\\Desktop\\HRM管理系统\\数据导入\\" + startYear + "-" + endYear + "年" + startMonth + "-" + endMonth + "月考勤模拟数据.xlsx";
+            filename = "C:\\Users\\17314\\Desktop\\HRM管理系统\\数据导入\\" + startYear + "-" + endYear + "年" + startMonth + "-" + endMonth + "月" + companyId + "考勤模拟数据.xlsx";
+        } else {
+            final String[] split = filename.split("\\.");
+            filename = split[0] + companyId + "." + split[1];
         }
         if (ObjectUtil.isEmpty(startMonth)) {
             startMonth = 1;
@@ -122,7 +120,7 @@ public class GenerateController extends BaseController {
             endMonth = 1;
         }
         if (ObjectUtil.isEmpty(startYear)) {
-            startYear = DateUtil.date().getYear();
+            startYear = DateUtil.year(DateUtil.date());
         }
         if (ObjectUtil.isEmpty(endYear)) {
             endYear = startYear;
@@ -135,7 +133,7 @@ public class GenerateController extends BaseController {
     @ApiOperation(value = "生成社保数据")
     public Result buildSocialData(@RequestBody Map map1) throws IOException, ParseException {
         String filename = (String) map1.get("filename");
-        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
+        filename = filename.split("\\.")[0] + companyId + "." + filename.split("\\.")[1];
         Map m = new HashMap();
         m.put("companyId", companyId);
         m.put("page", 1);
@@ -159,6 +157,7 @@ public class GenerateController extends BaseController {
             vo.setSocialSecurityBase(socialSecurityBase);
             vo.setProvidentFundBase(providentFundBase);
             vo.setUserId(row.getId());
+            vo.setMobile(row.getMobile());
             vo.setUsername(row.getUsername());
             vo.setProvidentFundCity(workingCity);
             vo.setParticipatingInTheCity(workingCity);
@@ -167,6 +166,7 @@ public class GenerateController extends BaseController {
             vo.setEnterpriseProportion(RandomUtil.randomBigDecimal(new BigDecimal("5"), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_DOWN));
             vo.setPersonalProportion(RandomUtil.randomBigDecimal(new BigDecimal("5"), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_DOWN));
             list.add(vo);
+            System.out.println(vo);
         }
         Resource template = new ClassPathResource("社保数据.xlsx");
         final WriteSheet sheet = EasyExcel.writerSheet().build();
@@ -197,30 +197,30 @@ public class GenerateController extends BaseController {
                 cityPaymentItem.setSwitchCompany(switchCompany);
                 cityPaymentItem.setSwitchPersonal(switchPersonal);
 
-                if (cityPayName.equals("养老")) {
+                if ("养老".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(new BigDecimal(16));
                     cityPaymentItem.setScalePersonal(new BigDecimal(8));
                 }
-                if (cityPayName.equals("医疗")) {
+                if ("医疗".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(
                             RandomUtil.randomBigDecimal(new BigDecimal(7), new BigDecimal("11.7")).setScale(1, BigDecimal.ROUND_HALF_DOWN));
                     cityPaymentItem.setScalePersonal(new BigDecimal(2));
                 }
-                if (cityPayName.equals("失业")) {
+                if ("失业".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(new BigDecimal("0.5"));
                     cityPaymentItem.setScalePersonal(new BigDecimal("0.5"));
                 }
-                if (cityPayName.equals("工伤")) {
+                if ("工伤".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(
                             RandomUtil.randomBigDecimal(new BigDecimal("0.2"), new BigDecimal("0.7")).setScale(2, BigDecimal.ROUND_HALF_DOWN));
                     cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
                 }
-                if (cityPayName.equals("生育")) {
+                if ("生育".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(
                             RandomUtil.randomBigDecimal(new BigDecimal(0), new BigDecimal("0.7")).setScale(1, BigDecimal.ROUND_HALF_DOWN));
                     cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
                 }
-                if (cityPayName.equals("大病")) {
+                if ("大病".equals(cityPayName)) {
                     cityPaymentItem.setScaleCompany(BigDecimal.ZERO);
                     cityPaymentItem.setScalePersonal(BigDecimal.ZERO);
                 }
@@ -240,7 +240,7 @@ public class GenerateController extends BaseController {
     public Result buildUserBaseData(@RequestBody Map map) throws IOException {
         final int num = Integer.parseInt((String) map.get("num"));
         String filename = (String) map.get("filename");
-        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
+        filename = filename.split("\\.")[0] + companyId + "." + filename.split("\\.")[1];
         final List<Department> depts = companyFeignClient.findAll().getData().getDepts();
         final List<City> data = systemFeignClient.findCityList().getData();
         List<UserVo> list = new ArrayList<>(num);
@@ -272,10 +272,13 @@ public class GenerateController extends BaseController {
         return Result.SUCCESS();
     }
 
+    // 考勤数据
     private void buildAttendanceData(int startYear, int endYear, int startMonth, int endMonth, String filename) throws ParseException, IOException {
+        final String[] split = filename.split("\\.");
+        System.out.println(split);
         List<AtteUploadVo> list = new ArrayList<>();
-        String[] startHours = new String[]{"07", "08", "09", "10"};
-        String[] endHours = new String[]{"17", "18", "19"};
+        String[] startHours = new String[]{"08", "09"};
+        String[] endHours = new String[]{"18", "19"};
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         final Map map1 = new HashMap<>();
         map1.put("page", 1);
@@ -336,7 +339,7 @@ public class GenerateController extends BaseController {
     @ApiOperation(value = "生成用户详细信息数据")
     public void generateUserDetailInfo(@RequestBody Map map) throws IOException {
         String filename = (String) map.get("filename");
-        filename = filename.split("\\.")[0] + RandomUtil.randomInt(100, 999) + "." + filename.split("\\.")[1];
+        filename = filename.split("\\.")[0] + companyId + "." + filename.split("\\.")[1];
         // 生成用户详细信息
         final Map map1 = new HashMap<>();
         map1.put("page", 1);
@@ -393,11 +396,10 @@ public class GenerateController extends BaseController {
             sourceInfo.setSocialSecurityComputerNumber(sourceInfo.getIdNumber());
             sourceInfo.setProvidentFundAccount(String.valueOf(RandomUtil.randomLong(100000000L, 999999999L)));
             sourceInfo.setBankCardNumber(BankNumberUtil.getBankNumber(RandomUtil.randomEle(new String[]{"6", "8", "9"})));
-            sourceInfo.setOpeningBank("中国建设银行");
+            sourceInfo.setOpeningBank("平安银行");
             sourceInfo.setEducationalType("统招");
             sourceInfo.setMajor("030000/031600/031601");
             log.info("{}", sourceInfo);
-            System.out.println(sourceInfo);
             list.add(sourceInfo);
         }
         Resource template = new ClassPathResource("/template/员工月度报表导出模板.xlsx");
@@ -409,4 +411,33 @@ public class GenerateController extends BaseController {
                  .finish();
     }
 
+    @Autowired
+    private HrmDataMapper hrmDataMapper;
+
+    @GetMapping("clearCompanyData")
+    @ApiModelProperty("清除企业数据")
+    public Result clearData(@RequestParam String companyId) {
+        final Integer integer = hrmDataMapper.deleteData(companyId);
+        return new Result(ResultCode.SUCCESS, integer);
+    }
+
+    @Autowired
+    public void setSalaryFeignClient(SalaryFeignClient salaryFeignClient) {
+        this.salaryFeignClient = salaryFeignClient;
+    }
+
+    @Autowired
+    public void setCompanyFeignClient(CompanyFeignClient companyFeignClient) {
+        this.companyFeignClient = companyFeignClient;
+    }
+
+    @Autowired
+    public void setSystemFeignClient(SystemFeignClient systemFeignClient) {
+        this.systemFeignClient = systemFeignClient;
+    }
+
+    @Autowired
+    public void setSocialSecurityClient(SocialSecurityClient socialSecurityClient) {
+        this.socialSecurityClient = socialSecurityClient;
+    }
 }

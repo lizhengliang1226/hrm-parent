@@ -2,6 +2,7 @@ package com.hrm.attendance.service;
 
 
 import com.hrm.common.entity.PageResult;
+import com.hrm.common.exception.CommonException;
 import com.hrm.domain.attendance.entity.Attendance;
 import com.hrm.domain.attendance.entity.AttendanceArchiveMonthlyInfo;
 import com.hrm.domain.attendance.entity.AttendanceCompanySettings;
@@ -22,12 +23,12 @@ public interface AttendanceService {
      */
 	public Map getAtteData(Map map) throws ParseException;
 
-	/**
-	 * 修改考勤记录
-	 *
-	 * @param attendance
-	 */
-	public void saveOrUpdateAtte(Attendance attendance);
+    /**
+     * 修改考勤记录
+     *
+     * @param attendance
+     */
+    public void saveOrUpdateAtte(Attendance attendance) throws CommonException;
 
 	/**
 	 * 查询考勤归档数据

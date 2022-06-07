@@ -26,7 +26,7 @@ import java.util.Map;
 @RequestMapping("salary")
 @Api(tags = "薪资归档")
 @Slf4j
-public class ArchiveController extends BaseController {
+public class SalaryArchiveController extends BaseController {
     private ArchiveService archiveService;
 
     @Autowired

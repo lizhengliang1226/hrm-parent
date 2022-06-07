@@ -30,7 +30,7 @@ public class SalaryServiceImpl implements SalaryService {
     //定薪或者调薪
     @Override
     public void saveUserSalary(UserSalary userSalary) {
-        final String userId = userSalary.getUserId();
+//        final String userId = userSalary.getUserId();
 //        final Map<String, Object> data = socialSecurityClient.findUserSocialInfo(userId).getData();
 //        final Object userSocialSecurity = data.get("userSocialSecurity");
 //        final UserSocialSecurity u = JSON.parseObject(

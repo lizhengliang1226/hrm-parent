@@ -1,6 +1,7 @@
 package com.hrm.system.redis;
 
 import com.alibaba.fastjson.JSON;
+import com.hrm.common.cache.SystemCache;
 import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.system.User;
 import com.hrm.system.dao.UserDao;
@@ -34,6 +35,7 @@ public class RedisService {
             final String mobile = user.getMobile();
             redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(id, user1);
             redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).put(mobile, user1);
+            SystemCache.USER_INFO_CACHE.put(mobile, user1);
         }
     }
 

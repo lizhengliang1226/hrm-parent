@@ -91,6 +91,8 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         final long ed1 = System.currentTimeMillis();
         log.info("考勤数据批量插入用时：{}ms", ed1 - st1);
         atList.clear();
+        // 清除本地临时缓存
+        SystemCache.USER_INFO_CACHE.clear();
     }
 
     /**
@@ -102,10 +104,13 @@ public class ExcelImportServiceImpl implements ExcelImportService {
         @Override
         public void invoke(AtteUploadVo atteUploadVo, AnalysisContext analysisContext) {
             User user = null;
+            // 从本地缓存获取数据
             user = SystemCache.USER_INFO_CACHE.get(atteUploadVo.getMobile());
             if (user == null) {
+                // 获取不到从远程缓存获取
                 final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(atteUploadVo.getMobile());
                 user = JSON.parseObject(JSON.toJSONString(o), User.class);
+                // 存入本地缓存
                 SystemCache.USER_INFO_CACHE.put(atteUploadVo.getMobile(), user);
             }
             Attendance attendance = new Attendance(atteUploadVo, user);

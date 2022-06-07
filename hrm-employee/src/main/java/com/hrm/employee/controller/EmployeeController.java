@@ -7,7 +7,6 @@ import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
 import com.alibaba.excel.write.metadata.WriteSheet;
-import com.hrm.common.cache.SystemCache;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.controller.BaseController;
 import com.hrm.common.entity.PageResult;
@@ -69,7 +68,8 @@ public class EmployeeController extends BaseController {
     private TransferPositionServiceImpl transferPositionServiceImpl;
 
     private PositiveServiceImpl positiveServiceImpl;
-
+    @Autowired
+    private SystemFeignClient systemFeignClient;
     private ArchiveServiceImpl archiveServiceImpl;
     private ThreadPoolExecutor pool = new ThreadPoolExecutor(16, 16, 2, TimeUnit.MINUTES, new LinkedBlockingQueue<>(), (r) -> new Thread(r, "t1"));
 
@@ -213,11 +213,11 @@ public class EmployeeController extends BaseController {
 
         @Override
         public void invoke(UserCompanyPersonal user, AnalysisContext analysisContext) {
-            User user1 = SystemCache.USER_INFO_CACHE.get(user.getMobile());
-            if (user1 == null) {
-                user1 = (User) redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(user.getMobile());
-                SystemCache.USER_INFO_CACHE.put(user.getMobile(), user1);
-            }
+//            User user1 = SystemCache.USER_INFO_CACHE.get(user.getMobile());
+//            if (user1 == null) {
+            User user1 = (User) redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(user.getMobile());
+//                SystemCache.USER_INFO_CACHE.put(user.getMobile(), user1);
+//            }
             user.setUserId(user1.getId());
             user.setCompanyId(companyId);
             pool.execute(() -> {
@@ -317,7 +317,11 @@ public class EmployeeController extends BaseController {
         final String month1 = month.substring(0, 4) + "-" + month.substring(4);
         EmployeeArchive e1 = archiveServiceImpl.findByMonth(month);
         // 查询总人数
-        Page<Map> list = userCompanyPersonalService.findMonthlyReport(companyId, month1, 1, 9999);
+        Map m = new HashMap();
+        m.put("companyId", companyId);
+        m.put("page", 1);
+        m.put("size", 10000);
+        final Long totalNum = (Long) stemFeignClient.findAllUsers(m).getData();
         // 查询在职人数
         final Integer onJob = userCompanyPersonalService.numOfJobStatus(companyId, month1, 1);
         // 查询离职人数
@@ -326,7 +330,7 @@ public class EmployeeController extends BaseController {
             // 已归档，则将原归档覆盖
             e1.setCompanyId(companyId);
             e1.setDepartures(num);
-            e1.setTotals((int) list.getTotalElements());
+            e1.setTotals(totalNum.intValue());
             e1.setPayrolls(onJob);
             e1.setOpUser(username);
             archiveServiceImpl.save(e1);
@@ -337,7 +341,7 @@ public class EmployeeController extends BaseController {
             e.setOpUser(username);
             e.setDepartures(num);
             e.setMonth(month);
-            e.setTotals((int) list.getTotalElements());
+            e.setTotals(totalNum.intValue());
             e.setPayrolls(onJob);
             e.setId(IdWorker.getIdStr());
             archiveServiceImpl.save(e);

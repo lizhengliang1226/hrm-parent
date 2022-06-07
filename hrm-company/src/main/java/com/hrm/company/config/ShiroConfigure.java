@@ -146,6 +146,8 @@ public class ShiroConfigure {
     public RedisSessionDAO redisSessionDAO() {
         RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
         redisSessionDAO.setRedisManager(redisManager());
+        redisSessionDAO.setExpire(60 * 60);
+        redisSessionDAO.setSessionInMemoryTimeout(60 * 60);
         return redisSessionDAO;
     }
 
@@ -159,6 +161,7 @@ public class ShiroConfigure {
         redisManager.setHost(host);
         redisManager.setPort(port);
         redisManager.setPassword(password);
+
         return redisManager;
     }
 

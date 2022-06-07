@@ -17,11 +17,13 @@ import java.math.BigDecimal;
 @ExcelIgnoreUnannotated
 public class UserSocialSecurityVo {
 
-    @ExcelProperty(value = "ID")
+    //    @ExcelProperty(value = "ID")
     private String userId;
 
     @ExcelProperty(value = "姓名")
     private String username;
+    @ExcelProperty(value = "手机号")
+    private String mobile;
     /**
      * 参保城市id
      */

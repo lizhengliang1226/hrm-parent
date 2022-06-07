@@ -38,7 +38,8 @@ public interface UserCompanyPersonalDao extends JpaRepository<UserCompanyPersona
             "b.wechat , b.place_of_residence placeOfResidence,  " +
             "b.social_security_computer_number socialSecurityComputerNumber,  " +
             "b.provident_fund_account providentFundAccount, b.bank_card_number bankCardNumber,  " +
-            "b.opening_bank openingBank, b.educational_type educationalType, b.major,b.personal_mailbox personalMailbox,a.time_of_entry timeOfEntry " +
+            "b.opening_bank openingBank, b.educational_type educationalType," +
+            " b.major,b.personal_mailbox personalMailbox,a.time_of_entry timeOfEntry " +
             "from bs_user a " +
             "left join em_user_company_personal b on " +
             "a.id = b.user_id " +

@@ -152,6 +152,14 @@ public class UserController extends BaseController {
         return new Result<>(ResultCode.SUCCESS, pageResult);
     }
 
+    @GetMapping(value = "findUsers")
+    @ApiOperation(value = "获取某个企业的用户列表,不获取角色")
+    public Result<Long> findAllUsers(@RequestParam Map<String, Object> map) {
+        map.put("companyId", companyId);
+        final Page<User> all = userService.findAll(map);
+        return new Result<>(ResultCode.SUCCESS, all.getTotalElements());
+    }
+
     @GetMapping(value = "user/simple", name = "FIND_SIMPLE_USER_LIST_API")
     @ApiOperation(value = "获取某个企业的简洁用户列表")
     public Result<List<Map<String, Object>>> findUserList() {
@@ -242,13 +250,10 @@ public class UserController extends BaseController {
         public void invoke(User user, AnalysisContext analysisContext) {
             final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).get(user.getDepartmentId());
             final Department data = JSON.parseObject(JSON.toJSONString(o), Department.class);
-//            final Result<Department> result = companyFeignClient.findByCode(user.getDepartmentId(), companyId);
-//            final Department data = result.getData();
             user.setDepartmentId(data.getId());
             user.setDepartmentName(data.getName());
             user.setCompanyName(companyName);
             user.setCompanyId(companyId);
-//            userList.add(user)
             pool.execute(() -> {
                 try {
                     userService.save(user);

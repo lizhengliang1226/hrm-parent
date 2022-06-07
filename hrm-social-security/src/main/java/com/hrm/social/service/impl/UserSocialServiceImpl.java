@@ -5,9 +5,12 @@ import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
 import com.alibaba.excel.read.builder.ExcelReaderBuilder;
 import com.alibaba.excel.read.builder.ExcelReaderSheetBuilder;
+import com.alibaba.fastjson.JSON;
 import com.hrm.common.client.SystemFeignClient;
 import com.hrm.common.entity.PageResult;
 import com.hrm.common.utils.PageUtils;
+import com.hrm.domain.attendance.entity.User;
+import com.hrm.domain.constant.SystemConstant;
 import com.hrm.domain.social.CityPaymentItem;
 import com.hrm.domain.social.UserSocialSecurity;
 import com.hrm.domain.social.enums.UserSocialEnum;
@@ -60,7 +63,7 @@ public class UserSocialServiceImpl implements UserSocialService {
     private ThreadPoolExecutor pool = new ThreadPoolExecutor(16, 16, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
                                                              r -> new Thread(r, "t1"));
     static ReentrantLock lock = new ReentrantLock();
-
+    private Map<String, List<CityPaymentItem>> cityPayList = new HashMap<>();
     @Override
     public PageResult<UserSocialSecuritySimpleVo> findAll(Map map) {
         PageUtils.doPage(map);
@@ -82,7 +85,12 @@ public class UserSocialServiceImpl implements UserSocialService {
     public void save(UserSocialSecurity uss) {
         lock.lock();
         try {
-            final List<CityPaymentItem> byCityId = cityPaymentItemDao.findByCityId(uss.getParticipatingInTheCityId());
+            List<CityPaymentItem> byCityId = null;
+            byCityId = cityPayList.get(uss.getParticipatingInTheCityId());
+            if (byCityId == null) {
+                byCityId = cityPaymentItemDao.findByCityId(uss.getParticipatingInTheCityId());
+                cityPayList.put(uss.getParticipatingInTheCityId(), byCityId);
+            }
             BigDecimal comTol = new BigDecimal(0);
             BigDecimal personalTol = new BigDecimal(0);
             DecimalFormat df = new DecimalFormat("#.00");
@@ -134,7 +142,8 @@ public class UserSocialServiceImpl implements UserSocialService {
     public void importSocialExcel(MultipartFile file, String companyId) throws IOException {
         log.info("社保数据开始导入");
         cityList = systemFeignClient.findCityList().getData();
-        final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), UserSocialSecurityVo.class, new SocialExcelListener());
+        final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(),
+                                                       UserSocialSecurityVo.class, new SocialExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
         log.info("社保数据导入完成");
@@ -147,6 +156,15 @@ public class UserSocialServiceImpl implements UserSocialService {
 
         @Override
         public void invoke(UserSocialSecurityVo vo, AnalysisContext analysisContext) {
+            final String mobile = vo.getMobile();
+//            User user = SystemCache.USER_INFO_CACHE.get(mobile);
+//            if(user==null){
+            final Object o = redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(vo.getMobile());
+            User user = JSON.parseObject(JSON.toJSONString(o), User.class);
+            // 存入本地缓存
+//                SystemCache.USER_INFO_CACHE.put(vo.getMobile(), user);
+//            }
+            vo.setUserId(user.getId());
             final UserSocialSecurity us = new UserSocialSecurity();
             for (City city : cityList) {
                 if (city.getName().equals(vo.getParticipatingInTheCity())) {

@@ -46,7 +46,7 @@ public class DepartmentController extends BaseController {
     private RedisTemplate redisTemplate;
     @Autowired
     private DepartmentMapperServiceImpl departmentMap;
-
+    private Set deptKeys = new HashSet();
     @Autowired
     public void setCompanyService(CompanyService companyService) {
         this.companyService = companyService;
@@ -121,6 +121,7 @@ public class DepartmentController extends BaseController {
     @PostMapping(value = "department/import")
     @ApiOperation(value = "批量保存部门")
     public Result importDepartments(@RequestParam MultipartFile file) throws Exception {
+        deptKeys = redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).keys();
         final ExcelReaderBuilder read = EasyExcel.read(file.getInputStream(), Department.class, new DepartmentExcelListener());
         final ExcelReaderSheetBuilder sheet = read.sheet();
         sheet.doRead();
@@ -133,6 +134,7 @@ public class DepartmentController extends BaseController {
             redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(id, department);
             redisTemplate.boundHashOps(SystemConstant.REDIS_DEPT_LIST).put(code, department);
         }
+        // 清除临时缓存
         list.clear();
         return Result.SUCCESS();
     }
@@ -145,18 +147,26 @@ public class DepartmentController extends BaseController {
         @SneakyThrows
         @Override
         public void invoke(Department department, AnalysisContext analysisContext) {
-            final String s = RandomUtil.randomString(RandomUtil.BASE_CHAR.toUpperCase(), 5);
+            // 随机生成部门码
+            String code = "";
+            do {
+                code = RandomUtil.randomString(RandomUtil.BASE_CHAR.toUpperCase(), 5);
+            } while (deptKeys.contains(code));
             if (!department.getPid().equals("0")) {
+                // 非顶级部门从临时缓存中获取pid
                 final String id = map.get(department.getPid());
                 department.setPid(id);
                 department.setId(IdWorker.getIdStr());
             } else {
+                // 顶级部门存入临时缓存，给后面的子部门提供pid
                 department.setId(IdWorker.getIdStr());
                 map.put(department.getName(), department.getId());
             }
-            department.setCode(s);
+            // 设置信息
+            department.setCode(code);
             department.setCompanyId(companyId);
             department.setCreateTime(new Date());
+            // 添加到临时缓存
             list.add(department);
         }
 

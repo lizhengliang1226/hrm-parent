@@ -14,4 +14,5 @@ import java.util.Map;
  */
 public class SystemCache {
     public static Map<String, User> USER_INFO_CACHE = new HashMap<>(64);
+
 }

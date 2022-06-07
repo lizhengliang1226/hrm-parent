@@ -44,7 +44,7 @@ public class AttendanceSettingsController extends BaseController {
     }
 
     @PostMapping(value = "atte/item")
-    @ApiOperation(value = "查询部门考勤设置")
+    @ApiOperation(value = "查询部门出勤设置")
     public Result findDeptAtteSet(@RequestBody Map map) {
         log.info("{}", map.get("departmentId"));
         final AttendanceConfig atteConfig = attendanceSettingsService.getAtteConfig(companyId, (String) map.get("departmentId"));
@@ -52,7 +52,7 @@ public class AttendanceSettingsController extends BaseController {
     }
 
     @PutMapping(value = "atte")
-    @ApiOperation(value = "保存考勤设置")
+    @ApiOperation(value = "保存出勤设置")
     public Result saveAtteSet(@RequestBody AttendanceConfig attendanceConfig) {
         attendanceConfig.setCompanyId(companyId);
         attendanceSettingsService.saveAtteConfig(attendanceConfig);
