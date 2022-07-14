@@ -213,11 +213,7 @@ public class EmployeeController extends BaseController {
 
         @Override
         public void invoke(UserCompanyPersonal user, AnalysisContext analysisContext) {
-//            User user1 = SystemCache.USER_INFO_CACHE.get(user.getMobile());
-//            if (user1 == null) {
             User user1 = (User) redisTemplate.boundHashOps(SystemConstant.REDIS_USER_LIST).get(user.getMobile());
-//                SystemCache.USER_INFO_CACHE.put(user.getMobile(), user1);
-//            }
             user.setUserId(user1.getId());
             user.setCompanyId(companyId);
             pool.execute(() -> {

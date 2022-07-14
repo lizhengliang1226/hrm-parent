@@ -11,6 +11,7 @@ import com.hrm.domain.company.Company;
 import com.lzl.IdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 public class CompanyServiceImpl implements CompanyService {
 
     private CompanyDao companyDao;
-
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
     @Value("${initial-password}")
     private String initialPassword;
 

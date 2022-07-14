@@ -36,5 +36,4 @@ public class BaseExceptionHandler {
             return new Result(ResultCode.SERVER_ERROR);
         }
     }
-
 }

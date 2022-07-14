@@ -73,7 +73,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
     /**
      * 处理考勤数据的文件上传
      * 参数 :excel文件
-     * 企业
      */
     @Override
     public void importAttendanceExcel(MultipartFile file, String companyId) throws Exception {
@@ -146,10 +145,6 @@ public class ExcelImportServiceImpl implements ExcelImportService {
                     // 早退
                     attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY.getValue());
                 }
-//                if (isLate && isEarly) {
-//                    // 迟到早退
-//                    attendance.setAdtStatus(AttendanceStatusEnum.LEAVE_EARLY_AND_LATE.getValue());
-//                }
             }
             attendance.setId(IdWorker.getIdStr());
             attendance.setCreateDate(new Date());

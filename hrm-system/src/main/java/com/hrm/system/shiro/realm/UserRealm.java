@@ -52,7 +52,6 @@ public class UserRealm extends HrmRealm {
      * @return 认证信息
      * @throws AuthenticationException 授权失败异常
      */
-
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken)
             throws AuthenticationException {

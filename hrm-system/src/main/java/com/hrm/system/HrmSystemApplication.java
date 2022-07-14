@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 
@@ -23,6 +24,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 @Import({OpenEntityManagerInViewFilter.class})
 public class HrmSystemApplication {
     public static void main(String[] args) {
-        SpringApplication.run(HrmSystemApplication.class, args);
+        final ConfigurableApplicationContext run =
+                SpringApplication.run(HrmSystemApplication.class, args);
     }
 }
